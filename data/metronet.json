@@ -1,0 +1,227 @@
+{
+  "source": {
+    "id": "metronet",
+    "name": "VNPT MetroNet",
+    "url": "https://vnpt.vn",
+    "description": "Dịch vụ truyền số liệu / kênh thuê riêng đô thị băng rộng MetroNet (vnpt.vn)."
+  },
+  "products": [
+    {
+      "id": "metronet-bang-gia-dich-vu-dich-vu-truyen-so-lieu-trong-nuoc-metronet",
+      "slug": "metronet-bang-gia-dich-vu-dich-vu-truyen-so-lieu-trong-nuoc-metronet",
+      "sourceId": "metronet",
+      "category": "Truyền số liệu (MetroNet)",
+      "title": "BẢNG GIÁ DỊCH VỤ dịch vụ truyền số liệu trong nước (METRONET)",
+      "shortDesc": "Đơn vị tính: 1.000 đồng/lần/điểm (chưa bao gồm VAT)",
+      "features": [
+        "Giá cước đầu nối hòa mạng",
+        "18001091 | 18001166 | 18001260",
+        "cskh@vnpt.vn",
+        "Chính sách bảo vệ dữ liệu cá nhân",
+        "Điều khoản"
+      ],
+      "pricing": [
+        {
+          "columns": [
+            "TT",
+            "Loại cổng",
+            "Mức cước"
+          ],
+          "rows": [
+            [
+              "I",
+              "Khách hàng thông thường",
+              ""
+            ],
+            [
+              "1",
+              "FE",
+              "3.000"
+            ],
+            [
+              "2",
+              "GE",
+              "5.000"
+            ]
+          ]
+        },
+        {
+          "columns": [
+            "Tốc độ Mbps",
+            "Nội hạt",
+            "Nội vùng",
+            "Cận vùng",
+            "Cách vùng"
+          ],
+          "rows": [
+            [
+              "1",
+              "844",
+              "1.188",
+              "1.318",
+              "1.713"
+            ],
+            [
+              "2",
+              "1.300",
+              "1.989",
+              "2.134",
+              "2.494"
+            ],
+            [
+              "4",
+              "2.214",
+              "3.591",
+              "3.741",
+              "3.943"
+            ],
+            [
+              "5",
+              "2.670",
+              "4.535",
+              "4.728",
+              "4.891"
+            ],
+            [
+              "8",
+              "4.039",
+              "6.795",
+              "6.976",
+              "7.422"
+            ],
+            [
+              "10",
+              "4.952",
+              "8.397",
+              "8.535",
+              "8.767"
+            ],
+            [
+              "20",
+              "8.380",
+              "15.698",
+              "15.881",
+              "16.333"
+            ],
+            [
+              "50",
+              "14.830",
+              "28.295",
+              "28.456",
+              "29.231"
+            ],
+            [
+              "100",
+              "21.814",
+              "30.532",
+              "34.622",
+              "45.997"
+            ],
+            [
+              "150",
+              "32.528",
+              "39.592",
+              "44.907",
+              "59.692"
+            ],
+            [
+              "200",
+              "33.333",
+              "48.227",
+              "54.712",
+              "72.752"
+            ],
+            [
+              "300",
+              "37.885",
+              "63.552",
+              "72.112",
+              "95.922"
+            ],
+            [
+              "400",
+              "50.342",
+              "76.962",
+              "87.337",
+              "116.202"
+            ],
+            [
+              "500",
+              "62.798",
+              "88.457",
+              "100.392",
+              "133.582"
+            ],
+            [
+              "600",
+              "75.255",
+              "99.587",
+              "113.027",
+              "150.407"
+            ],
+            [
+              "700",
+              "87.711",
+              "109.512",
+              "124.297",
+              "165.417"
+            ],
+            [
+              "800",
+              "100.167",
+              "119.107",
+              "135.192",
+              "179.927"
+            ],
+            [
+              "900",
+              "112.624",
+              "128.607",
+              "145.982",
+              "194.292"
+            ],
+            [
+              "1.000",
+              "125.080",
+              "141.082",
+              "160.142",
+              "213.157"
+            ],
+            [
+              "1.500",
+              "187.362",
+              "193.092",
+              "219.202",
+              "291.802"
+            ],
+            [
+              "2.000",
+              "249.644",
+              "256.215",
+              "269.322",
+              "358.552"
+            ],
+            [
+              "2.500",
+              "313.604",
+              "321.710",
+              "351.187",
+              "467.572"
+            ]
+          ]
+        }
+      ],
+      "images": [
+        "/scraped-images/metronet/e7a6a0059b958cc5.jpg",
+        "/scraped-images/metronet/62d710d8a8637450.png",
+        "/scraped-images/metronet/c8ab87e3f2547075.png",
+        "/scraped-images/metronet/461b349a2798cd24.png",
+        "/scraped-images/metronet/8f811e1fd5cbd56f.png",
+        "/scraped-images/metronet/85d713f12871f2c2.jpg"
+      ],
+      "bodyText": "17:01 |11/09/2023\nGiá cước đầu nối hòa mạng\nĐơn vị tính: 1.000 đồng/lần/điểm (chưa bao gồm VAT)\nTT\nLoại cổng\nMức cước\nKhách hàng thông thường\nFE\n3.000\nGE\n5.000\n2. Mức giá cước\nĐơn vị tính: 1.000 đồng/điểm/tháng (chưa bao gồm VAT)\nTốc độ Mbps\nNội hạt\nNội vùng\nCận vùng\nCách vùng\n844\n1.188\n1.318\n1.713\n1.300\n1.989\n2.134\n2.494\n2.214\n3.591\n3.741\n3.943\n2.670\n4.535\n4.728\n4.891\n4.039\n6.795\n6.976\n7.422\n10\n4.952\n8.397\n8.535\n8.767\n20\n8.380\n15.698\n15.881\n16.333\n50\n14.830\n28.295\n28.456\n29.231\n100\n21.814\n30.532\n34.622\n45.997\n150\n32.528\n39.592\n44.907\n59.692\n200\n33.333\n48.227\n54.712\n72.752\n300\n37.885\n63.552\n72.112\n95.922\n400\n50.342\n76.962\n87.337\n116.202\n500\n62.798\n88.457\n100.392\n133.582\n600\n75.255\n99.587\n113.027\n150.407\n700\n87.711\n109.512\n124.297\n165.417\n800\n100.167\n119.107\n135.192\n179.927\n900\n112.624\n128.607\n145.982\n194.292\n1.000\n125.080\n141.082\n160.142\n213.157\n1.500\n187.362\n193.092\n219.202\n291.802\n2.000\n249.644\n256.215\n269.322\n358.552\n2.500\n313.604\n321.710\n351.187\n467.572\nChi tiết liên hệ: 1800126\nTin liên quan\nVinaPhone tung ưu đãi Roaming dịp World Cup 2026: Data vô cực tại Mỹ, Canada, Mexico và 130+ quốc gia\nThứ Năm 18/06/2026 11:00\nHướng dẫn chi tiết cách xác thực sinh trắc học khuôn mặt khi đổi SIM VinaPhone sang thiết bị mới (Cập nhật quy định 2026)\nThứ Tư 17/06/2026 10:15\neSIM VinaPhone: Hướng dẫn đăng ký, chuyển đổi & cài MultiSIM cho Apple Watch, Galaxy Watch\nThứ Hai 15/06/2026 18:32\nVinaPhone tăng cường mạng lưới hỗ trợ: Giúp khách hàng Xác thực thông tin thuê bao nhanh chóng\nThứ Sáu 22/05/2026 16:59\nVNPT thông báo điều chỉnh gói cước Internet từ 1/5/2026\nThứ Sáu 24/04/2026 12:04\n\n## Hỗ Trợ\nVinaPhone Plus\nỨng dụng chăm sóc khách hàng của VinaPhone, cung cấp hàng ngàn ưu đãi cho khách hàng.\nVpoint\nỨng dụng tích điểm và thanh toán bằng điểm tại tất cả các cửa hàng trong cộng đồng như ẩm thực, thời trang, du lịch, siêu thị, …\nMy VNPT\nỨng dụng tra cứu toàn bộ thông tin thuê bao, lịch sử tiêu dùng, gói cước, dịch vụ… của VNPT.\nVNPT Money\nVNPT Money chuyển tiền miễn phí thanh toán mọi lúc. Nhiều chương trình ưu đãi, khuyến mãi.\n18001091 | 18001166 | 18001260\ncskh@vnpt.vn\nQ&A\nChính sách bảo vệ dữ liệu cá nhân\nĐiều khoản\nĐƯỢC CHỨNG NHẬN",
+      "sourceUrl": "https://vnpt.vn/tu-van/bang-gia-dich-vu-dich-vu-truyen-so-lieu-trong-nuoc-metronet.html"
+    }
+  ],
+  "articles": []
+}

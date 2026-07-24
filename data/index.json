@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-07-11T17:04:43.151Z",
+  "sources": [
+    {
+      "id": "cloud",
+      "name": "VNPT Cloud",
+      "url": "https://cloud.vnpt.vn",
+      "description": "Nền tảng điện toán đám mây VNPT — Compute, Database, Storage, AI, Security...",
+      "productCount": 30,
+      "articleCount": 0
+    },
+    {
+      "id": "digishop",
+      "name": "VNPT DigiShop",
+      "url": "https://digishop.vnpt.vn",
+      "description": "Cửa hàng số VNPT — bài tư vấn, khuyến mãi & bảng giá gói cước (MyTV, Internet...).",
+      "productCount": 0,
+      "articleCount": 3
+    },
+    {
+      "id": "metronet",
+      "name": "VNPT MetroNet",
+      "url": "https://vnpt.vn",
+      "description": "Dịch vụ truyền số liệu / kênh thuê riêng đô thị băng rộng MetroNet (vnpt.vn).",
+      "productCount": 1,
+      "articleCount": 0
+    },
+    {
+      "id": "onesme",
+      "name": "oneSME",
+      "url": "https://onesme.vn",
+      "description": "Nền tảng chuyển đổi số toàn diện cho doanh nghiệp SME (oneSME - VNPT).",
+      "productCount": 8,
+      "articleCount": 0
+    },
+    {
+      "id": "vnpt-technology",
+      "name": "VNPT Technology",
+      "url": "https://www.vnpt-technology.vn",
+      "description": "Nhà sản xuất thiết bị & công nghệ VNPT — ONT, Mesh WiFi, Camera, SmartBox, 5G...",
+      "productCount": 11,
+      "articleCount": 12
+    },
+    {
+      "id": "vnptit",
+      "name": "VNPT IT",
+      "url": "https://vnptit.vn",
+      "description": "Công ty CNTT VNPT — giải pháp Chính phủ số, Doanh nghiệp, Giáo dục, Y tế, Bảo mật.",
+      "productCount": 23,
+      "articleCount": 0
+    }
+  ]
+}

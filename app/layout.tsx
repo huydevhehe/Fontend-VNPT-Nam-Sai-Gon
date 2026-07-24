@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
+import Shell from "@/components/layout/Shell";
 
 const montserrat = Montserrat({
   weight: ["500", "600", "700", "800"],
@@ -26,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${montserrat.variable} ${beVN.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans bg-white text-slate-800">
-        {children}
+        <Shell>{children}</Shell>
       </body>
     </html>
   );

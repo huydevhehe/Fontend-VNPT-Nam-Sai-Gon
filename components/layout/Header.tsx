@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Mail, MessageCircle, Menu, Phone, Search, X } from "lucide-react";
+import { ChevronDown, Headset, Mail, MessageCircle, Menu, Phone, Search, X } from "lucide-react";
 import { categories } from "@/content/category-map";
 
 const NAV = [
@@ -37,6 +37,9 @@ export default function Header() {
             </span>
             <span className="flex items-center gap-1">
               <Mail size={14} /> Email
+            </span>
+            <span className="flex items-center gap-1">
+              <Headset size={14} /> Hỗ trợ 24/7
             </span>
           </div>
         </div>

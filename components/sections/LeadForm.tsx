@@ -6,10 +6,12 @@ export default function LeadForm({
   title = "Đăng ký tư vấn",
   subtitle = "Chúng tôi sẽ liên hệ với bạn!",
   interestOptions = ["Internet", "MyTV", "Di động Vinaphone", "Hóa đơn điện tử", "Chữ ký số", "Cloud & IDC", "Chuyển đổi số"],
+  showCompany = false,
 }: {
   title?: string;
   subtitle?: string;
   interestOptions?: string[];
+  showCompany?: boolean;
 }) {
   const [submitted, setSubmitted] = useState(false);
 
@@ -54,6 +56,13 @@ export default function LeadForm({
           placeholder="Email"
           className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-vnpt"
         />
+        {showCompany && (
+          <input
+            name="tenCongTy"
+            placeholder="Tên công ty"
+            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-vnpt"
+          />
+        )}
         <select
           name="nhuCau"
           defaultValue=""
@@ -80,6 +89,9 @@ export default function LeadForm({
         >
           GỬI THÔNG TIN
         </button>
+        <p className="text-center text-xs text-slate-400">
+          🔒 Thông tin của bạn được bảo mật tuyệt đối
+        </p>
       </form>
     </div>
   );

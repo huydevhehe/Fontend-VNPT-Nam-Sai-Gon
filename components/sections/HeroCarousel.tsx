@@ -13,7 +13,8 @@ export type HeroSlide = {
   secondaryCta: { label: string; href: string; icon: ReactNode };
 };
 
-const AUTO_ADVANCE_MS = 6000;
+const AUTO_ADVANCE_MS = 7000;
+const FADE_DURATION_MS = 1500;
 
 export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
@@ -39,9 +40,10 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           src={s.image}
           alt={s.title.join(" ")}
           fill
-          className={`object-cover transition-opacity duration-700 ${
+          className={`object-cover transition-opacity ease-in-out ${
             i === index ? "opacity-100" : "opacity-0"
           }`}
+          style={{ transitionDuration: `${FADE_DURATION_MS}ms` }}
           priority={i === 0}
         />
       ))}

@@ -40,6 +40,8 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           src={s.image}
           alt={s.title.join(" ")}
           fill
+          sizes="100vw"
+          quality={95}
           className={`object-cover transition-opacity ease-in-out ${
             i === index ? "opacity-100" : "opacity-0"
           }`}

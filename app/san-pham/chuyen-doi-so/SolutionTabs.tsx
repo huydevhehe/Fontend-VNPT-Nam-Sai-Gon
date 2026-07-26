@@ -275,7 +275,13 @@ export default function SolutionTabs() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr]">
         <div className="relative hidden h-full min-h-[220px] overflow-hidden rounded-xl bg-vnpt-darker lg:block">
           {tab.image ? (
-            <Image src={tab.image} alt={tab.label} fill className="object-cover" />
+            <Image
+              src={tab.image}
+              alt={tab.label}
+              fill
+              sizes="(max-width: 1024px) 0px, 220px"
+              className="object-cover"
+            />
           ) : (
             tab.fallbackIcon && (
               <div className="flex h-full items-center justify-center">

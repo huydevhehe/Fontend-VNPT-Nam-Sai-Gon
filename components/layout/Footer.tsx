@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone, PlayCircle, Share2 } from "lucide-react";
 import { categories } from "@/content/category-map";
+import { AUDIENCE_CONFIG } from "@/content/audience-map";
 
 const HO_TRO = [
   { label: "Hướng dẫn thanh toán", href: "/lien-he" },
@@ -11,12 +13,15 @@ const HO_TRO = [
 export default function Footer() {
   return (
     <footer className="bg-vnpt-darker text-slate-200">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-4">
-        <div>
-          <div className="text-xl font-extrabold text-white">
-            VNPT
-            <span className="block text-xs font-semibold text-vnpt-accent">NAM SÀI GÒN</span>
-          </div>
+      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3 lg:grid-cols-6">
+        <div className="lg:col-span-2">
+          <Image
+            src="/images/vnpt_logo.png"
+            alt="VNPT Nam Sài Gòn"
+            width={160}
+            height={40}
+            className="h-10 w-auto brightness-0 invert"
+          />
           <p className="mt-3 text-sm text-slate-300">
             Đồng hành cùng doanh nghiệp, cá nhân trên hành trình Chuyển đổi số.
           </p>
@@ -33,6 +38,19 @@ export default function Footer() {
               <li key={c.slug}>
                 <Link href={`/san-pham/${c.slug}`} className="hover:text-white">
                   {c.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="mb-3 text-sm font-semibold text-white">GIẢI PHÁP</h4>
+          <ul className="space-y-2 text-sm text-slate-300">
+            {AUDIENCE_CONFIG.map((a) => (
+              <li key={a.slug}>
+                <Link href={`/giai-phap/${a.slug}`} className="hover:text-white">
+                  Giải pháp {a.label.toLowerCase()}
                 </Link>
               </li>
             ))}
@@ -66,6 +84,19 @@ export default function Footer() {
               <Mail size={16} /> kinhdoanh@vnptnamsaigon.vn
             </li>
           </ul>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl border-t border-white/10 px-6 py-6">
+        <div className="flex flex-col items-center justify-center gap-2 text-center">
+          <Image
+            src="/images/misc/zalo-qr.png"
+            alt="QR Zalo OA VNPT Nam Sài Gòn"
+            width={96}
+            height={96}
+            className="rounded-md bg-white p-1"
+          />
+          <span className="text-xs text-slate-400">Quét QR code - Kết nối Zalo OA</span>
         </div>
       </div>
 

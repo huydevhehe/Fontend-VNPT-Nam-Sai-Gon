@@ -11,7 +11,13 @@ export default function ArticleCard({ article }: { article: Article }) {
     >
       <div className="relative flex h-36 items-center justify-center bg-vnpt-darker">
         {article.images[0] ? (
-          <Image src={article.images[0]} alt={article.title} fill className="object-cover" />
+          <Image
+            src={article.images[0]}
+            alt={article.title}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover"
+          />
         ) : (
           <Newspaper size={32} className="text-white" />
         )}

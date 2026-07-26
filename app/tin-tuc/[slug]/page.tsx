@@ -21,7 +21,9 @@ function NewsRow({ article }: { article: Article }) {
   return (
     <Link href={`/tin-tuc/${article.slug}`} className="flex gap-3 rounded-lg p-2 transition hover:bg-vnpt-light">
       <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-md bg-vnpt-darker">
-        {article.images[0] && <Image src={article.images[0]} alt={article.title} fill className="object-cover" />}
+        {article.images[0] && (
+          <Image src={article.images[0]} alt={article.title} fill sizes="80px" className="object-cover" />
+        )}
       </div>
       <div className="min-w-0">
         <h4 className="line-clamp-2 text-sm font-semibold text-slate-800">{article.title}</h4>
@@ -90,7 +92,13 @@ export default async function ArticleDetailPage({
 
           <div className="relative mt-6 h-72 overflow-hidden rounded-xl bg-vnpt-darker md:h-96">
             {article.images[0] ? (
-              <Image src={article.images[0]} alt={article.title} fill className="object-cover" />
+              <Image
+                src={article.images[0]}
+                alt={article.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 66vw"
+                className="object-cover"
+              />
             ) : (
               <div className="flex h-full items-center justify-center">
                 <Newspaper size={48} className="text-white/70" />

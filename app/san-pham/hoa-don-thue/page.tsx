@@ -191,6 +191,8 @@ export default function HoaDonThuePage() {
                   src="/images/hero/hero-city-night.jpg"
                   alt="VNPT Invoice - Hóa đơn điện tử"
                   fill
+                  sizes="(max-width: 1024px) 0px, 448px"
+                  quality={90}
                   className="object-cover"
                   priority
                 />

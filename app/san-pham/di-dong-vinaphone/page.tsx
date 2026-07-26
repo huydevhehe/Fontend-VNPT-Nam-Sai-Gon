@@ -131,6 +131,8 @@ export default function DiDongVinaphonePage() {
                 src="/images/hero/hero-city-night.jpg"
                 alt="Di động Vinaphone - Kết nối mọi lúc mọi nơi"
                 fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
                 className="object-cover"
                 priority
               />

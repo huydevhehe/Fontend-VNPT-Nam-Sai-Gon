@@ -7,6 +7,7 @@ import {
   Building2,
   Check,
   Globe,
+  Link2,
   Mail,
   MapPin,
   MessageCircle,
@@ -65,7 +66,7 @@ const SOCIALS = [
   { icon: MessageCircle, label: "Zalo OA" },
   { icon: Share2, label: "Facebook" },
   { icon: PlayCircle, label: "YouTube" },
-  { icon: Globe, label: "Website" },
+  { icon: Link2, label: "Linkedin" },
 ];
 
 export default function GioiThieuPage() {
@@ -75,29 +76,35 @@ export default function GioiThieuPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-vnpt-darker via-vnpt-dark to-vnpt px-6 py-10 text-white">
         <div className="mx-auto max-w-7xl">
           <Breadcrumb items={[{ label: "Trang chủ", href: "/" }, { label: "Giới thiệu" }]} />
-          <div className="mt-3 grid items-center gap-8 lg:grid-cols-2">
+          <div className="mt-3 grid items-stretch gap-8 lg:grid-cols-2">
             <div>
               <h1 className="text-3xl font-extrabold">GIỚI THIỆU</h1>
               <p className="mt-2 text-white/85">
                 VNPT Nam Sài Gòn - Đồng hành cùng bạn trên hành trình Chuyển đổi số
               </p>
-            </div>
-            <div className="relative hidden h-40 overflow-hidden rounded-2xl lg:block">
-              <Image src="/images/hero/hero-city-night.jpg" alt="VNPT" fill className="object-cover" />
-              <div className="absolute inset-0 bg-vnpt/50 mix-blend-multiply" />
-            </div>
-          </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-6 border-t border-white/15 pt-6 sm:grid-cols-4">
-            {HERO_STATS.map((s) => (
-              <div key={s.label} className="flex items-center gap-2">
-                <s.icon size={22} className="shrink-0 text-vnpt-accent" />
-                <div>
-                  <div className="text-sm font-bold">{s.value}</div>
-                  <div className="text-xs text-white/70">{s.label}</div>
-                </div>
+              <div className="mt-8 grid grid-cols-2 gap-6 border-t border-white/15 pt-6">
+                {HERO_STATS.map((s) => (
+                  <div key={s.label} className="flex items-center gap-2">
+                    <s.icon size={22} className="shrink-0 text-vnpt-accent" />
+                    <div>
+                      <div className="text-sm font-bold">{s.value}</div>
+                      <div className="text-xs text-white/70">{s.label}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+            <div className="relative hidden min-h-[320px] overflow-hidden rounded-2xl lg:block">
+              <Image
+                src="/images/gioi-thieu/toanha-vnpt.png"
+                alt="Tòa nhà VNPT"
+                fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -129,8 +136,14 @@ export default function GioiThieuPage() {
             </a>
           </div>
           <div className="relative h-72 overflow-hidden rounded-2xl">
-            <Image src="/images/hero/hero-city-night.jpg" alt="Tập đoàn VNPT" fill className="object-cover" />
-            <div className="absolute inset-0 bg-vnpt-darker/30" />
+            <Image
+              src="/images/hero/hero-datacenter.jpg"
+              alt="Tập đoàn VNPT"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              quality={90}
+              className="object-cover"
+            />
           </div>
         </div>
       </section>
@@ -139,7 +152,14 @@ export default function GioiThieuPage() {
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-8 rounded-xl border border-slate-100 p-6 shadow-sm lg:grid-cols-[1fr_1.3fr_0.9fr]">
           <div className="relative h-56 overflow-hidden rounded-xl lg:h-full">
-            <Image src="/images/gioi-thieu/van-phong.jpg" alt="Văn phòng VNPT Nam Sài Gòn" fill className="object-cover" />
+            <Image
+              src="/images/gioi-thieu/van-phong.jpg"
+              alt="Văn phòng VNPT Nam Sài Gòn"
+              fill
+              sizes="(max-width: 1024px) 100vw, 33vw"
+              quality={90}
+              className="object-cover"
+            />
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-800">GIỚI THIỆU VNPT NAM SÀI GÒN</h2>

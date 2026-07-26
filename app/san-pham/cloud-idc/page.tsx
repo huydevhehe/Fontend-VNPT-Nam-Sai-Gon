@@ -242,6 +242,8 @@ export default function CloudIdcPage() {
                 src="/images/hero/hero-city-night.jpg"
                 alt="VNPT Cloud & Data Center"
                 fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
                 className="object-cover"
                 priority
               />

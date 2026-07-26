@@ -188,6 +188,8 @@ export default function BangRongCoDinhPage() {
                 src="/images/hero/hero-city-night.jpg"
                 alt="Internet VNPT tốc độ cao"
                 fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
                 className="object-cover"
                 priority
               />

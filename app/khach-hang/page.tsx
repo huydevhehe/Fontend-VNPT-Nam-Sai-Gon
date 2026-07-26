@@ -141,6 +141,8 @@ export default function KhachHangPage() {
                 src="/images/hero/hero-city-night.jpg"
                 alt="Khách hàng VNPT Nam Sài Gòn"
                 fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-vnpt/50 mix-blend-multiply" />
@@ -191,7 +193,13 @@ export default function KhachHangPage() {
           {DU_AN_TIEU_BIEU.map((d) => (
             <div key={d.title} className="overflow-hidden rounded-xl border border-slate-100 shadow-sm">
               <div className="relative h-36 w-full">
-                <Image src={d.image} alt={d.title} fill className="object-cover" />
+                <Image
+                  src={d.image}
+                  alt={d.title}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 20vw"
+                  className="object-cover"
+                />
                 <div className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-vnpt text-white shadow">
                   <d.icon size={16} />
                 </div>
@@ -298,7 +306,13 @@ export default function KhachHangPage() {
           {CASE_STUDIES.map((cs) => (
             <div key={cs.title} className="overflow-hidden rounded-xl border border-slate-100 shadow-sm">
               <div className="relative h-40 w-full">
-                <Image src={cs.image} alt={cs.title} fill className="object-cover" />
+                <Image
+                  src={cs.image}
+                  alt={cs.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  className="object-cover"
+                />
                 <span className="absolute left-3 top-3 rounded bg-vnpt-darker/90 px-2 py-1 text-[10px] font-bold tracking-wide text-white">
                   {cs.badge}
                 </span>

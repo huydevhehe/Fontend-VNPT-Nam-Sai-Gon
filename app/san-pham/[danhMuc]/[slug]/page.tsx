@@ -145,7 +145,13 @@ export default async function ProductDetailPage({
           <div className="mt-6 grid gap-8 md:grid-cols-2">
             <div className="relative h-64 overflow-hidden rounded-xl bg-vnpt-darker">
               {product.images[0] ? (
-                <Image src={product.images[0]} alt={product.title} fill className="object-cover" />
+                <Image
+                  src={product.images[0]}
+                  alt={product.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
+                />
               ) : (
                 <div className="flex h-full items-center justify-center">
                   <Package size={56} className="text-white/70" />

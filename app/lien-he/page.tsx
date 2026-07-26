@@ -188,6 +188,8 @@ export default function LienHePage() {
                 src="/images/hero/hero-city-night.jpg"
                 alt="VNPT Nam Sài Gòn"
                 fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-vnpt/50 mix-blend-multiply" />

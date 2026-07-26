@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Headset, Mail, MessageCircle, Menu, Phone, Search, X } from "lucide-react";
+import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { categories } from "@/content/category-map";
 
 const NAV = [
@@ -25,32 +26,16 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-white shadow-sm">
-      <div className="hidden bg-vnpt-darker text-xs text-white md:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2">
-          <span>VNPT Nam Sài Gòn - Đồng hành cùng bạn trên hành trình Chuyển đổi số</span>
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <Phone size={14} /> Hotline: 0838 999 333
-            </span>
-            <span className="flex items-center gap-1">
-              <MessageCircle size={14} /> Zalo OA
-            </span>
-            <span className="flex items-center gap-1">
-              <Mail size={14} /> Email
-            </span>
-            <span className="flex items-center gap-1">
-              <Headset size={14} /> Hỗ trợ 24/7
-            </span>
-          </div>
-        </div>
-      </div>
-
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
-        <Link href="/" className="shrink-0 text-xl font-extrabold text-vnpt">
-          VNPT
-          <span className="block text-xs font-semibold tracking-wide text-vnpt-accent">
-            NAM SÀI GÒN
-          </span>
+        <Link href="/" className="shrink-0">
+          <Image
+            src="/images/vnpt_logo.png"
+            alt="VNPT Nam Sài Gòn"
+            width={160}
+            height={40}
+            className="h-10 w-auto"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">

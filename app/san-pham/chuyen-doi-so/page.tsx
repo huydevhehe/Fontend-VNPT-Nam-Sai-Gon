@@ -238,6 +238,8 @@ export default function ChuyenDoiSoPage() {
                 src="/images/hero/hero-city-night.jpg"
                 alt="VNPT Nam Sài Gòn - Chuyển đổi số"
                 fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
                 className="object-cover"
                 priority
               />

@@ -188,6 +188,8 @@ export default function ChuKySoPage() {
                 src="/images/hero/hero-city-night.jpg"
                 alt="VNPT SmartCA - Chữ ký số từ xa"
                 fill
+                sizes="(max-width: 1024px) 0px, 50vw"
+                quality={90}
                 className="object-cover"
                 priority
               />

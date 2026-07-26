@@ -60,7 +60,13 @@ export default async function GiaiPhapPage({
               </ul>
 
               <div className="relative mt-7 hidden h-56 max-w-md overflow-hidden rounded-2xl lg:block">
-                <Image src={audience.image} alt={audience.label} fill className="object-cover" />
+                <Image
+                  src={audience.image}
+                  alt={audience.label}
+                  fill
+                  sizes="(max-width: 1024px) 0px, 448px"
+                  className="object-cover"
+                />
               </div>
             </div>
 
@@ -122,7 +128,13 @@ export default async function GiaiPhapPage({
         </h2>
         <div className="grid items-center gap-8 rounded-xl border border-slate-100 p-6 shadow-sm lg:grid-cols-[280px_1fr]">
           <div className="relative h-48 overflow-hidden rounded-xl lg:h-full">
-            <Image src={audience.image} alt={audience.customerName} fill className="object-cover" />
+            <Image
+              src={audience.image}
+              alt={audience.customerName}
+              fill
+              sizes="(max-width: 1024px) 100vw, 280px"
+              className="object-cover"
+            />
           </div>
           <div>
             <Quote size={28} className="text-vnpt/30" />

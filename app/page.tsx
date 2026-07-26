@@ -94,7 +94,7 @@ export default function HomePage() {
                 <Link
                   key={d.label}
                   href={d.href}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-slate-100 p-4 text-center shadow-sm transition hover:shadow-md"
+                  className="flex flex-col items-center gap-2 rounded-lg border border-slate-100 p-4 text-center shadow-sm transition hover:shadow-md"
                 >
                   <d.icon size={26} className="text-vnpt" />
                   <span className="text-sm font-semibold text-slate-800">{d.label}</span>
@@ -111,13 +111,14 @@ export default function HomePage() {
                   <Link
                     key={d.slug}
                     href={`/giai-phap/${d.slug}`}
-                    className="group overflow-hidden rounded-xl border border-slate-100 shadow-sm transition hover:shadow-md"
+                    className="group overflow-hidden rounded-lg border border-slate-100 shadow-sm transition hover:shadow-md"
                   >
                     <div className="relative h-28 w-full">
                       <Image
                         src={d.image}
                         alt={d.label}
                         fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
                         className="object-cover transition group-hover:scale-105"
                       />
                     </div>
@@ -151,7 +152,7 @@ export default function HomePage() {
                       <p className="relative text-xs text-white/70">{k.note}</p>
                       <Link
                         href="/khuyen-mai"
-                        className="relative mt-3 inline-block rounded-md bg-white/15 px-3 py-1.5 text-xs font-semibold hover:bg-white/25"
+                        className="relative mt-3 inline-block rounded bg-white/15 px-3 py-1.5 text-xs font-semibold hover:bg-white/25"
                       >
                         Xem chi tiết →
                       </Link>
@@ -172,11 +173,11 @@ export default function HomePage() {
                     <Link
                       key={a.id}
                       href={`/tin-tuc/${a.slug}`}
-                      className="flex gap-3 roundedp-2 transition hover:bg-vnpt-light"
+                      className="flex gap-3 rounded-lg transition hover:bg-vnpt-light"
                     >
-                      <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-md bg-vnpt-darker">
+                      <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-vnpt-darker">
                         {a.images[0] && (
-                          <Image src={a.images[0]} alt={a.title} fill className="object-cover" />
+                          <Image src={a.images[0]} alt={a.title} fill sizes="80px" className="object-cover" />
                         )}
                       </div>
                       <div className="min-w-0">

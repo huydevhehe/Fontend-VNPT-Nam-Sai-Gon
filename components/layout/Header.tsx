@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { categories } from "@/content/category-map";
 
@@ -21,8 +22,20 @@ const NAV = [
 ] as const;
 
 export default function Header() {
+  const router = useRouter();
   const [openDropdown, setOpenDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  function handleSearchSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    router.push(`/tim-kiem?q=${encodeURIComponent(q)}`);
+    setSearchOpen(false);
+    setQuery("");
+  }
 
   return (
     <header className="sticky top-0 z-40 bg-white shadow-sm">
@@ -38,54 +51,84 @@ export default function Header() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:flex">
-          {NAV.map((item) =>
-            "children" in item ? (
-              <div
-                key={item.href}
-                className="relative"
-                onMouseEnter={() => setOpenDropdown(true)}
-                onMouseLeave={() => setOpenDropdown(false)}
-              >
-                <button className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-vnpt">
-                  {item.label}
-                  <ChevronDown size={14} />
-                </button>
-                {openDropdown && (
-                  <div className="absolute left-0 top-full w-56 rounded-lg border border-slate-100 bg-white py-2 shadow-lg">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className="block px-4 py-2 text-sm text-slate-700 hover:bg-vnpt-light hover:text-vnpt"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
+        {searchOpen ? (
+          <form onSubmit={handleSearchSubmit} className="hidden flex-1 items-center gap-2 lg:flex">
+            <input
+              autoFocus
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Tìm sản phẩm, tin tức..."
+              className="w-full rounded-md border border-slate-200 px-4 py-2 text-sm outline-none focus:border-vnpt focus:ring-4 focus:ring-vnpt/10"
+            />
+            <button
+              type="button"
+              aria-label="Đóng tìm kiếm"
+              onClick={() => setSearchOpen(false)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-vnpt-light hover:text-vnpt"
+            >
+              <X size={18} />
+            </button>
+          </form>
+        ) : (
+          <>
+            <nav className="hidden items-center gap-6 lg:flex">
+              {NAV.map((item) =>
+                "children" in item ? (
+                  <div
+                    key={item.href}
+                    className="relative"
+                    onMouseEnter={() => setOpenDropdown(true)}
+                    onMouseLeave={() => setOpenDropdown(false)}
+                  >
+                    <button className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-vnpt">
+                      {item.label}
+                      <ChevronDown size={14} />
+                    </button>
+                    {openDropdown && (
+                      <div className="absolute left-0 top-full w-56 rounded-lg border border-slate-100 bg-white py-2 shadow-lg">
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className="block px-4 py-2 text-sm text-slate-700 hover:bg-vnpt-light hover:text-vnpt"
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium text-slate-700 hover:text-vnpt"
-              >
-                {item.label}
-              </Link>
-            ),
-          )}
-        </nav>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-sm font-medium text-slate-700 hover:text-vnpt"
+                  >
+                    {item.label}
+                  </Link>
+                ),
+              )}
+            </nav>
 
-        <div className="hidden items-center gap-4 lg:flex">
-          <Search size={18} className="text-slate-500" />
-          <Link
-            href="/lien-he"
-            className="rounded-md bg-vnpt-accent px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
-          >
-            ĐĂNG KÝ TƯ VẤN
-          </Link>
-        </div>
+            <div className="hidden items-center gap-3 lg:flex">
+              <button
+                type="button"
+                aria-label="Tìm kiếm"
+                onClick={() => setSearchOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-vnpt-light hover:text-vnpt"
+              >
+                <Search size={18} />
+              </button>
+              <Link
+                href="/lien-he"
+                className="rounded-md bg-vnpt-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-md"
+              >
+                ĐĂNG KÝ TƯ VẤN
+              </Link>
+            </div>
+          </>
+        )}
 
         <button
           className="lg:hidden"

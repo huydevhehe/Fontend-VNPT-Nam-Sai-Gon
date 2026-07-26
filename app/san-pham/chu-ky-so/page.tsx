@@ -349,10 +349,10 @@ export default function ChuKySoPage() {
 
       <StatBar
         items={[
-          { value: "50.000+", label: "Doanh nghiệp tin dùng" },
-          { value: "500.000+", label: "Người dùng trên toàn quốc" },
-          { value: "10+ năm", label: "Uy tín & kinh nghiệm" },
-          { value: "24/7", label: "Hỗ trợ tận tâm" },
+          { value: "50.000+", label: "Doanh nghiệp tin dùng", icon: Building2 },
+          { value: "500.000+", label: "Người dùng trên toàn quốc", icon: User },
+          { value: "10+ năm", label: "Uy tín & kinh nghiệm", icon: BadgeCheck },
+          { value: "24/7", label: "Hỗ trợ tận tâm", icon: Headset },
         ]}
       />
 

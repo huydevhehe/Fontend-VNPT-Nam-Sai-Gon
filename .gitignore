@@ -10,3 +10,8 @@ next-env.d.ts
 # ảnh thiết kế tham khảo, không cần lên git
 1-trang-chinh/
 2-trang-lam-them/
+
+# ảnh tham khảo thả rời ở gốc project (không phải asset thật của site)
+/*.png
+/*.jpg
+/*.jpeg

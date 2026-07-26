@@ -5,13 +5,12 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import {
   Check,
-  Cloud,
+  Clock,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
   Printer,
-  Wifi,
 } from "lucide-react";
 import Breadcrumb from "@/components/layout/Breadcrumb";
 
@@ -20,13 +19,6 @@ const HERO_CHECKS = [
   "Hỗ trợ nhanh chóng 24/7",
   "Cam kết bảo mật thông tin",
   "Đồng hành lâu dài",
-];
-
-const HERO_BADGES = [
-  { icon: Cloud, style: { top: "10%", left: "10%" } },
-  { icon: Wifi, style: { top: "18%", left: "85%" } },
-  { icon: Mail, style: { top: "62%", left: "6%" } },
-  { icon: MessageCircle, style: { top: "68%", left: "88%" } },
 ];
 
 const INFO_CARDS = [
@@ -166,41 +158,31 @@ function ContactForm() {
 export default function LienHePage() {
   return (
     <div>
-      <section className="relative overflow-hidden bg-gradient-to-br from-vnpt-darker via-vnpt-dark to-vnpt px-6 py-10 text-white">
-        <div className="mx-auto max-w-7xl">
-          <Breadcrumb items={[{ label: "Trang chủ", href: "/" }, { label: "Liên hệ" }]} />
-          <div className="mt-3 grid items-center gap-8 lg:grid-cols-2">
-            <div>
-              <h1 className="text-3xl font-extrabold">LIÊN HỆ VỚI CHÚNG TÔI</h1>
-              <p className="mt-2 text-white/85">
-                VNPT Nam Sài Gòn luôn sẵn sàng hỗ trợ bạn mọi lúc – mọi nơi.
-              </p>
-              <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                {HERO_CHECKS.map((c) => (
-                  <span key={c} className="flex items-center gap-2">
-                    <Check size={16} className="shrink-0 text-vnpt-accent" /> {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="relative hidden h-56 overflow-hidden rounded-2xl lg:block">
-              <Image
-                src="/images/hero/hero-city-night.jpg"
-                alt="VNPT Nam Sài Gòn"
-                fill
-                sizes="(max-width: 1024px) 0px, 50vw"
-                quality={90}
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-vnpt/50 mix-blend-multiply" />
-              {HERO_BADGES.map((b, i) => (
-                <div
-                  key={i}
-                  style={b.style}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/95 p-2 text-vnpt shadow-lg"
-                >
-                  <b.icon size={16} />
-                </div>
+      <section className="relative flex min-h-[380px] items-center overflow-hidden text-white sm:min-h-[440px] lg:min-h-[500px]">
+        <Image
+          src="/images/lien-he/banner-lien-he.png"
+          alt="Liên hệ VNPT Nam Sài Gòn"
+          fill
+          sizes="100vw"
+          quality={95}
+          priority
+          className="object-cover"
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
+          <div className="max-w-xl -ml-[620px] [filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.9))_drop-shadow(0_8px_20px_rgba(0,0,0,0.7))]">
+            <Breadcrumb
+              variant="light"
+              items={[{ label: "Trang chủ", href: "/" }, { label: "Liên hệ" }]}
+            />
+            <h1 className="mt-3 text-3xl font-extrabold">LIÊN HỆ VỚI CHÚNG TÔI</h1>
+            <p className="mt-2 text-white/85">
+              VNPT Nam Sài Gòn luôn sẵn sàng hỗ trợ bạn mọi lúc – mọi nơi.
+            </p>
+            <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              {HERO_CHECKS.map((c) => (
+                <span key={c} className="flex items-center gap-2">
+                  <Check size={16} className="shrink-0 text-vnpt-accent" /> {c}
+                </span>
               ))}
             </div>
           </div>
@@ -282,25 +264,32 @@ export default function LienHePage() {
 
       <section className="mx-auto max-w-7xl px-6 pb-12">
         <div className="rounded-xl border border-slate-100 p-6 shadow-sm">
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_2fr]">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
+              <Clock size={20} />
+            </span>
             <div>
               <h3 className="font-semibold text-slate-800">GIỜ LÀM VIỆC</h3>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="text-sm text-slate-500">
                 Chúng tôi luôn sẵn sàng phục vụ bạn trong khung giờ làm việc và hỗ trợ
                 ngoài giờ khi cần thiết.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {GIO_LAM_VIEC.map((g) => (
-                <div key={g.label} className="text-center">
-                  <div className="text-sm font-semibold text-vnpt">{g.label}</div>
-                  <div className="mt-1 text-sm text-slate-700">{g.value}</div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {GIO_LAM_VIEC.map((g) => (
+              <div key={g.label} className="rounded-lg border border-slate-100 p-4 text-center">
+                <div className="text-sm font-semibold text-slate-800">{g.label}</div>
+                <div
+                  className={`mt-1 text-sm ${g.value === "Nghỉ" ? "text-slate-400" : "font-semibold text-vnpt"}`}
+                >
+                  {g.value}
                 </div>
-              ))}
-              <div className="rounded-lg bg-vnpt-light p-3 text-center">
-                <div className="text-sm font-semibold text-vnpt-accent">Hỗ trợ 24/7</div>
-                <div className="mt-1 text-sm text-slate-700">Hotline: 0838 999 333</div>
               </div>
+            ))}
+            <div className="rounded-lg bg-gradient-to-br from-vnpt-darker to-vnpt p-4 text-center text-white">
+              <div className="text-sm font-semibold text-vnpt-accent">Hỗ trợ 24/7</div>
+              <div className="mt-1 text-sm">Hotline: 0838 999 333</div>
             </div>
           </div>
         </div>

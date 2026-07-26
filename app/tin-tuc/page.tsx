@@ -96,23 +96,55 @@ export default function TinTucPage() {
 
   return (
     <div>
-      <section className="relative overflow-hidden bg-gradient-to-br from-vnpt-darker via-vnpt-dark to-vnpt px-6 py-10 text-white">
-        <div className="mx-auto max-w-7xl">
-          <Breadcrumb items={[{ label: "Trang chủ", href: "/" }, { label: "Tin tức" }]} />
-          <h1 className="mt-3 text-3xl font-extrabold">TIN TỨC</h1>
-          <p className="mt-2 text-white/85">
-            Cập nhật thông tin mới nhất từ VNPT và các giải pháp công nghệ.
-          </p>
-          <form className="mt-5 flex max-w-md overflow-hidden rounded-md">
-            <input
-              type="search"
-              placeholder="Nhập từ khóa cần tìm..."
-              className="w-full px-4 py-2.5 text-sm text-slate-800 outline-none"
+      <section className="relative flex min-h-[380px] items-center overflow-hidden text-white sm:min-h-[440px] lg:min-h-[500px]">
+        <Image
+          src="/images/tin-tuc/banner-tin-tuc.png"
+          alt="Tin tức VNPT"
+          fill
+          sizes="100vw"
+          quality={95}
+          priority
+          className="object-cover"
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
+          <div className="max-w-xl -ml-[620px] [filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.9))_drop-shadow(0_8px_20px_rgba(0,0,0,0.7))]">
+            <Breadcrumb
+              variant="light"
+              items={[{ label: "Trang chủ", href: "/" }, { label: "Tin tức" }]}
             />
-            <button type="submit" className="flex items-center justify-center bg-vnpt-accent px-4 hover:bg-orange-600">
-              <Search size={18} />
-            </button>
-          </form>
+            <h1 className="mt-3 text-3xl font-extrabold">TIN TỨC</h1>
+            <p className="mt-2 text-white/85">
+              Cập nhật thông tin mới nhất từ VNPT và các giải pháp công nghệ.
+            </p>
+            <form className="mt-5 flex max-w-md overflow-hidden rounded-md shadow-lg">
+              <input
+                type="search"
+                placeholder="Nhập từ khóa cần tìm..."
+                className="w-full bg-white px-4 py-2.5 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+              />
+              <button type="submit" className="flex items-center justify-center bg-vnpt-accent px-4 hover:bg-orange-600">
+                <Search size={18} />
+              </button>
+            </form>
+
+            <div className="mt-6 grid grid-cols-3 gap-4">
+              {[
+                { icon: Newspaper, value: `${articles.length}+`, label: "Bài viết" },
+                { icon: Layers, value: `${DANH_MUC.length - 1}`, label: "Chuyên mục" },
+                { icon: Bell, value: "Hằng ngày", label: "Cập nhật tin mới" },
+              ].map((s) => (
+                <div key={s.label} className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <s.icon size={18} className="text-vnpt-accent" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold">{s.value}</div>
+                    <div className="text-xs text-white/70">{s.label}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

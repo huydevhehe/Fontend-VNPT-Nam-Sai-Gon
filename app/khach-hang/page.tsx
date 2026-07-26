@@ -27,13 +27,6 @@ const HERO_STATS = [
   { icon: Cloud, value: "25+ năm", label: "Đồng hành & phát triển" },
 ];
 
-const HERO_BADGES = [
-  { icon: Users, style: { top: "10%", left: "8%" } },
-  { icon: Building2, style: { top: "14%", left: "88%" } },
-  { icon: Cloud, style: { top: "70%", left: "6%" } },
-  { icon: Landmark, style: { top: "74%", left: "90%" } },
-];
-
 const DU_AN_TIEU_BIEU = [
   {
     image: "/images/doi-tuong/co-quan-nha-nuoc.jpg",
@@ -68,14 +61,14 @@ const DU_AN_TIEU_BIEU = [
 ];
 
 const KHACH_HANG_DOANH_NGHIEP = [
-  "Tập đoàn Sao Việt",
-  "Công ty CP Đầu tư Thăng Long",
-  "Tổng Công ty Phương Nam",
-  "Công ty CP Kim Cương Xanh",
-  "Tập đoàn Ánh Dương Group",
-  "Công ty CP Xây dựng Đại Phát",
-  "Công ty CP Logistics Miền Nam",
-  "Tập đoàn Công nghệ Việt Tiến",
+  { name: "BIDV", logo: "/images/partners/bidv.png" },
+  { name: "Vietcombank", logo: "/images/partners/vietcombank.png" },
+  { name: "Hoà Phát", logo: "/images/partners/hoaphat.png" },
+  { name: "Viettel", logo: "/images/partners/viettel.png" },
+  { name: "FPT", logo: "/images/partners/fpt.png" },
+  { name: "Becamex", logo: "/images/partners/becamex.png" },
+  { name: "VinFast", logo: "/images/partners/vinfast.png" },
+  { name: "MobiFone", logo: "/images/partners/mobifone.png" },
 ];
 
 const KHACH_HANG_CA_NHAN = [
@@ -125,49 +118,41 @@ export default function KhachHangPage() {
   return (
     <div>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-vnpt-darker via-vnpt-dark to-vnpt px-6 py-10 text-white">
-        <div className="mx-auto max-w-7xl">
-          <Breadcrumb items={[{ label: "Trang chủ", href: "/" }, { label: "Khách hàng" }]} />
-          <div className="mt-3 grid items-center gap-8 lg:grid-cols-2">
-            <div>
-              <h1 className="text-3xl font-extrabold">KHÁCH HÀNG</h1>
-              <p className="mt-2 text-white/85">
-                VNPT Nam Sài Gòn tự hào là đối tác tin cậy của hàng nghìn khách hàng trên mọi
-                lĩnh vực.
-              </p>
-            </div>
-            <div className="relative hidden h-56 overflow-hidden rounded-2xl lg:block">
-              <Image
-                src="/images/hero/hero-city-night.jpg"
-                alt="Khách hàng VNPT Nam Sài Gòn"
-                fill
-                sizes="(max-width: 1024px) 0px, 50vw"
-                quality={90}
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-vnpt/50 mix-blend-multiply" />
-              {HERO_BADGES.map((b, i) => (
-                <div
-                  key={i}
-                  style={b.style}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/95 p-2 text-vnpt shadow-lg"
-                >
-                  <b.icon size={16} />
+      <section className="relative flex min-h-[380px] items-center overflow-hidden text-white sm:min-h-[440px] lg:min-h-[500px]">
+        <Image
+          src="/images/khach-hang/banner-khach-hang.png"
+          alt="Khách hàng VNPT Nam Sài Gòn"
+          fill
+          sizes="100vw"
+          quality={95}
+          priority
+          className="object-cover"
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
+          <div className="max-w-xl -ml-[620px] [filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.9))_drop-shadow(0_8px_20px_rgba(0,0,0,0.7))]">
+            <Breadcrumb
+              variant="light"
+              items={[{ label: "Trang chủ", href: "/" }, { label: "Khách hàng" }]}
+            />
+            <h1 className="mt-3 text-3xl font-extrabold">KHÁCH HÀNG</h1>
+            <p className="mt-2 text-white/85">
+              VNPT Nam Sài Gòn tự hào là đối tác tin cậy của hàng nghìn khách hàng trên mọi
+              lĩnh vực.
+            </p>
+
+            <div className="mt-8 grid grid-cols-2 gap-4">
+              {HERO_STATS.map((s) => (
+                <div key={s.label} className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <s.icon size={18} className="text-vnpt-accent" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold">{s.value}</div>
+                    <div className="text-xs text-white/70">{s.label}</div>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-2 gap-6 border-t border-white/15 pt-6 sm:grid-cols-4">
-            {HERO_STATS.map((s) => (
-              <div key={s.label} className="flex items-center gap-2">
-                <s.icon size={22} className="shrink-0 text-vnpt-accent" />
-                <div>
-                  <div className="text-sm font-bold">{s.value}</div>
-                  <div className="text-xs text-white/70">{s.label}</div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -231,18 +216,12 @@ export default function KhachHangPage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {KHACH_HANG_DOANH_NGHIEP.map((name) => (
+          {KHACH_HANG_DOANH_NGHIEP.map((c) => (
             <div
-              key={name}
-              className="flex h-24 flex-col items-center justify-center rounded-xl border border-slate-100 p-3 text-center shadow-sm"
+              key={c.name}
+              className="relative flex h-16 items-center justify-center rounded-lg border border-slate-100 px-4 py-3 shadow-sm"
             >
-              <div className="text-base font-extrabold tracking-tight text-vnpt">
-                {name
-                  .split(" ")
-                  .slice(-1)
-                  .join("")}
-              </div>
-              <div className="mt-1 text-[11px] leading-tight text-slate-500">{name}</div>
+              <Image src={c.logo} alt={c.name} fill sizes="120px" className="object-contain p-3" />
             </div>
           ))}
         </div>

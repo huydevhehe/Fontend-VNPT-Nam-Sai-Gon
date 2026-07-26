@@ -43,18 +43,49 @@ const NAM_SAI_GON_CHECKS = [
 ];
 
 const DOI_NGU = [
-  { name: "Vũ Tiến Khoa", role: "Trưởng phòng Kinh doanh", phone: "0838 999 333", email: "khoavt.hcm@vnpt.vn" },
-  { name: "Nguyễn Thị Hằng", role: "Phó phòng Kinh doanh", phone: "0936 123 456", email: "hangnt.hcm@vnpt.vn" },
-  { name: "Trần Minh Đức", role: "Chuyên viên Kinh doanh", phone: "0912 345 678", email: "ductm.hcm@vnpt.vn" },
-  { name: "Lê Thị Thanh Thảo", role: "Chuyên viên Kinh doanh", phone: "0978 456 789", email: "thaolt.hcm@vnpt.vn" },
-  { name: "Phạm Hoàng Nam", role: "Chuyên viên Kinh doanh", phone: "0981 234 567", email: "namph.hcm@vnpt.vn" },
-  { name: "Bùi Thùy Linh", role: "Chuyên viên Kinh doanh", phone: "0902 678 910", email: "linhbt.hcm@vnpt.vn" },
+  {
+    name: "Vũ Tiến Khoa",
+    role: "Trưởng phòng Kinh doanh",
+    phone: "0838 999 333",
+    email: "khoavt.hcm@vnpt.vn",
+    avatar: "/images/doi-ngu/vu-tien-khoa.jpg",
+  },
+  {
+    name: "Nguyễn Thị Hằng",
+    role: "Phó phòng Kinh doanh",
+    phone: "0936 123 456",
+    email: "hangnt.hcm@vnpt.vn",
+    avatar: "/images/doi-ngu/nguyen-thi-hang.jpg",
+  },
+  {
+    name: "Trần Minh Đức",
+    role: "Chuyên viên Kinh doanh",
+    phone: "0912 345 678",
+    email: "ductm.hcm@vnpt.vn",
+    avatar: "/images/doi-ngu/tran-minh-duc.jpg",
+  },
+  {
+    name: "Lê Thị Thanh Thảo",
+    role: "Chuyên viên Kinh doanh",
+    phone: "0978 456 789",
+    email: "thaolt.hcm@vnpt.vn",
+    avatar: "/images/doi-ngu/le-thi-thanh-thao.jpg",
+  },
+  {
+    name: "Phạm Hoàng Nam",
+    role: "Chuyên viên Kinh doanh",
+    phone: "0981 234 567",
+    email: "namph.hcm@vnpt.vn",
+    avatar: "/images/doi-ngu/pham-hoang-nam.jpg",
+  },
+  {
+    name: "Bùi Thùy Linh",
+    role: "Chuyên viên Kinh doanh",
+    phone: "0902 678 910",
+    email: "linhbt.hcm@vnpt.vn",
+    avatar: "/images/doi-ngu/bui-thuy-linh.jpg",
+  },
 ];
-
-function initials(name: string) {
-  const parts = name.split(" ");
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 const CHI_NHANH = [
   "421 Nguyễn Thị Thập, P. Tân Phong, Quận 7",
@@ -73,37 +104,39 @@ export default function GioiThieuPage() {
   return (
     <div>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-vnpt-darker via-vnpt-dark to-vnpt px-6 py-10 text-white">
-        <div className="mx-auto max-w-7xl">
-          <Breadcrumb items={[{ label: "Trang chủ", href: "/" }, { label: "Giới thiệu" }]} />
-          <div className="mt-3 grid items-stretch gap-8 lg:grid-cols-2">
-            <div>
-              <h1 className="text-3xl font-extrabold">GIỚI THIỆU</h1>
-              <p className="mt-2 text-white/85">
-                VNPT Nam Sài Gòn - Đồng hành cùng bạn trên hành trình Chuyển đổi số
-              </p>
+      <section className="relative flex min-h-[380px] items-center overflow-hidden text-white sm:min-h-[440px] lg:min-h-[500px]">
+        <Image
+          src="/images/gioi-thieu/banner-gioi-thieu.png"
+          alt="Tòa nhà VNPT"
+          fill
+          sizes="100vw"
+          quality={95}
+          priority
+          className="object-cover"
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
+          <div className="max-w-xl -ml-[620px] [filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.9))_drop-shadow(0_8px_20px_rgba(0,0,0,0.7))]">
+            <Breadcrumb
+              variant="light"
+              items={[{ label: "Trang chủ", href: "/" }, { label: "Giới thiệu" }]}
+            />
+            <h1 className="mt-3 text-3xl font-extrabold">GIỚI THIỆU</h1>
+            <p className="mt-2 text-white/85">
+              VNPT Nam Sài Gòn - Đồng hành cùng bạn trên hành trình Chuyển đổi số
+            </p>
 
-              <div className="mt-8 grid grid-cols-2 gap-6 border-t border-white/15 pt-6">
-                {HERO_STATS.map((s) => (
-                  <div key={s.label} className="flex items-center gap-2">
-                    <s.icon size={22} className="shrink-0 text-vnpt-accent" />
-                    <div>
-                      <div className="text-sm font-bold">{s.value}</div>
-                      <div className="text-xs text-white/70">{s.label}</div>
-                    </div>
+            <div className="mt-8 grid grid-cols-2 gap-4">
+              {HERO_STATS.map((s) => (
+                <div key={s.label} className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <s.icon size={18} className="text-vnpt-accent" />
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="relative hidden min-h-[320px] overflow-hidden rounded-2xl lg:block">
-              <Image
-                src="/images/gioi-thieu/toanha-vnpt.png"
-                alt="Tòa nhà VNPT"
-                fill
-                sizes="(max-width: 1024px) 0px, 50vw"
-                quality={90}
-                className="object-cover"
-              />
+                  <div>
+                    <div className="text-sm font-bold">{s.value}</div>
+                    <div className="text-xs text-white/70">{s.label}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -130,14 +163,14 @@ export default function GioiThieuPage() {
               href="https://vnpt.com.vn"
               target="_blank"
               rel="noreferrer"
-              className="mt-5 inline-flex items-center gap-2 rounded-md border border-vnpt px-4 py-2 text-sm font-semibold text-vnpt hover:bg-vnpt-light"
+              className="mt-5 inline-flex items-center gap-2 rounded border border-vnpt px-6 py-4 text-sm font-semibold text-vnpt hover:bg-vnpt-light"
             >
               Xem chi tiết về VNPT <ArrowRight size={14} />
             </a>
           </div>
-          <div className="relative h-72 overflow-hidden rounded-2xl">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
             <Image
-              src="/images/hero/hero-datacenter.jpg"
+              src="/images/gioi-thieu/tap-doan-vnpt.png"
               alt="Tập đoàn VNPT"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -153,7 +186,7 @@ export default function GioiThieuPage() {
         <div className="grid gap-8 rounded-xl border border-slate-100 p-6 shadow-sm lg:grid-cols-[1fr_1.3fr_0.9fr]">
           <div className="relative h-56 overflow-hidden rounded-xl lg:h-full">
             <Image
-              src="/images/gioi-thieu/van-phong.jpg"
+              src="/images/gioi-thieu/vnpt-nam-sai-gon.png"
               alt="Văn phòng VNPT Nam Sài Gòn"
               fill
               sizes="(max-width: 1024px) 100vw, 33vw"
@@ -216,8 +249,8 @@ export default function GioiThieuPage() {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
           {DOI_NGU.map((p) => (
             <div key={p.name} className="rounded-xl border border-slate-100 p-4 text-center shadow-sm">
-              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-vnpt text-lg font-bold text-white">
-                {initials(p.name)}
+              <div className="relative mx-auto mb-3 h-16 w-16 overflow-hidden rounded-full">
+                <Image src={p.avatar} alt={p.name} fill sizes="64px" className="object-cover" />
               </div>
               <div className="text-sm font-semibold text-slate-800">{p.name}</div>
               <div className="text-xs text-slate-500">{p.role}</div>
@@ -243,68 +276,80 @@ export default function GioiThieuPage() {
       {/* THÔNG TIN LIÊN HỆ */}
       <section className="mx-auto max-w-7xl px-6 py-12">
         <h2 className="mb-6 text-xl font-bold text-slate-800">THÔNG TIN LIÊN HỆ</h2>
-        <div className="grid gap-6 rounded-xl bg-vnpt-light p-6 md:grid-cols-4">
-          <div className="flex flex-col justify-between rounded-xl bg-gradient-to-br from-vnpt-darker to-vnpt p-5 text-white">
+        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+          <div className="flex flex-col justify-between rounded-xl bg-gradient-to-br from-vnpt-darker to-vnpt p-6 text-white">
             <div>
               <Building2 size={28} className="text-vnpt-accent" />
-              <div className="mt-2 text-lg font-extrabold">VNPT NAM SÀI GÒN</div>
+              <div className="mt-3 text-lg font-extrabold">VNPT NAM SÀI GÒN</div>
               <p className="mt-1 text-xs text-white/75">
                 Đồng hành cùng bạn trên hành trình Chuyển đổi số
               </p>
             </div>
             <Link
               href="/lien-he"
-              className="mt-4 rounded-md bg-vnpt-accent px-3 py-2 text-center text-xs font-semibold hover:bg-orange-600"
+              className="mt-6 rounded-md bg-vnpt-accent px-3 py-2.5 text-center text-xs font-semibold hover:bg-orange-600"
             >
               ĐĂNG KÝ TƯ VẤN NGAY
             </Link>
           </div>
 
-          <div>
-            <h3 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-slate-800">
-              <MapPin size={15} className="text-vnpt" /> ĐỊA CHỈ
-            </h3>
-            <p className="text-sm text-slate-600">
-              Tòa nhà VNPT, 28bis Nguyễn Thị Minh Khai, P. Đa Kao, Quận 1, TP. Hồ Chí Minh
-            </p>
-            <p className="mt-3 text-xs font-semibold text-slate-500">Chi nhánh Giao dịch:</p>
-            <ul className="mt-1 space-y-1 text-xs text-slate-500">
-              {CHI_NHANH.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-          </div>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="rounded-xl border border-slate-100 p-5 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
+                  <MapPin size={16} />
+                </span>
+                <h3 className="text-sm font-semibold text-slate-800">ĐỊA CHỈ</h3>
+              </div>
+              <p className="text-sm text-slate-600">
+                Tòa nhà VNPT, 28bis Nguyễn Thị Minh Khai, P. Đa Kao, Quận 1, TP. Hồ Chí Minh
+              </p>
+              <p className="mt-3 text-xs font-semibold text-slate-500">Chi nhánh Giao dịch:</p>
+              <ul className="mt-1 space-y-1 text-xs text-slate-500">
+                {CHI_NHANH.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </div>
 
-          <div>
-            <h3 className="mb-3 text-sm font-semibold text-slate-800">LIÊN HỆ</h3>
-            <ul className="space-y-2 text-sm text-slate-600">
-              <li className="flex items-center gap-2">
-                <Phone size={14} className="text-vnpt" /> Hotline: 0838 999 333
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone size={14} className="text-vnpt" /> Điện thoại: (028) 38 999 333
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail size={14} className="text-vnpt" /> kinhdoanh@vnptnamsaigon.vn
-              </li>
-              <li className="flex items-center gap-2">
-                <Globe size={14} className="text-vnpt" /> www.vnptnamsaigon.vn
-              </li>
-            </ul>
-          </div>
+            <div className="rounded-xl border border-slate-100 p-5 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
+                  <Phone size={16} />
+                </span>
+                <h3 className="text-sm font-semibold text-slate-800">LIÊN HỆ</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2">
+                  <Phone size={14} className="text-vnpt" /> Hotline: 0838 999 333
+                </li>
+                <li className="flex items-center gap-2">
+                  <Phone size={14} className="text-vnpt" /> Điện thoại: (028) 38 999 333
+                </li>
+                <li className="flex items-center gap-2">
+                  <Mail size={14} className="text-vnpt" /> kinhdoanh@vnptnamsaigon.vn
+                </li>
+                <li className="flex items-center gap-2">
+                  <Globe size={14} className="text-vnpt" /> www.vnptnamsaigon.vn
+                </li>
+              </ul>
+            </div>
 
-          <div>
-            <h3 className="mb-3 text-sm font-semibold text-slate-800">KẾT NỐI VỚI CHÚNG TÔI</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {SOCIALS.map((s) => (
-                <div
-                  key={s.label}
-                  className="flex flex-col items-center gap-1 rounded-lg bg-white p-3 text-xs text-slate-600 shadow-sm"
-                >
-                  <s.icon size={18} className="text-vnpt" />
-                  {s.label}
-                </div>
-              ))}
+            <div className="rounded-xl border border-slate-100 p-5 shadow-sm sm:col-span-2">
+              <h3 className="mb-3 text-sm font-semibold text-slate-800">KẾT NỐI VỚI CHÚNG TÔI</h3>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {SOCIALS.map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center gap-2 rounded-lg border border-slate-100 p-3 text-xs font-medium text-slate-600 transition hover:border-vnpt/40 hover:text-vnpt"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
+                      <s.icon size={16} />
+                    </span>
+                    {s.label}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

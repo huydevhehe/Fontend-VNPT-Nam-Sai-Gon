@@ -5,6 +5,58 @@ import path from "node:path";
 import type { Article, Product, ScrapeResult, Source } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
+const PUBLIC_DIR = path.join(process.cwd(), "public");
+// Ảnh cào được dưới ngưỡng này thường là icon/logo/banner lặp lại của site nguồn,
+// không phải ảnh nội dung thật (đo thực tế: icon rác nặng vài trăm byte tới ~7KB,
+// ảnh thật nhẹ nhất cũng ~10KB trở lên).
+const MIN_REAL_IMAGE_BYTES = 8000;
+
+function isRealImage(src: string): boolean {
+  if (!src.startsWith("/scraped-images/")) return true;
+  try {
+    return fs.statSync(path.join(PUBLIC_DIR, src)).size >= MIN_REAL_IMAGE_BYTES;
+  } catch {
+    return false;
+  }
+}
+
+function stripDiacritics(s: string): string {
+  let out = "";
+  for (const ch of s.normalize("NFD")) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (code >= 0x0300 && code <= 0x036f) continue; // combining diacritical marks
+    out += ch;
+  }
+  return out.replaceAll("đ", "d").replaceAll("Đ", "D");
+}
+
+export function normalizeForCompare(s: string): string {
+  return stripDiacritics(s)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function toTitleCase(s: string): string {
+  return s
+    .toLowerCase()
+    .split(" ")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
+// Một số nguồn cào bị mất dấu tiếng Việt ở title (lấy từ slug thay vì title thật),
+// trong khi bodyText vẫn còn heading "## ..." giữ đủ dấu. Nếu heading đó khớp nội dung
+// với title (chỉ khác dấu/hoa-thường) thì dùng lại heading để khôi phục tiêu đề đúng.
+function recoverArticleTitle(article: Article): Article {
+  const target = normalizeForCompare(article.title);
+  const headings = article.bodyText
+    .split("\n")
+    .filter((l) => l.startsWith("## "))
+    .map((l) => l.slice(3).trim());
+  const match = headings.find((h) => normalizeForCompare(h) === target);
+  return match ? { ...article, title: toTitleCase(match) } : article;
+}
 
 type Dataset = {
   sources: Source[];
@@ -41,8 +93,10 @@ function loadDataset(): Dataset {
       }
       const r = JSON.parse(raw) as ScrapeResult;
       sources.push(r.source);
-      products.push(...r.products);
-      articles.push(...r.articles);
+      products.push(...r.products.map((p) => ({ ...p, images: p.images.filter(isRealImage) })));
+      articles.push(
+        ...r.articles.map((a) => recoverArticleTitle({ ...a, images: a.images.filter(isRealImage) })),
+      );
     } catch {
       // bỏ file lỗi
     }

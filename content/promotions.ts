@@ -11,6 +11,7 @@ export type Promotion = {
   subtitle: string;
   discountLabel: string;
   note: string;
+  image: string;
   validFrom: string;
   validUntil: string;
   benefits: string[];
@@ -28,6 +29,7 @@ export const promotions: Promotion[] = [
     subtitle: "Lướt net tốc độ - Giải trí đỉnh cao",
     discountLabel: "Giảm đến 30%",
     note: "Giảm đến 30% cước hàng tháng",
+    image: "/images/khuyen-mai/router.jpg",
     validFrom: "01/06/2025",
     validUntil: "30/06/2025",
     benefits: [
@@ -59,6 +61,7 @@ export const promotions: Promotion[] = [
     subtitle: "Trải nghiệm tốc độ vượt trội cùng mạng 5G",
     discountLabel: "Giảm đến 50%",
     note: "Giảm đến 50% khi đăng ký mới",
+    image: "/images/khuyen-mai/phone-5g.jpg",
     validFrom: "01/05/2025",
     validUntil: "31/05/2025",
     benefits: [
@@ -83,6 +86,7 @@ export const promotions: Promotion[] = [
     subtitle: "Ký số mọi lúc, mọi nơi – không cần USB Token",
     discountLabel: "Giảm đến 20%",
     note: "Giảm đến 20% phí dịch vụ",
+    image: "/images/khuyen-mai/usb-smartca.jpg",
     validFrom: "01/06/2025",
     validUntil: "30/06/2025",
     benefits: [
@@ -107,6 +111,7 @@ export const promotions: Promotion[] = [
     subtitle: "Hạ tầng máy chủ đám mây linh hoạt, hiệu năng cao",
     discountLabel: "Giảm 25%",
     note: "Giảm 25% phí thuê Cloud Server khi đăng ký 6 tháng",
+    image: "/images/khuyen-mai/server-rack.jpg",
     validFrom: "01/06/2025",
     validUntil: "15/06/2025",
     benefits: [
@@ -131,6 +136,7 @@ export const promotions: Promotion[] = [
     subtitle: "Khởi tạo, phát hành hóa đơn nhanh chóng, đúng chuẩn",
     discountLabel: "Giảm 20%",
     note: "Giảm 20% phí khởi tạo cho khách hàng mới",
+    image: "/images/khuyen-mai/invoice-calc.jpg",
     validFrom: "01/06/2025",
     validUntil: "30/06/2025",
     benefits: [
@@ -154,6 +160,7 @@ export const promotions: Promotion[] = [
     subtitle: "Giải pháp camera an ninh thông minh",
     discountLabel: "Giảm 15%",
     note: "Giảm 15% khi lắp đặt mới từ 2 camera trở lên",
+    image: "/images/khuyen-mai/camera.jpg",
     validFrom: "01/05/2025",
     validUntil: "31/05/2025",
     benefits: [
@@ -177,6 +184,7 @@ export const promotions: Promotion[] = [
     subtitle: "Đường truyền chuyên dụng, cam kết băng thông",
     discountLabel: "Giảm 20%",
     note: "Giảm 20% cước tháng đầu khi đăng ký mới",
+    image: "/images/khuyen-mai/network-switch.jpg",
     validFrom: "01/06/2025",
     validUntil: "30/06/2025",
     benefits: [
@@ -199,6 +207,7 @@ export const promotions: Promotion[] = [
     subtitle: "Hơn 180 kênh, kho phim đa dạng",
     discountLabel: "Giảm đến 30%",
     note: "Giảm 30% cước gói K+ khi đăng ký 12 tháng",
+    image: "/images/khuyen-mai/tv-remote.jpg",
     validFrom: "01/05/2025",
     validUntil: "31/05/2025",
     benefits: [
@@ -221,6 +230,7 @@ export const promotions: Promotion[] = [
     subtitle: "Data lớn, gọi thoại thoải mái",
     discountLabel: "Giảm 15%",
     note: "Giảm 15% cước gói tháng đầu",
+    image: "/images/khuyen-mai/phone-5g.jpg",
     validFrom: "01/05/2025",
     validUntil: "31/05/2025",
     benefits: [
@@ -243,6 +253,7 @@ export const promotions: Promotion[] = [
     subtitle: "Ký số hóa đơn, hợp đồng, hồ sơ thuế",
     discountLabel: "Giảm 20%",
     note: "Giảm 20% phí dịch vụ khi đăng ký mới",
+    image: "/images/khuyen-mai/usb-smartca.jpg",
     validFrom: "01/06/2025",
     validUntil: "30/06/2025",
     benefits: [
@@ -265,6 +276,7 @@ export const promotions: Promotion[] = [
     subtitle: "Đặt máy chủ tại Data Center chuẩn quốc tế",
     discountLabel: "Giảm 10%",
     note: "Giảm 10% phí thuê chỗ đặt Rack khi đăng ký 6 tháng",
+    image: "/images/khuyen-mai/server-rack.jpg",
     validFrom: "01/06/2025",
     validUntil: "30/06/2025",
     benefits: [

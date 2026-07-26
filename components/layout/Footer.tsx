@@ -84,19 +84,20 @@ export default function Footer() {
               <Mail size={16} /> kinhdoanh@vnptnamsaigon.vn
             </li>
           </ul>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-7xl border-t border-white/10 px-6 py-6">
-        <div className="flex flex-col items-center justify-center gap-2 text-center">
-          <Image
-            src="/images/misc/zalo-qr.png"
-            alt="QR Zalo OA VNPT Nam Sài Gòn"
-            width={96}
-            height={96}
-            className="rounded-md bg-white p-1"
-          />
-          <span className="text-xs text-slate-400">Quét QR code - Kết nối Zalo OA</span>
+          <div className="mt-4 flex items-center gap-3">
+            <Image
+              src="/images/misc/zalo-qr.png"
+              alt="QR Zalo OA VNPT Nam Sài Gòn"
+              width={64}
+              height={64}
+              className="rounded-md bg-white p-1"
+            />
+            <span className="text-xs text-slate-400">
+              Quét QR code
+              <br />
+              Kết nối Zalo OA
+            </span>
+          </div>
         </div>
       </div>
 

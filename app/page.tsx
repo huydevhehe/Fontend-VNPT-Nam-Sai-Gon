@@ -143,7 +143,7 @@ export default function HomePage() {
                   {KHUYEN_MAI.map((k) => (
                     <div
                       key={k.title}
-                      className="relative overflow-hidden rounded-xl bg-gradient-to-br from-vnpt to-vnpt-dark p-4 text-white"
+                      className="relative overflow-hidden rounded-lg bg-gradient-to-br from-vnpt to-vnpt-dark p-4 text-white"
                     >
                       <k.icon size={64} className="absolute -bottom-3 -right-3 text-white/10" />
                       <h3 className="relative text-sm font-semibold">{k.title}</h3>
@@ -172,7 +172,7 @@ export default function HomePage() {
                     <Link
                       key={a.id}
                       href={`/tin-tuc/${a.slug}`}
-                      className="flex gap-3 rounded-lg p-2 transition hover:bg-vnpt-light"
+                      className="flex gap-3 roundedp-2 transition hover:bg-vnpt-light"
                     >
                       <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-md bg-vnpt-darker">
                         {a.images[0] && (

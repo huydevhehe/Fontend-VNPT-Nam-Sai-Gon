@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-vnpt: #005baa;
-  --color-vnpt-dark: #00468c;
-  --color-vnpt-darker: #002f5e;
+  --color-vnpt: #0d6fc4;
+  --color-vnpt-dark: #0f5aa3;
+  --color-vnpt-darker: #123f78;
   --color-vnpt-light: #eef4fa;
   --color-vnpt-accent: #f26522;
   --font-sans: var(--font-be-vn), ui-sans-serif, system-ui, "Segoe UI", sans-serif;

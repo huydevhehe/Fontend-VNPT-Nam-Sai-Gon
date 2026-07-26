@@ -2,18 +2,23 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  ChevronLeft,
-  ChevronRight,
+  Camera,
   Cloud,
+  Database,
+  Gauge,
   Headset,
   PenTool,
   Receipt,
+  Server,
+  Shield,
   Smartphone,
   Tv,
   Wifi,
   Workflow,
+  Zap,
 } from "lucide-react";
 import { getAllArticles } from "@/lib/data";
+import HeroCarousel, { type HeroSlide } from "@/components/sections/HeroCarousel";
 import LeadForm from "@/components/sections/LeadForm";
 import StatBar from "@/components/sections/StatBar";
 
@@ -27,14 +32,64 @@ const DICH_VU = [
   { icon: Workflow, label: "Giải pháp số", desc: "Giải pháp toàn diện cho doanh nghiệp & CQNN", href: "/san-pham/chuyen-doi-so" },
 ];
 
-const HERO_BADGES = [
-  { icon: Wifi, label: "INTERNET", style: { top: "8%", left: "44%" } },
-  { icon: Cloud, label: "CLOUD", style: { top: "4%", left: "76%" } },
-  { icon: Tv, label: "MYTV", style: { top: "30%", left: "36%" } },
-  { icon: Receipt, label: "CAMERA", style: { top: "32%", left: "86%" } },
-  { icon: PenTool, label: "SMARTCA", style: { top: "56%", left: "34%" } },
-  { icon: Smartphone, label: "VINAPHONE", style: { top: "56%", left: "84%" } },
-  { icon: Workflow, label: "AI & DATA", style: { top: "78%", left: "78%" } },
+const HERO_SLIDES: HeroSlide[] = [
+  {
+    image: "/images/hero/hero-city-night.jpg",
+    title: ["CHUYỂN ĐỔI SỐ TOÀN DIỆN", "CÙNG VNPT NAM SÀI GÒN"],
+    subtitle:
+      "Giải pháp số tin cậy cho Cá nhân, Hộ kinh doanh, Doanh nghiệp và Cơ quan Nhà nước.",
+    primaryCta: { label: "TƯ VẤN NGAY", href: "/lien-he", icon: <Headset size={18} /> },
+    secondaryCta: { label: "XEM SẢN PHẨM", href: "/san-pham", icon: <ArrowRight size={16} /> },
+    badges: [
+      { icon: <Wifi size={14} />, label: "INTERNET", style: { top: "8%", left: "44%" } },
+      { icon: <Cloud size={14} />, label: "CLOUD", style: { top: "4%", left: "76%" } },
+      { icon: <Tv size={14} />, label: "MYTV", style: { top: "30%", left: "36%" } },
+      { icon: <Camera size={14} />, label: "CAMERA", style: { top: "32%", left: "86%" } },
+      { icon: <PenTool size={14} />, label: "SMARTCA", style: { top: "56%", left: "34%" } },
+      { icon: <Smartphone size={14} />, label: "VINAPHONE", style: { top: "56%", left: "84%" } },
+      { icon: <Workflow size={14} />, label: "AI & DATA", style: { top: "78%", left: "78%" } },
+    ],
+  },
+  {
+    image: "/images/hero/hero-datacenter.jpg",
+    title: ["HẠ TẦNG CLOUD MẠNH MẼ", "AN TOÀN - LINH HOẠT - MỞ RỘNG"],
+    subtitle:
+      "Cloud Server, Data Center chuẩn quốc tế cho doanh nghiệp sẵn sàng bứt phá cùng VNPT.",
+    primaryCta: { label: "TƯ VẤN GIẢI PHÁP", href: "/lien-he", icon: <Headset size={18} /> },
+    secondaryCta: {
+      label: "XEM CLOUD & IDC",
+      href: "/san-pham/cloud-idc",
+      icon: <ArrowRight size={16} />,
+    },
+    badges: [
+      { icon: <Server size={14} />, label: "CLOUD SERVER", style: { top: "10%", left: "20%" } },
+      { icon: <Database size={14} />, label: "STORAGE", style: { top: "8%", left: "82%" } },
+      {
+        icon: <Shield size={14} />,
+        label: "BẢO MẬT ĐA LỚP",
+        style: { top: "50%", left: "10%" },
+      },
+      { icon: <Cloud size={14} />, label: "BACKUP", style: { top: "82%", left: "76%" } },
+    ],
+  },
+  {
+    image: "/images/hero/hero-fiber.jpg",
+    title: ["KẾT NỐI SIÊU TỐC", "TRẢI NGHIỆM ĐỈNH CAO"],
+    subtitle:
+      "Internet cáp quang tốc độ cao, ổn định - Phù hợp mọi nhu cầu gia đình và doanh nghiệp.",
+    primaryCta: { label: "ĐĂNG KÝ NGAY", href: "/lien-he", icon: <Headset size={18} /> },
+    secondaryCta: {
+      label: "XEM GÓI CƯỚC",
+      href: "/san-pham/bang-rong-co-dinh",
+      icon: <ArrowRight size={16} />,
+    },
+    badges: [
+      { icon: <Gauge size={14} />, label: "1000 MBPS", style: { top: "10%", left: "24%" } },
+      { icon: <Wifi size={14} />, label: "WIFI 6", style: { top: "12%", left: "80%" } },
+      { icon: <Zap size={14} />, label: "TỐC ĐỘ CAO", style: { top: "80%", left: "18%" } },
+      { icon: <Headset size={14} />, label: "HỖ TRỢ 24/7", style: { top: "82%", left: "78%" } },
+    ],
+  },
 ];
 
 const DOI_TUONG = [
@@ -58,80 +113,7 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-vnpt-darker via-vnpt-dark to-vnpt">
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div className="relative z-10 text-white">
-              <h1 className="text-3xl font-extrabold leading-tight md:text-4xl">
-                CHUYỂN ĐỔI SỐ TOÀN DIỆN
-                <br />
-                CÙNG VNPT NAM SÀI GÒN
-              </h1>
-              <p className="mt-4 max-w-xl text-white/85">
-                Giải pháp số tin cậy cho Cá nhân, Hộ kinh doanh, Doanh nghiệp và Cơ quan
-                Nhà nước.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/lien-he"
-                  className="flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-vnpt hover:bg-white/90"
-                >
-                  <Headset size={18} /> TƯ VẤN NGAY
-                </Link>
-                <Link
-                  href="/san-pham"
-                  className="flex items-center gap-2 rounded-md border border-white/60 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
-                >
-                  XEM SẢN PHẨM <ArrowRight size={16} />
-                </Link>
-              </div>
-            </div>
-
-            <div className="relative hidden h-80 overflow-hidden rounded-2xl lg:block">
-              <Image
-                src="/images/hero/hero-city-night.jpg"
-                alt="VNPT Nam Sài Gòn - Chuyển đổi số"
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-vnpt/50 mix-blend-multiply" />
-              <div className="absolute inset-0 bg-gradient-to-t from-vnpt-darker/80 via-transparent to-vnpt-dark/30" />
-              {HERO_BADGES.map((b) => (
-                <div
-                  key={b.label}
-                  style={b.style}
-                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-vnpt shadow-lg"
-                >
-                  <b.icon size={14} /> {b.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 flex items-center justify-center gap-4 lg:hidden">
-            <ChevronLeft className="text-white/70" size={20} />
-            <span className="h-2 w-2 rounded-full bg-white" />
-            <span className="h-2 w-2 rounded-full bg-white/40" />
-            <span className="h-2 w-2 rounded-full bg-white/40" />
-            <ChevronRight className="text-white/70" size={20} />
-          </div>
-        </div>
-
-        <button
-          aria-label="Slide trước"
-          className="absolute left-4 top-1/2 hidden -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 lg:block"
-        >
-          <ChevronLeft size={22} />
-        </button>
-        <button
-          aria-label="Slide sau"
-          className="absolute right-4 top-1/2 hidden -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 lg:block"
-        >
-          <ChevronRight size={22} />
-        </button>
-      </section>
+      <HeroCarousel slides={HERO_SLIDES} />
 
       {/* NỘI DUNG CHÍNH + FORM SIDEBAR */}
       <section className="mx-auto max-w-7xl px-6 py-10">

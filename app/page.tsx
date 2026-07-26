@@ -2,20 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Camera,
   Cloud,
-  Database,
-  Gauge,
   Headset,
   PenTool,
   Receipt,
-  Server,
-  Shield,
   Smartphone,
   Tv,
   Wifi,
   Workflow,
-  Zap,
 } from "lucide-react";
 import { getAllArticles } from "@/lib/data";
 import HeroCarousel, { type HeroSlide } from "@/components/sections/HeroCarousel";
@@ -40,15 +34,6 @@ const HERO_SLIDES: HeroSlide[] = [
       "Giải pháp số tin cậy cho Cá nhân, Hộ kinh doanh, Doanh nghiệp và Cơ quan Nhà nước.",
     primaryCta: { label: "TƯ VẤN NGAY", href: "/lien-he", icon: <Headset size={18} /> },
     secondaryCta: { label: "XEM SẢN PHẨM", href: "/san-pham", icon: <ArrowRight size={16} /> },
-    badges: [
-      { icon: <Wifi size={14} />, label: "INTERNET", style: { top: "8%", left: "44%" } },
-      { icon: <Cloud size={14} />, label: "CLOUD", style: { top: "4%", left: "76%" } },
-      { icon: <Tv size={14} />, label: "MYTV", style: { top: "30%", left: "36%" } },
-      { icon: <Camera size={14} />, label: "CAMERA", style: { top: "32%", left: "86%" } },
-      { icon: <PenTool size={14} />, label: "SMARTCA", style: { top: "56%", left: "34%" } },
-      { icon: <Smartphone size={14} />, label: "VINAPHONE", style: { top: "56%", left: "84%" } },
-      { icon: <Workflow size={14} />, label: "AI & DATA", style: { top: "78%", left: "78%" } },
-    ],
   },
   {
     image: "/images/hero/hero-datacenter.jpg",
@@ -61,16 +46,6 @@ const HERO_SLIDES: HeroSlide[] = [
       href: "/san-pham/cloud-idc",
       icon: <ArrowRight size={16} />,
     },
-    badges: [
-      { icon: <Server size={14} />, label: "CLOUD SERVER", style: { top: "10%", left: "20%" } },
-      { icon: <Database size={14} />, label: "STORAGE", style: { top: "8%", left: "82%" } },
-      {
-        icon: <Shield size={14} />,
-        label: "BẢO MẬT ĐA LỚP",
-        style: { top: "50%", left: "10%" },
-      },
-      { icon: <Cloud size={14} />, label: "BACKUP", style: { top: "82%", left: "76%" } },
-    ],
   },
   {
     image: "/images/hero/hero-fiber.jpg",
@@ -83,12 +58,6 @@ const HERO_SLIDES: HeroSlide[] = [
       href: "/san-pham/bang-rong-co-dinh",
       icon: <ArrowRight size={16} />,
     },
-    badges: [
-      { icon: <Gauge size={14} />, label: "1000 MBPS", style: { top: "10%", left: "24%" } },
-      { icon: <Wifi size={14} />, label: "WIFI 6", style: { top: "12%", left: "80%" } },
-      { icon: <Zap size={14} />, label: "TỐC ĐỘ CAO", style: { top: "80%", left: "18%" } },
-      { icon: <Headset size={14} />, label: "HỖ TRỢ 24/7", style: { top: "82%", left: "78%" } },
-    ],
   },
 ];
 

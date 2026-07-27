@@ -4,17 +4,16 @@ import Link from "next/link";
 import {
   ArrowRight,
   Award,
-  Building2,
   Check,
   Globe,
+  Handshake,
   Link2,
   Mail,
   MapPin,
-  MessageCircle,
+  Percent,
   Phone,
-  PlayCircle,
-  Share2,
   Users,
+  Wallet,
 } from "lucide-react";
 import Breadcrumb from "@/components/layout/Breadcrumb";
 
@@ -85,19 +84,6 @@ const DOI_NGU = [
     email: "linhbt.hcm@vnpt.vn",
     avatar: "/images/doi-ngu/bui-thuy-linh.jpg",
   },
-];
-
-const CHI_NHANH = [
-  "421 Nguyễn Thị Thập, P. Tân Phong, Quận 7",
-  "324 Phạm Hùng, P. 5, Quận 8",
-  "1236 Lê Văn Lương, Nhà Bè",
-];
-
-const SOCIALS = [
-  { icon: MessageCircle, label: "Zalo OA" },
-  { icon: Share2, label: "Facebook" },
-  { icon: PlayCircle, label: "YouTube" },
-  { icon: Link2, label: "Linkedin" },
 ];
 
 export default function GioiThieuPage() {
@@ -273,23 +259,24 @@ export default function GioiThieuPage() {
         </div>
       </section>
 
-      {/* THÔNG TIN LIÊN HỆ */}
+      {/* TRỞ THÀNH CỘNG TÁC VIÊN */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-6 text-xl font-bold text-slate-800">THÔNG TIN LIÊN HỆ</h2>
+        <h2 className="mb-6 text-xl font-bold text-slate-800">TRỞ THÀNH CỘNG TÁC VIÊN</h2>
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <div className="flex flex-col justify-between rounded-xl bg-gradient-to-br from-vnpt-darker to-vnpt p-6 text-white">
             <div>
-              <Building2 size={28} className="text-vnpt-accent" />
-              <div className="mt-3 text-lg font-extrabold">VNPT NAM SÀI GÒN</div>
+              <Handshake size={28} className="text-vnpt-accent" />
+              <div className="mt-3 text-lg font-extrabold">KIẾM THÊM THU NHẬP CÙNG VNPT</div>
               <p className="mt-1 text-xs text-white/75">
-                Đồng hành cùng bạn trên hành trình Chuyển đổi số
+                Giới thiệu khách hàng, nhận hoa hồng hấp dẫn trên mỗi sản phẩm - không cần vốn,
+                không giới hạn thu nhập.
               </p>
             </div>
             <Link
-              href="/lien-he"
+              href="/cong-tac-vien"
               className="mt-6 rounded-md bg-vnpt-accent px-3 py-2.5 text-center text-xs font-semibold hover:bg-orange-600"
             >
-              ĐĂNG KÝ TƯ VẤN NGAY
+              TRỞ THÀNH CTV NGAY
             </Link>
           </div>
 
@@ -297,59 +284,53 @@ export default function GioiThieuPage() {
             <div className="rounded-xl border border-slate-100 p-5 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
-                  <MapPin size={16} />
+                  <Percent size={16} />
                 </span>
-                <h3 className="text-sm font-semibold text-slate-800">ĐỊA CHỈ</h3>
+                <h3 className="text-sm font-semibold text-slate-800">HOA HỒNG HẤP DẪN</h3>
               </div>
               <p className="text-sm text-slate-600">
-                Tòa nhà VNPT, 28bis Nguyễn Thị Minh Khai, P. Đa Kao, Quận 1, TP. Hồ Chí Minh
+                Nhận hoa hồng lên đến 15% giá trị đơn hàng cho mỗi khách hàng đăng ký thành công
+                qua link giới thiệu của bạn.
               </p>
-              <p className="mt-3 text-xs font-semibold text-slate-500">Chi nhánh Giao dịch:</p>
-              <ul className="mt-1 space-y-1 text-xs text-slate-500">
-                {CHI_NHANH.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
             </div>
 
             <div className="rounded-xl border border-slate-100 p-5 shadow-sm">
               <div className="mb-3 flex items-center gap-2">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
-                  <Phone size={16} />
+                  <Link2 size={16} />
                 </span>
-                <h3 className="text-sm font-semibold text-slate-800">LIÊN HỆ</h3>
+                <h3 className="text-sm font-semibold text-slate-800">LINK GIỚI THIỆU RIÊNG</h3>
               </div>
-              <ul className="space-y-2 text-sm text-slate-600">
-                <li className="flex items-center gap-2">
-                  <Phone size={14} className="text-vnpt" /> Hotline: 0838 999 333
-                </li>
-                <li className="flex items-center gap-2">
-                  <Phone size={14} className="text-vnpt" /> Điện thoại: (028) 38 999 333
-                </li>
-                <li className="flex items-center gap-2">
-                  <Mail size={14} className="text-vnpt" /> kinhdoanh@vnptnamsaigon.vn
-                </li>
-                <li className="flex items-center gap-2">
-                  <Globe size={14} className="text-vnpt" /> www.vnptnamsaigon.vn
-                </li>
-              </ul>
+              <p className="text-sm text-slate-600">
+                Mỗi CTV có mã giới thiệu và link riêng, theo dõi đơn hàng, hoa hồng theo thời gian
+                thực trên ứng dụng.
+              </p>
             </div>
 
-            <div className="rounded-xl border border-slate-100 p-5 shadow-sm sm:col-span-2">
-              <h3 className="mb-3 text-sm font-semibold text-slate-800">KẾT NỐI VỚI CHÚNG TÔI</h3>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {SOCIALS.map((s) => (
-                  <div
-                    key={s.label}
-                    className="flex flex-col items-center gap-2 rounded-lg border border-slate-100 p-3 text-xs font-medium text-slate-600 transition hover:border-vnpt/40 hover:text-vnpt"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
-                      <s.icon size={16} />
-                    </span>
-                    {s.label}
-                  </div>
-                ))}
+            <div className="rounded-xl border border-slate-100 p-5 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
+                  <Wallet size={16} />
+                </span>
+                <h3 className="text-sm font-semibold text-slate-800">RÚT HOA HỒNG LINH HOẠT</h3>
               </div>
+              <p className="text-sm text-slate-600">
+                Đối soát minh bạch, rút hoa hồng về tài khoản ngân hàng bất cứ lúc nào, không giới
+                hạn số lần.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-100 p-5 shadow-sm">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-vnpt-light text-vnpt">
+                  <Users size={16} />
+                </span>
+                <h3 className="text-sm font-semibold text-slate-800">KHÔNG CẦN KINH NGHIỆM</h3>
+              </div>
+              <p className="text-sm text-slate-600">
+                Ai cũng có thể tham gia, được đào tạo miễn phí và hỗ trợ đội ngũ kinh doanh trong
+                suốt quá trình.
+              </p>
             </div>
           </div>
         </div>

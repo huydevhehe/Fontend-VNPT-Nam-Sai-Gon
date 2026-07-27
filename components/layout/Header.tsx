@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { ChevronDown, Menu, Search, X } from "lucide-react";
+import { ChevronDown, LayoutDashboard, Menu, Search, X } from "lucide-react";
 import { categories } from "@/content/category-map";
 
 const NAV = [
@@ -120,6 +120,14 @@ export default function Header() {
               >
                 <Search size={18} />
               </button>
+              <Link
+                href="/cong-tac-vien/dashboard"
+                title="Dashboard CTV (demo)"
+                aria-label="Dashboard CTV (demo)"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-vnpt-light hover:text-vnpt"
+              >
+                <LayoutDashboard size={18} />
+              </Link>
               <Link
                 href="/lien-he"
                 className="rounded-md bg-vnpt-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-md"

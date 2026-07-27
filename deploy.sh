@@ -25,11 +25,17 @@ echo "==> Building production..."
 npm run build
 
 echo "==> Stopping old process on port $PORT (if any)..."
-OLD_PID=$(lsof -ti:$PORT || true)
-if [ -n "$OLD_PID" ]; then
-  kill "$OLD_PID"
+OLD_PIDS=$(lsof -ti:$PORT || true)
+if [ -n "$OLD_PIDS" ]; then
+  echo "$OLD_PIDS" | xargs kill
   sleep 2
-  echo "==> Killed old process (PID $OLD_PID)."
+  # Nếu vẫn còn sống sau 2s (không chịu tắt) thì buộc kill -9
+  STILL_ALIVE=$(lsof -ti:$PORT || true)
+  if [ -n "$STILL_ALIVE" ]; then
+    echo "$STILL_ALIVE" | xargs kill -9
+    sleep 1
+  fi
+  echo "==> Killed old process(es): $OLD_PIDS"
 else
   echo "==> No process running on port $PORT."
 fi

@@ -5,7 +5,7 @@
 
 set -e
 
-PORT=3000
+PORT=8010
 
 BEFORE_COMMIT=$(git rev-parse HEAD)
 
@@ -40,8 +40,8 @@ else
   echo "==> No process running on port $PORT."
 fi
 
-echo "==> Starting app with nohup..."
-nohup npm start > nohup.out 2>&1 &
+echo "==> Starting app with nohup on port $PORT..."
+PORT=$PORT nohup npm start > nohup.out 2>&1 &
 disown
 
 echo "==> Done. App is running again on port $PORT."

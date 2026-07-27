@@ -7,11 +7,19 @@ set -e
 
 PORT=3000
 
+BEFORE_COMMIT=$(git rev-parse HEAD)
+
 echo "==> Pulling latest code..."
 git pull
 
-echo "==> Installing dependencies..."
-npm install
+AFTER_COMMIT=$(git rev-parse HEAD)
+
+if git diff --name-only "$BEFORE_COMMIT" "$AFTER_COMMIT" | grep -qE "^(package\.json|package-lock\.json)$"; then
+  echo "==> package.json changed, installing dependencies..."
+  npm install
+else
+  echo "==> package.json unchanged, skipping npm install."
+fi
 
 echo "==> Building production..."
 npm run build

@@ -24,16 +24,21 @@ else
   echo "==> package.json unchanged, skipping npm install."
 fi
 
+# lsof không nhận diện được process trên server này (không hiện gì dù cổng đang bị chiếm),
+# nên dò bằng `ss` (đáng tin cậy hơn) thay vì lsof.
+find_port_pids() {
+  ss -ltnp 2>/dev/null | grep ":$PORT " | sed -n 's/.*pid=\([0-9]\+\).*/\1/p' | sort -u
+}
+
 echo "==> Stopping old process on port $PORT (if any)..."
-OLD_PIDS=$(lsof -ti:$PORT || true)
+OLD_PIDS=$(find_port_pids)
 if [ -n "$OLD_PIDS" ]; then
-  echo "$OLD_PIDS" | xargs kill
+  echo "$OLD_PIDS" | xargs kill -9
   sleep 2
-  # Nếu vẫn còn sống sau 2s (không chịu tắt) thì buộc kill -9
-  STILL_ALIVE=$(lsof -ti:$PORT || true)
+  STILL_ALIVE=$(find_port_pids)
   if [ -n "$STILL_ALIVE" ]; then
-    echo "$STILL_ALIVE" | xargs kill -9
-    sleep 1
+    echo "==> ERROR: port $PORT still occupied by PID(s): $STILL_ALIVE — aborting."
+    exit 1
   fi
   echo "==> Killed old process(es): $OLD_PIDS"
 else
@@ -47,5 +52,24 @@ echo "==> Starting app with nohup on port $PORT..."
 PORT=$PORT nohup npm start > nohup.out 2>&1 &
 disown
 
-echo "==> Done. App is running again on port $PORT."
+# Đợi và xác nhận server mới thực sự lên (tránh báo "Done" giả khi start thất bại,
+# ví dụ EADDRINUSE do vẫn còn tiến trình cũ chiếm cổng).
+echo "==> Waiting for server to respond on port $PORT..."
+READY=0
+for i in $(seq 1 15); do
+  if curl -s -o /dev/null -m 2 "http://localhost:$PORT/"; then
+    READY=1
+    break
+  fi
+  sleep 1
+done
+
+if [ "$READY" -eq 1 ]; then
+  echo "==> Done. App is running again on port $PORT."
+else
+  echo "==> ERROR: server did not respond on port $PORT after 15s. Last log lines:"
+  tail -30 nohup.out
+  exit 1
+fi
+
 echo "==> Check logs with: tail -f nohup.out"

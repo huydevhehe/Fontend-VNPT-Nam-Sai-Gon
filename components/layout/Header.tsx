@@ -20,8 +20,9 @@ const NAV = [
   { label: "Sim số", href: "/san-pham/di-dong-vinaphone" },
   {
     label: "Dịch vụ CNTT",
-    href: "/san-pham/chuyen-doi-so",
+    href: "/dich-vu-cntt",
     children: [
+      { label: "Tất cả dịch vụ CNTT", href: "/dich-vu-cntt" },
       { label: "Chữ ký số", href: "/san-pham/chu-ky-so" },
       { label: "Hoá đơn điện tử", href: "/san-pham/hoa-don-thue" },
       { label: "Hợp đồng điện tử", href: "/san-pham/hop-dong-dien-tu" },

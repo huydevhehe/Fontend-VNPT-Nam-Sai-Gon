@@ -134,6 +134,7 @@ const HO_TRO = [
 export default function ChuKySoPage() {
   const products = getCategoryProducts("chu-ky-so");
   const smartCaCaNhan = products.find((p) => p.slug === "smartca-ca-nhan");
+  const smartCaHoKinhDoanh = products.find((p) => p.slug === "smartca-ho-kinh-doanh");
   const smartCaDoanhNghiep = products.find((p) => p.slug === "smartca-doanh-nghiep");
 
   return (
@@ -282,13 +283,21 @@ export default function ChuKySoPage() {
               <h2 className="mb-6 text-center text-slate-800">
                 BẢNG GIÁ VNPT SMARTCA
               </h2>
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-3">
                 {smartCaCaNhan && (
                   <div>
                     <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-vnpt">
                       <User size={16} /> CÁ NHÂN
                     </div>
                     <PricingTable pricing={smartCaCaNhan.pricing} />
+                  </div>
+                )}
+                {smartCaHoKinhDoanh && (
+                  <div>
+                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-vnpt">
+                      <Store size={16} /> HỘ KINH DOANH
+                    </div>
+                    <PricingTable pricing={smartCaHoKinhDoanh.pricing} />
                   </div>
                 )}
                 {smartCaDoanhNghiep && (

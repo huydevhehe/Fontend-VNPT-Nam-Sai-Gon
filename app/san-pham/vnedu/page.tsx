@@ -11,10 +11,12 @@ import {
   MonitorPlay,
   School,
   Smartphone,
+  Trophy,
   Users,
 } from "lucide-react";
 import Breadcrumb from "@/components/layout/Breadcrumb";
 import LeadForm from "@/components/sections/LeadForm";
+import StatBar from "@/components/sections/StatBar";
 
 export const metadata: Metadata = {
   title: "vnEdu — Hệ sinh thái giáo dục số VNPT | VNPT Nam Sài Gòn",
@@ -99,7 +101,7 @@ export default function VnEduPage() {
             variant="light"
             items={[
               { label: "Trang chủ", href: "/" },
-              { label: "Dịch vụ CNTT", href: "/san-pham/chuyen-doi-so" },
+              { label: "Dịch vụ CNTT", href: "/dich-vu-cntt" },
               { label: "vnEdu" },
             ]}
           />
@@ -208,6 +210,25 @@ export default function VnEduPage() {
           ))}
         </ul>
       </section>
+
+      {/* QUY MÔ TRIỂN KHAI */}
+      <section className="mx-auto max-w-7xl px-6 pb-4">
+        <h2 className="text-center text-slate-800">ĐỐI TÁC &amp; QUY MÔ TRIỂN KHAI</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-slate-500">
+          vnEdu đã đồng hành cùng hàng chục nghìn trường học trên cả nước.
+        </p>
+      </section>
+      <StatBar
+        items={[
+          { value: "30.000+", label: "Trường học sử dụng", icon: School },
+          { value: "8 triệu+", label: "Học sinh", icon: GraduationCap },
+          { value: "800.000+", label: "Giáo viên", icon: Users },
+          { value: "Số 1", label: "Thị phần giáo dục số Việt Nam", icon: Trophy },
+        ]}
+      />
+      <p className="mx-auto max-w-7xl px-6 py-3 text-center text-xs text-slate-400">
+        Nguồn: Đài Tiếng nói Việt Nam (VOV) — thống kê VNEdu 4.0
+      </p>
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-6 pb-12">

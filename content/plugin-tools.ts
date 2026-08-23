@@ -130,12 +130,16 @@ export const TOOL_GROUPS: ToolGroup[] = [
   },
 ];
 
-/** Các thao tác online thực hiện trực tiếp trên cổng SmartCA. */
+// Đã xác minh từng path thật trên smartca.vnpt.vn (HTTP 200, nội dung riêng, không phải
+// trang 404 dùng chung) — không dùng đường dẫn tự đoán. 4 thao tác còn lại trên trang gốc
+// (kích hoạt SmartCA, gửi yêu cầu/mở khoá Token, kiểm tra & tải chứng thư số) chỉ mở modal
+// yêu cầu đăng nhập (`javascript:void(0);`), không có URL riêng để trỏ tới — nên không đưa
+// vào đây, thay bằng "Đăng nhập quản lý chứng thư số" dẫn thẳng cổng đăng nhập.
 export const ONLINE_TOOLS = [
-  { label: "Kích hoạt SmartCA tích hợp", path: "/cong-cu/kich-hoat-smartca" },
-  { label: "Gửi yêu cầu mở khoá Token", path: "/cong-cu/yeu-cau-mo-khoa-token" },
-  { label: "Kiểm tra trạng thái chứng thư số", path: "/cong-cu/kiem-tra-chung-thu-so" },
-  { label: "Tải về chứng thư số", path: "/cong-cu/tai-chung-thu-so" },
-  { label: "Gia hạn chứng thư số", path: "/cong-cu/gia-han-chung-thu-so" },
-  { label: "Thay đổi thông tin chứng thư số", path: "/cong-cu/thay-doi-thong-tin" },
+  { label: "Đăng nhập quản lý chứng thư số", path: "/sig/signmultiple" },
+  { label: "Kích hoạt chứng thư số bằng Plugin", path: "/kich-hoat-chung-thu-so" },
+  { label: "Kích hoạt chứng thư số bằng CSR", path: "/kich-hoat-chung-thu-so-csr" },
+  { label: "Cấp bù chứng thư số", path: "/cap-bu" },
+  { label: "Gia hạn chứng thư số", path: "/gia-han-chung-thu-so" },
+  { label: "Thay đổi thông tin chứng thư số", path: "/thay-doi-thong-tin-chung-thu" },
 ];

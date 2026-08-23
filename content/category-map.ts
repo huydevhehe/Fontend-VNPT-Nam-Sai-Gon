@@ -293,6 +293,31 @@ const chuKySoFake: Product[] = [
     isFake: true,
   },
   {
+    id: "fake-smartca-ho-kinh-doanh",
+    slug: "smartca-ho-kinh-doanh",
+    sourceId: "vnpt-nam-sai-gon",
+    category: "Chữ ký số",
+    title: "SmartCA Hộ kinh doanh",
+    shortDesc: "Chữ ký số từ xa cho hộ kinh doanh, ký hóa đơn điện tử, tờ khai thuế.",
+    features: ["Ký hóa đơn điện tử", "Ký tờ khai thuế", "Không cần USB Token"],
+    pricing: [
+      {
+        name: "Bảng giá SmartCA Hộ kinh doanh",
+        columns: ["Gói", "Thời hạn", "Giá cước"],
+        rows: [
+          ["SmartCA Hộ kinh doanh 1 năm", "12 tháng", "900.000đ"],
+          ["SmartCA Hộ kinh doanh 2 năm", "24 tháng", "1.620.000đ"],
+          ["SmartCA Hộ kinh doanh 3 năm", "36 tháng", "2.160.000đ"],
+        ],
+        note: "Giá tham khảo, có thể thay đổi tuỳ thời điểm và chính sách",
+      },
+    ],
+    images: [],
+    bodyText: "SmartCA Hộ kinh doanh giúp hộ kinh doanh cá thể ký số hóa đơn điện tử, tờ khai thuế nhanh chóng, không cần USB Token.",
+    sourceUrl: "#",
+    isFake: true,
+  },
+  {
     id: "fake-usb-token",
     slug: "usb-token",
     sourceId: "vnpt-nam-sai-gon",

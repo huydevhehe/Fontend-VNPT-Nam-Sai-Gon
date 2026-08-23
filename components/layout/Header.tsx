@@ -45,7 +45,7 @@ const NAV = [
 
 export default function Header() {
   const router = useRouter();
-  const [openDropdown, setOpenDropdown] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -100,14 +100,14 @@ export default function Header() {
                   <div
                     key={item.href}
                     className="relative"
-                    onMouseEnter={() => setOpenDropdown(true)}
-                    onMouseLeave={() => setOpenDropdown(false)}
+                    onMouseEnter={() => setOpenDropdown(item.href)}
+                    onMouseLeave={() => setOpenDropdown(null)}
                   >
-                    <button className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-vnpt">
+                    <button type="button" className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-vnpt">
                       {item.label}
                       <ChevronDown size={14} />
                     </button>
-                    {openDropdown && (
+                    {openDropdown === item.href && (
                       <div className="absolute left-0 top-full w-56 rounded-lg border border-slate-100 bg-white py-2 shadow-lg">
                         {item.children.map((child) => (
                           <Link

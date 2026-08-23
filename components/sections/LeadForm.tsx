@@ -8,11 +8,14 @@ export default function LeadForm({
   subtitle = "Chúng tôi sẽ liên hệ với bạn!",
   interestOptions = ["Internet", "MyTV", "Di động Vinaphone", "Hóa đơn điện tử", "Chữ ký số", "Cloud & IDC", "Chuyển đổi số"],
   showCompany = false,
+  showInterest = true,
 }: {
   title?: string;
   subtitle?: string;
   interestOptions?: string[];
   showCompany?: boolean;
+  /** Ẩn ô "Nhu cầu quan tâm" ở những trang chỉ bán một dịch vụ. */
+  showInterest?: boolean;
 }) {
   const [submitted, setSubmitted] = useState(false);
 
@@ -64,26 +67,28 @@ export default function LeadForm({
             <input name="tenCongTy" placeholder="Tên công ty" className={fieldClass} />
           </div>
         )}
-        <div className="relative">
-          <Tag size={16} className={iconClass} />
-          <select name="nhuCau" defaultValue="" className={`${fieldClass} text-slate-600`}>
-            <option value="" disabled>
-              Nhu cầu quan tâm
-            </option>
-            {interestOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
+        {showInterest && (
+          <div className="relative">
+            <Tag size={16} className={iconClass} />
+            <select name="nhuCau" defaultValue="" className={`${fieldClass} text-slate-600`}>
+              <option value="" disabled>
+                Nhu cầu quan tâm
               </option>
-            ))}
-          </select>
-        </div>
+              {interestOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="relative">
           <MessageSquare size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" />
           <textarea name="loiNhan" placeholder="Lời nhắn (nếu có)" rows={3} className={fieldClass} />
         </div>
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-vnpt-accent py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 hover:shadow-md"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-vnpt py-2.5 text-sm font-semibold text-white transition hover:bg-vnpt-dark hover:shadow-md"
         >
           GỬI THÔNG TIN <Send size={16} />
         </button>

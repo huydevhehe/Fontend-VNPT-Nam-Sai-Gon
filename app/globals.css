@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 @theme {
+  /* Hệ màu theo brief: nút chính #0A66C2, hover #084C94, header #0A4A8C,
+     nền xanh nhạt #EAF3FC. Cam giữ làm màu nhấn phụ (badge, số khuyến mãi). */
   --color-vnpt-neon: #0038ff;
-  --color-vnpt: #006ef0;
-  --color-vnpt-dark: #0151af;
-  --color-vnpt-darker: #01489c;
-  --color-vnpt-light: #e8f2ff;
+  --color-vnpt: #0a66c2;
+  --color-vnpt-dark: #084c94;
+  --color-vnpt-darker: #0a4a8c;
+  --color-vnpt-light: #eaf3fc;
   --color-vnpt-accent: #f26522;
-  --font-sans: var(--font-be-vn), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-  --font-display: var(--font-montserrat), var(--font-be-vn), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-display: var(--font-montserrat), var(--font-inter), ui-sans-serif, sans-serif;
 }
 
 :root {
@@ -20,15 +22,78 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Thang chữ theo brief:
+   - Montserrat cho menu + heading (H1 600/32-40px, H2 600/24-28px, H3 500/18-20px)
+   - Inter cho body (400/15-16px, line-height 1.6-1.7) */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-display);
+}
+
+h1 {
+  font-weight: 600;
+  font-size: clamp(2rem, 1.5vw + 1.5rem, 2.5rem);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+h2 {
+  font-weight: 600;
+  font-size: clamp(1.5rem, 0.8vw + 1.25rem, 1.75rem);
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+}
+
+h3 {
+  font-weight: 500;
+  font-size: clamp(1.125rem, 0.4vw + 1rem, 1.25rem);
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+/* Menu chính: Montserrat 500, 15-16px, +0.2px — giữ sentence case, không in hoa toàn bộ. */
+.nav-link {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  letter-spacing: 0.2px;
+}
+
+/* Nhãn nút: đồng bộ với menu — Montserrat 500, 14-15px, +0.2px. */
+.btn-label {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  letter-spacing: 0.2px;
+}
+
+/* Text phụ / caption: Inter 400, 13px, line-height 1.5. */
+.text-caption {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Label form / input: Inter 500, 14px, line-height 1.4. */
+.text-form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Số liệu nổi bật: Inter 600, 20-28px, line-height 1.2. */
+.text-stat {
+  font-weight: 600;
+  font-size: clamp(1.25rem, 1vw + 1rem, 1.75rem);
+  line-height: 1.2;
 }
 
 ::-webkit-scrollbar {

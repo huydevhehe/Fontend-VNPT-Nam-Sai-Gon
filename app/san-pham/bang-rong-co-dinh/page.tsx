@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Antenna,
   ArrowRight,
+  Building2,
   Camera,
   CheckCircle2,
   ClipboardList,
@@ -12,6 +13,7 @@ import {
   Gift,
   GraduationCap,
   Headset,
+  Home,
   Laptop,
   MapPin,
   Search,
@@ -45,6 +47,34 @@ const HIGHLIGHTS = [
   { icon: Headset, title: "Hỗ trợ 24/7", desc: "Tận tâm - chuyên nghiệp" },
 ];
 
+// Hai nhóm dịch vụ Internet, dẫn sang landing page riêng của từng nhóm.
+const NHOM_DICH_VU = [
+  {
+    icon: Home,
+    title: "Internet cá nhân / gia đình",
+    href: "/san-pham/internet-ca-nhan-gia-dinh",
+    image: "/images/hero/hero-fiber.jpg",
+    desc: "Gói cước cho hộ gia đình: tốc độ cao, WiFi phủ toàn nhà, tuỳ chọn kèm truyền hình và camera.",
+    points: [
+      "Tốc độ từ 300 Mbps, hỗ trợ nâng cấp XGSPON",
+      "Tuỳ chọn WiFi Mesh cho nhà nhiều tầng",
+      "Tích hợp bảo mật GreenNet / Family Safe",
+    ],
+  },
+  {
+    icon: Building2,
+    title: "Internet doanh nghiệp",
+    href: "/san-pham/internet-doanh-nghiep",
+    image: "/images/hero/hero-datacenter.jpg",
+    desc: "Đường truyền chuyên dụng cho doanh nghiệp: cam kết băng thông, IP tĩnh và SLA rõ ràng.",
+    points: [
+      "Băng thông cam kết, không chia sẻ",
+      "Cấp IP tĩnh cho server, VPN, tổng đài",
+      "SLA và đội ngũ kỹ thuật hỗ trợ riêng",
+    ],
+  },
+];
+
 const PACKAGE_META: Array<{
   name: string;
   tag: string;
@@ -63,9 +93,9 @@ const PACKAGE_STYLES: Record<
   { text: string; border: string; button: string }
 > = {
   emerald: { text: "text-emerald-600", border: "border-slate-100", button: "bg-emerald-600 hover:bg-emerald-700" },
-  blue: { text: "text-vnpt", border: "border-vnpt ring-1 ring-vnpt/15", button: "bg-vnpt hover:bg-vnpt-dark" },
+  blue: { text: "text-vnpt", border: "border-vnpt ring-1 ring-vnpt/15", button: "bg-vnpt text-white hover:bg-vnpt-dark" },
   violet: { text: "text-violet-600", border: "border-slate-100", button: "bg-violet-600 hover:bg-violet-700" },
-  amber: { text: "text-vnpt-accent", border: "border-slate-100", button: "bg-vnpt-accent hover:bg-orange-600" },
+  amber: { text: "text-vnpt-accent", border: "border-slate-100", button: "bg-vnpt text-white hover:bg-vnpt-dark" },
 };
 
 const TRAI_NGHIEM = [
@@ -144,7 +174,7 @@ export default function BangRongCoDinhPage() {
           <div className="mt-4 grid items-center gap-10 lg:grid-cols-2">
             <div>
               <p className="text-sm font-semibold tracking-wide text-vnpt-accent">INTERNET VNPT</p>
-              <h1 className="mt-2 text-3xl font-extrabold leading-tight md:text-4xl">
+              <h1 className="mt-2 leading-tight">
                 KẾT NỐI SIÊU TỐC
                 <br />
                 TRẢI NGHIỆM ĐỈNH CAO
@@ -170,7 +200,7 @@ export default function BangRongCoDinhPage() {
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/lien-he"
-                  className="rounded-md bg-vnpt-accent px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+                  className="rounded-md bg-white px-5 py-3 text-sm font-semibold text-vnpt-dark hover:bg-slate-100"
                 >
                   ĐĂNG KÝ NGAY
                 </Link>
@@ -204,9 +234,60 @@ export default function BangRongCoDinhPage() {
         </div>
       </section>
 
-      {/* NỘI DUNG CHÍNH + SIDEBAR */}
+      {/* 2 NHÓM DỊCH VỤ INTERNET */}
+      <section className="mx-auto max-w-7xl px-6 py-12">
+        <h2 className="text-center text-slate-800">CHỌN GÓI INTERNET PHÙ HỢP</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-slate-500">
+          Internet VNPT có gói riêng cho hộ gia đình và gói chuyên dụng cho doanh nghiệp.
+        </p>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          {NHOM_DICH_VU.map((n) => (
+            <div
+              key={n.href}
+              className="flex flex-col overflow-hidden rounded-2xl border border-slate-100 shadow-sm transition hover:border-vnpt/40 hover:shadow-md"
+            >
+              <div className="relative h-44 w-full">
+                <Image
+                  src={n.image}
+                  alt={n.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-vnpt-darker/85 to-transparent" />
+                <div className="absolute bottom-4 left-5 text-white">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15">
+                    <n.icon size={22} />
+                  </span>
+                  <h3 className="mt-2 text-white">{n.title}</h3>
+                </div>
+              </div>
+
+              <div className="flex flex-1 flex-col p-5">
+                <p className="text-sm text-slate-600">{n.desc}</p>
+                <ul className="mt-3 flex-1 space-y-1.5">
+                  {n.points.map((p) => (
+                    <li key={p} className="flex items-start gap-2 text-sm text-slate-600">
+                      <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-vnpt" /> {p}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={n.href}
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-vnpt py-2.5 text-sm font-semibold text-white hover:bg-vnpt-dark"
+                >
+                  Xem gói cước <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* NỘI DUNG CHÍNH */}
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+        <div className="grid gap-8">
           <div className="space-y-12">
             {/* HIGHLIGHTS */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -224,7 +305,7 @@ export default function BangRongCoDinhPage() {
 
             {/* GÓI CƯỚC */}
             <div>
-              <h2 className="text-center text-xl font-bold text-slate-800">GÓI CƯỚC INTERNET VNPT</h2>
+              <h2 className="text-center text-slate-800">GÓI CƯỚC INTERNET VNPT</h2>
               <p className="mt-1 text-center text-sm text-slate-500">
                 Đa dạng gói cước - Phù hợp mọi nhu cầu
               </p>
@@ -407,30 +488,45 @@ export default function BangRongCoDinhPage() {
             </div>
           </div>
 
-          {/* SIDEBAR PHẢI */}
-          <div className="space-y-6 lg:sticky lg:top-24 lg:h-fit">
-            <LeadForm
-              title="Đăng ký tư vấn"
-              subtitle="Nhận ưu đãi tốt nhất từ VNPT"
-              interestOptions={PACKAGE_META.map((p) => p.name)}
-            />
+        </div>
+      </section>
 
-            <div className="overflow-hidden rounded-xl bg-gradient-to-br from-vnpt to-vnpt-dark p-5 text-white">
-              <Gift size={28} className="text-vnpt-accent" />
-              <h3 className="mt-3 text-sm font-semibold">KHUYẾN MÃI HẤP DẪN</h3>
-              <p className="mt-2 text-2xl font-extrabold">
-                Giảm đến 20%
-                <br />
-                <span className="text-base font-semibold text-white/85">khi đăng ký trực tuyến</span>
-              </p>
+      {/* ĐĂNG KÝ + KHUYẾN MÃI */}
+      <section className="mx-auto max-w-7xl px-6 pb-12">
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="flex flex-col justify-center overflow-hidden rounded-xl bg-gradient-to-br from-vnpt-darker to-vnpt p-8 text-white">
+            <Gift size={30} className="text-vnpt-accent" />
+            <h2 className="mt-3 text-white">KHUYẾN MÃI HẤP DẪN</h2>
+            <p className="mt-2 text-3xl font-extrabold">
+              Giảm đến 20%
+              <span className="ml-2 text-base font-semibold text-white/85">
+                khi đăng ký trực tuyến
+              </span>
+            </p>
+            <p className="mt-2 max-w-lg text-sm text-white/80">
+              Miễn phí khảo sát hạ tầng, lắp đặt nhanh trong ngày với khu vực đã có hạ tầng sẵn.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="/khuyen-mai"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-white/15 px-4 py-2 text-sm font-semibold hover:bg-white/25"
+                className="inline-flex items-center gap-1.5 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-vnpt-dark hover:bg-slate-100"
               >
                 XEM CHI TIẾT <ArrowRight size={14} />
               </Link>
+              <a
+                href="tel:0838999333"
+                className="rounded-md border border-white/60 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
+              >
+                Hotline: 0838 999 333
+              </a>
             </div>
           </div>
+
+          <LeadForm
+            title="Đăng ký tư vấn"
+            subtitle="Nhận ưu đãi tốt nhất từ VNPT"
+            showInterest={false}
+          />
         </div>
       </section>
     </div>

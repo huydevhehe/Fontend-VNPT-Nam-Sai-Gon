@@ -32,7 +32,7 @@ export default function SanPhamPage() {
           <div className="text-left">
             <Breadcrumb items={[{ label: "Trang chủ", href: "/" }, { label: "Sản phẩm" }]} />
           </div>
-          <h1 className="mt-3 text-3xl font-extrabold text-slate-800">DANH MỤC SẢN PHẨM</h1>
+          <h1 className="mt-3 text-slate-800">DANH MỤC SẢN PHẨM</h1>
           <p className="mx-auto mt-2 max-w-2xl text-slate-600">
             Các sản phẩm - dịch vụ của VNPT giúp cá nhân, doanh nghiệp và tổ chức phát
             triển mạnh mẽ trong kỷ nguyên số.

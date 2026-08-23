@@ -205,7 +205,7 @@ export default function CloudIdcPage() {
           />
           <div className="mt-4 grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <h1 className="text-3xl font-extrabold leading-tight md:text-4xl">
+              <h1 className="leading-tight">
                 VNPT CLOUD
                 <br />& DATA CENTER
               </h1>
@@ -265,7 +265,7 @@ export default function CloudIdcPage() {
 
       {/* DỊCH VỤ */}
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+        <h2 className="mb-6 text-center text-slate-800">
           DỊCH VỤ CLOUD &amp; DATA CENTER
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -298,7 +298,7 @@ export default function CloudIdcPage() {
       {/* TẠI SAO CHỌN VNPT CLOUD */}
       <section className="bg-vnpt-light px-6 py-10">
         <div className="mx-auto max-w-7xl">
-          <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+          <h2 className="mb-6 text-center text-slate-800">
             TẠI SAO CHỌN VNPT CLOUD
           </h2>
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
@@ -394,7 +394,7 @@ export default function CloudIdcPage() {
 
       {/* BẢNG GIÁ THAM KHẢO */}
       <section id="bang-gia" className="mx-auto max-w-7xl scroll-mt-20 px-6 py-10">
-        <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+        <h2 className="mb-6 text-center text-slate-800">
           BẢNG GIÁ THAM KHẢO
         </h2>
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
@@ -437,7 +437,7 @@ export default function CloudIdcPage() {
             </ul>
             <Link
               href="#dang-ky-tu-van"
-              className="mt-5 block rounded-md bg-vnpt-accent py-2.5 text-center text-sm font-semibold text-white hover:bg-orange-600"
+              className="mt-5 block rounded-md bg-vnpt py-2.5 text-center text-sm font-semibold text-white hover:bg-vnpt-dark"
             >
               ĐĂNG KÝ TƯ VẤN NGAY
             </Link>
@@ -447,7 +447,7 @@ export default function CloudIdcPage() {
 
       {/* KHÁCH HÀNG TIÊU BIỂU */}
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <h2 className="mb-6 text-xl font-bold text-slate-800">KHÁCH HÀNG TIÊU BIỂU</h2>
+        <h2 className="mb-6 text-slate-800">KHÁCH HÀNG TIÊU BIỂU</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {KHACH_HANG.map((k) => (
             <div key={k.name} className="rounded-xl border border-slate-100 p-4 text-center shadow-sm">
@@ -463,7 +463,7 @@ export default function CloudIdcPage() {
       <section className="bg-vnpt-darker px-6 py-10 text-white">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div>
-            <h2 className="text-xl font-bold">DATA CENTER VNPT</h2>
+            <h2>DATA CENTER VNPT</h2>
             <p className="mt-1 text-white/70">
               Hệ thống Data Center hiện đại, đạt chuẩn quốc tế
             </p>
@@ -502,7 +502,7 @@ export default function CloudIdcPage() {
 
       {/* QUY TRÌNH TRIỂN KHAI */}
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+        <h2 className="mb-6 text-center text-slate-800">
           QUY TRÌNH TRIỂN KHAI
         </h2>
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">

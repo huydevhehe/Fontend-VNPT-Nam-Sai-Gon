@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { getAllArticles } from "@/lib/data";
 import HeroCarousel, { type HeroSlide } from "@/components/sections/HeroCarousel";
-import LeadForm from "@/components/sections/LeadForm";
 import StatBar from "@/components/sections/StatBar";
 
 const DICH_VU = [
@@ -151,10 +150,9 @@ export default function HomePage() {
     <div>
       <HeroCarousel slides={HERO_SLIDES} />
 
-      {/* NỘI DUNG CHÍNH + FORM SIDEBAR */}
+      {/* NỘI DUNG CHÍNH */}
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-          <div className="space-y-12">
+        <div className="space-y-12">
             {/* 7 DỊCH VỤ */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
               {DICH_VU.map((d) => (
@@ -174,7 +172,7 @@ export default function HomePage() {
 
             {/* GIẢI PHÁP THEO ĐỐI TƯỢNG */}
             <div>
-              <h2 className="mb-6 text-xl font-bold text-slate-800">GIẢI PHÁP THEO ĐỐI TƯỢNG</h2>
+              <h2 className="mb-6 text-slate-800">GIẢI PHÁP THEO ĐỐI TƯỢNG</h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 {DOI_TUONG.map((d) => (
                   <Link
@@ -204,7 +202,7 @@ export default function HomePage() {
             <div className="grid gap-8 lg:grid-cols-2">
               <div>
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-slate-800">KHUYẾN MÃI NỔI BẬT</h2>
+                  <h2 className="text-slate-800">KHUYẾN MÃI NỔI BẬT</h2>
                   <Link href="/khuyen-mai" className="text-sm font-semibold text-vnpt">
                     Xem tất cả →
                   </Link>
@@ -236,7 +234,7 @@ export default function HomePage() {
 
               <div>
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-slate-800">TIN TỨC MỚI</h2>
+                  <h2 className="text-slate-800">TIN TỨC MỚI</h2>
                   <Link href="/tin-tuc" className="text-sm font-semibold text-vnpt">
                     Xem tất cả →
                   </Link>
@@ -262,18 +260,13 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="lg:sticky lg:top-24 lg:h-fit">
-            <LeadForm />
-          </div>
         </div>
       </section>
 
       {/* TIN TỨC MỚI NHẤT */}
       <section className="mx-auto max-w-7xl px-6 py-10">
         <div className="relative mb-6 text-center">
-          <h2 className="text-xl font-bold text-slate-800">TIN TỨC MỚI NHẤT</h2>
+          <h2 className="text-slate-800">TIN TỨC MỚI NHẤT</h2>
           <Link
             href="/tin-tuc"
             className="absolute right-0 top-1/2 -translate-y-1/2 text-sm font-semibold text-vnpt"
@@ -318,7 +311,7 @@ export default function HomePage() {
 
       {/* ĐỐI TÁC TIÊU BIỂU */}
       <section className="mx-auto max-w-7xl px-6 pb-10">
-        <h2 className="mb-6 text-center text-xl font-bold text-slate-800">ĐỐI TÁC TIÊU BIỂU</h2>
+        <h2 className="mb-6 text-center text-slate-800">ĐỐI TÁC TIÊU BIỂU</h2>
         <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-8">
           {DOI_TAC_TIEU_BIEU.map((d) => (
             <div
@@ -349,7 +342,7 @@ export default function HomePage() {
       {/* KHÁCH HÀNG NÓI VỀ CHÚNG TÔI */}
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="relative mb-6 text-center">
-          <h2 className="text-xl font-bold text-slate-800">KHÁCH HÀNG NÓI VỀ CHÚNG TÔI</h2>
+          <h2 className="text-slate-800">KHÁCH HÀNG NÓI VỀ CHÚNG TÔI</h2>
           <Link
             href="/khach-hang"
             className="absolute right-0 top-1/2 -translate-y-1/2 text-sm font-semibold text-vnpt"

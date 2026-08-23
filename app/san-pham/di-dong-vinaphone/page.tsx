@@ -22,8 +22,9 @@ import {
   Zap,
 } from "lucide-react";
 import Breadcrumb from "@/components/layout/Breadcrumb";
-import LeadForm from "@/components/sections/LeadForm";
+import SimPicker from "@/components/sections/SimPicker";
 import { getCategoryProducts } from "@/content/category-products";
+import { getAllProducts } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Di động Vinaphone — VNPT Nam Sài Gòn",
@@ -81,6 +82,7 @@ export default function DiDongVinaphonePage() {
   const products = getCategoryProducts("di-dong-vinaphone");
   const goiCuoc = products.filter((p) => p.pricing.length > 0);
   const dichVu = products.filter((p) => p.pricing.length === 0);
+  const goiData = getAllProducts().filter((p) => p.category === "Gói data di động");
 
   return (
     <div>
@@ -95,12 +97,12 @@ export default function DiDongVinaphonePage() {
             ]}
           />
 
-          <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_1fr_340px]">
+          <div className="mt-6 grid items-center gap-8 lg:grid-cols-2">
             <div className="relative z-10 text-white">
               <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide">
                 DI ĐỘNG VINAPHONE
               </span>
-              <h1 className="mt-4 text-3xl font-extrabold leading-tight md:text-4xl">
+              <h1 className="mt-4 leading-tight">
                 KẾT NỐI <span className="text-vnpt-accent">MỌI LÚC</span>
                 <br />
                 MỌI NƠI
@@ -110,6 +112,21 @@ export default function DiDongVinaphonePage() {
                 <br />
                 Ưu đãi hấp dẫn – Dịch vụ vượt trội
               </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  href="#chon-so"
+                  className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-vnpt-dark hover:bg-slate-100"
+                >
+                  CHỌN SỐ &amp; MUA SIM ONLINE <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="#goi-data"
+                  className="inline-flex items-center rounded-md border border-white/50 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
+                >
+                  XEM GÓI DATA
+                </Link>
+              </div>
 
               <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                 {HERO_STATS.map((s) => (
@@ -151,12 +168,6 @@ export default function DiDongVinaphonePage() {
               ))}
             </div>
 
-            <div className="relative z-10">
-              <LeadForm
-                title="Đăng ký nhận tư vấn"
-                interestOptions={["Di động Vinaphone"]}
-              />
-            </div>
           </div>
         </div>
       </section>
@@ -179,10 +190,66 @@ export default function DiDongVinaphonePage() {
         </div>
       </section>
 
-      {/* GÓI CƯỚC NỔI BẬT */}
-      <section className="bg-vnpt-light/40 px-6 py-12">
+      {/* CHỌN SỐ */}
+      <section id="chon-so" className="scroll-mt-24 px-6 py-12">
         <div className="mx-auto max-w-7xl">
-          <h2 className="text-center text-2xl font-extrabold text-slate-800">GÓI CƯỚC NỔI BẬT</h2>
+          <h2 className="text-center text-slate-800">CHỌN SỐ THUÊ BAO</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-center text-slate-500">
+            Chọn đầu số VinaPhone và dãy số bạn thích. Không tìm thấy số ưng ý? Gọi
+            <a href="tel:0838999333" className="font-semibold text-vnpt"> 0838 999 333 </a>
+            để được hỗ trợ tìm số theo yêu cầu.
+          </p>
+          <div className="mt-8">
+            <SimPicker />
+          </div>
+        </div>
+      </section>
+
+      {/* GÓI DATA 4G/5G */}
+      <section id="goi-data" className="scroll-mt-24 bg-slate-50 px-6 py-12">
+        <div className="mx-auto max-w-7xl">
+          <h2 className="text-center text-slate-800">GÓI DATA 4G/5G</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-center text-slate-500">
+            {goiData.length} gói data theo ngày, tuần và tháng — chọn đúng nhu cầu sử dụng.
+          </p>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {goiData.slice(0, 12).map((p) => {
+              const [, cycle, price] = p.pricing[0].rows[0];
+              return (
+                <div
+                  key={p.id}
+                  className="flex flex-col rounded-xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-vnpt/40 hover:shadow-md"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h3 className="text-slate-800">{p.title}</h3>
+                    <span className="text-xs text-slate-400">{cycle}</span>
+                  </div>
+                  <p className="mt-1 text-lg font-bold text-vnpt">{price}</p>
+                  <ul className="mt-3 flex-1 space-y-1.5">
+                    {p.features.slice(0, 3).map((f) => (
+                      <li key={f} className="flex items-start gap-1.5 text-xs text-slate-600">
+                        <Check size={13} className="mt-0.5 shrink-0 text-vnpt" /> {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="/lien-he"
+                    className="mt-4 rounded-md bg-vnpt py-2 text-center text-sm font-semibold text-white hover:bg-vnpt-dark"
+                  >
+                    ĐĂNG KÝ
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* GÓI CƯỚC NỔI BẬT */}
+      <section id="goi-cuoc" className="scroll-mt-24 bg-vnpt-light/40 px-6 py-12">
+        <div className="mx-auto max-w-7xl">
+          <h2 className="text-center text-slate-800">GÓI CƯỚC NỔI BẬT</h2>
 
           <div className="mt-6 flex flex-wrap justify-center gap-6 border-b border-slate-200 text-sm font-semibold text-slate-500">
             <span className="border-b-2 border-vnpt pb-3 text-vnpt">TRẢ TRƯỚC</span>
@@ -225,7 +292,7 @@ export default function DiDongVinaphonePage() {
                     href={`/san-pham/di-dong-vinaphone/${p.slug}`}
                     className={`mt-4 rounded-md py-2 text-center text-sm font-semibold ${
                       highlight
-                        ? "bg-vnpt-accent text-white hover:bg-orange-600"
+                        ? "bg-vnpt text-white hover:bg-vnpt-dark"
                         : "border border-slate-200 text-slate-700 hover:border-vnpt hover:text-vnpt"
                     }`}
                   >
@@ -249,7 +316,7 @@ export default function DiDongVinaphonePage() {
 
       {/* VÌ SAO CHỌN VINAPHONE */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="text-center text-2xl font-extrabold text-slate-800">VÌ SAO CHỌN VINAPHONE?</h2>
+        <h2 className="text-center text-slate-800">VÌ SAO CHỌN VINAPHONE?</h2>
         <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
           {VI_SAO.map((v) => (
             <div key={v.title} className="text-center">
@@ -346,7 +413,7 @@ export default function DiDongVinaphonePage() {
       </section>
 
       {/* MUA SIM ONLINE */}
-      <section className="mx-auto max-w-7xl px-6 pb-12">
+      <section id="mua-sim" className="mx-auto max-w-7xl scroll-mt-24 px-6 pb-12">
         <div className="grid items-center gap-6 overflow-hidden rounded-2xl bg-gradient-to-br from-vnpt-dark to-vnpt-darker px-8 py-8 text-white lg:grid-cols-[1fr_auto]">
           <div>
             <h3 className="text-xl font-extrabold">
@@ -367,7 +434,7 @@ export default function DiDongVinaphonePage() {
             </ul>
             <Link
               href="/lien-he"
-              className="mt-6 inline-flex items-center gap-2 rounded-md bg-vnpt-accent px-5 py-2.5 text-sm font-semibold hover:bg-orange-600"
+              className="mt-6 inline-flex items-center gap-2 rounded-md bg-white text-vnpt-dark px-5 py-2.5 text-sm font-semibold hover:bg-slate-100"
             >
               ĐẶT SIM NGAY <ArrowRight size={16} />
             </Link>
@@ -380,7 +447,7 @@ export default function DiDongVinaphonePage() {
 
       {/* QUY TRÌNH ĐĂNG KÝ */}
       <section className="mx-auto max-w-7xl px-6 pb-12">
-        <h2 className="text-center text-2xl font-extrabold text-slate-800">QUY TRÌNH ĐĂNG KÝ DỄ DÀNG</h2>
+        <h2 className="text-center text-slate-800">QUY TRÌNH ĐĂNG KÝ DỄ DÀNG</h2>
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
           {QUY_TRINH.map((s, i) => (
             <div key={s.title} className="relative text-center">
@@ -404,7 +471,7 @@ export default function DiDongVinaphonePage() {
       <section className="mx-auto max-w-7xl px-6 pb-12">
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
           <div>
-            <h2 className="mb-5 text-2xl font-extrabold text-slate-800">CÂU HỎI THƯỜNG GẶP</h2>
+            <h2 className="mb-5 text-slate-800">CÂU HỎI THƯỜNG GẶP</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {FAQ.map((q, i) => (
                 <div

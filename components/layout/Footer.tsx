@@ -2,19 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone, PlayCircle, Share2 } from "lucide-react";
 import { categories } from "@/content/category-map";
-import { AUDIENCE_CONFIG } from "@/content/audience-map";
 
-const HO_TRO = [
+const CHINH_SACH = [
+  { label: "Chính sách bảo mật", href: "/lien-he" },
+  { label: "Điều khoản sử dụng", href: "/lien-he" },
+  { label: "Chính sách bảo hành", href: "/lien-he" },
   { label: "Hướng dẫn thanh toán", href: "/lien-he" },
   { label: "Câu hỏi thường gặp", href: "/lien-he" },
-  { label: "Chính sách bảo mật", href: "/lien-he" },
 ];
 
 export default function Footer() {
   return (
     <footer className="bg-vnpt-darker text-slate-200">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-3 lg:grid-cols-6">
-        <div className="lg:col-span-2">
+      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-2 lg:grid-cols-4">
+        <div>
           <Image
             src="/images/vnpt_logo.png"
             alt="VNPT Nam Sài Gòn"
@@ -32,7 +33,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-semibold text-white">SẢN PHẨM</h4>
+          <h4 className="mb-3 text-sm font-semibold text-white">DỊCH VỤ NỔI BẬT</h4>
           <ul className="space-y-2 text-sm text-slate-300">
             {categories.map((c) => (
               <li key={c.slug}>
@@ -45,25 +46,12 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-semibold text-white">GIẢI PHÁP</h4>
+          <h4 className="mb-3 text-sm font-semibold text-white">CHÍNH SÁCH &amp; ĐIỀU KHOẢN</h4>
           <ul className="space-y-2 text-sm text-slate-300">
-            {AUDIENCE_CONFIG.map((a) => (
-              <li key={a.slug}>
-                <Link href={`/giai-phap/${a.slug}`} className="hover:text-white">
-                  Giải pháp {a.label.toLowerCase()}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="mb-3 text-sm font-semibold text-white">HỖ TRỢ</h4>
-          <ul className="space-y-2 text-sm text-slate-300">
-            {HO_TRO.map((h) => (
-              <li key={h.label}>
-                <Link href={h.href} className="hover:text-white">
-                  {h.label}
+            {CHINH_SACH.map((c) => (
+              <li key={c.label}>
+                <Link href={c.href} className="hover:text-white">
+                  {c.label}
                 </Link>
               </li>
             ))}

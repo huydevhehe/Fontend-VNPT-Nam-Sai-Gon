@@ -104,27 +104,6 @@ function ContactForm() {
           />
         </div>
         <div>
-          <label htmlFor="dichVu" className="mb-1 block text-sm text-slate-600">
-            Dịch vụ quan tâm
-          </label>
-          <select
-            id="dichVu"
-            name="dichVu"
-            defaultValue=""
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-vnpt"
-          >
-            <option value="" disabled>
-              Chọn dịch vụ
-            </option>
-            <option value="internet">Internet & Truyền hình MyTV</option>
-            <option value="vinaphone">Di động Vinaphone</option>
-            <option value="hoa-don">Hóa đơn - Thuế</option>
-            <option value="chu-ky-so">Chữ ký số</option>
-            <option value="cloud">Cloud & IDC</option>
-            <option value="chuyen-doi-so">Chuyển đổi số</option>
-          </select>
-        </div>
-        <div>
           <label htmlFor="noiDung" className="mb-1 block text-sm text-slate-600">
             Nội dung liên hệ *
           </label>
@@ -146,7 +125,7 @@ function ContactForm() {
         </label>
         <button
           type="submit"
-          className="w-full rounded-md bg-vnpt-accent py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
+          className="w-full rounded-md bg-vnpt py-2.5 text-sm font-semibold text-white hover:bg-vnpt-dark"
         >
           GỬI THÔNG TIN
         </button>
@@ -174,7 +153,7 @@ export default function LienHePage() {
               variant="light"
               items={[{ label: "Trang chủ", href: "/" }, { label: "Liên hệ" }]}
             />
-            <h1 className="mt-3 text-3xl font-extrabold">LIÊN HỆ VỚI CHÚNG TÔI</h1>
+            <h1 className="mt-3">LIÊN HỆ VỚI CHÚNG TÔI</h1>
             <p className="mt-2 text-white/85">
               VNPT Nam Sài Gòn luôn sẵn sàng hỗ trợ bạn mọi lúc – mọi nơi.
             </p>

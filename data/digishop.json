@@ -5,7 +5,2578 @@
     "url": "https://digishop.vnpt.vn",
     "description": "Cửa hàng số VNPT — bài tư vấn, khuyến mãi & bảng giá gói cước (MyTV, Internet...)."
   },
-  "products": [],
+  "products": [
+    {
+      "id": "digishop-home-1",
+      "slug": "home-1",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 1",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 1",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 1",
+              "190.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Không áp dụng tại TP. Hồ Chí Minh. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-1-mesh",
+      "slug": "home-1-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 1 (Mesh)",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 1 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 1 (Mesh)",
+              "215.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-1-2-mesh",
+      "slug": "home-1-2-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 1 (2 Mesh)",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 02 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 1 (2 Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 1 (2 Mesh)",
+              "220.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 02 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-2",
+      "slug": "home-2",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 2",
+      "shortDesc": "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 2",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 2",
+              "235.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-2-mesh",
+      "slug": "home-2-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 2 (Mesh)",
+      "shortDesc": "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 2 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 2 (Mesh)",
+              "240.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-2-2-mesh",
+      "slug": "home-2-2-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 2 (2 Mesh)",
+      "shortDesc": "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 02 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 2 (2 Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 2 (2 Mesh)",
+              "245.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 02 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-3-2-mesh",
+      "slug": "home-3-2-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 3 (2 Mesh)",
+      "shortDesc": "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 02 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 3 (2 Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 3 (2 Mesh)",
+              "335.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 02 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-3",
+      "slug": "home-3",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 3",
+      "shortDesc": "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 3",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 3",
+              "290.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-3-mesh",
+      "slug": "home-3-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME 3 (Mesh)",
+      "shortDesc": "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME 3 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME 3 (Mesh)",
+              "310.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-3",
+      "slug": "hometv-3",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 3",
+      "shortDesc": "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 3",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 3",
+              "310.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film +\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-1",
+      "slug": "hometv-1",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 1",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 1",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 1",
+              "215.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film+\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-1-mesh",
+      "slug": "hometv-1-mesh",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 1 (Mesh)",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 1 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 1 (Mesh)",
+              "230.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film+\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-2",
+      "slug": "hometv-2",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 2",
+      "shortDesc": "Internet 500 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 500 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 2",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 2",
+              "240.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film +\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-2-mesh",
+      "slug": "hometv-2-mesh",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 2 (Mesh)",
+      "shortDesc": "Internet 500 Mbps. Hỗ trợ nâng cấp XGSPON",
+      "features": [
+        "Internet 500 Mbps. Hỗ trợ nâng cấp XGSPON",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 2 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 2 (Mesh)",
+              "250.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 500 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film+\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-3-mesh",
+      "slug": "hometv-3-mesh",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 3 (Mesh)",
+      "shortDesc": "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 3 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 3 (Mesh)",
+              "330.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film+\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-vip1",
+      "slug": "hometv-vip1",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV VIP1",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Truyền hình MyTV VIP (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV VIP1",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV VIP1",
+              "240.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Gần 150 kênh truyền hình bao gồm chùm kênh VTV, HTV, VTVcab, SCTV, SPOTV, chùm kênh quốc tế đặc sắc.\n- Miễn phí gói Galaxy VIP.\n- Kho nội dung VoD phong phú không quảng cáo.\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động; ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-vip1-mesh",
+      "slug": "hometv-vip1-mesh",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV VIP1 (Mesh)",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Truyền hình MyTV VIP (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV VIP1 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV VIP1 (Mesh)",
+              "270.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Gần 150 kênh truyền hình bao gồm chùm kênh VTV, HTV, VTVcab, SCTV, SPOTV, chùm kênh quốc tế đặc sắc.\n- Miễn phí gói Galaxy VIP.\n- Kho nội dung VoD phong phú không quảng cáo.\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động; ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-2-2-mesh",
+      "slug": "hometv-2-2-mesh",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 2 (2 Mesh)",
+      "shortDesc": "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 02 Wifi Mesh 6.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 2 (2 Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 2 (2 Mesh)",
+              "265.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 02 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film +\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-hometv-3-2-mesh",
+      "slug": "hometv-3-2-mesh",
+      "sourceId": "digishop",
+      "category": "Truyền hình MyTV",
+      "title": "HOMETV 3 (2 Mesh)",
+      "shortDesc": "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Tích hợp bảo mật: GreenNet hoặc Family Safe.",
+        "Miễn phí 02 Wifi Mesh 6.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOMETV 3 (2 Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOMETV 3 (2 Mesh)",
+              "355.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Tích hợp bảo mật: GreenNet hoặc Family Safe.\n- Trang bị miễn phí 02 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film+\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-sanh-2",
+      "slug": "home-sanh-2",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME SÀNH 2",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Ưu đãi di động: 3GB/ngày, 1500 phút nội mạng, 89 phút ngoại mạng.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME SÀNH 2",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME SÀNH 2",
+              "249.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n*Di động VinaPhone:\n- Ưu đãi chủ nhóm: 3 GB data/ngày, 1500 phút thoại di động nội mạng VinaPhone, 89 phút di động ngoại mạng.\n- Thoại nội nhóm: Miễn phí cước gọi di động giữa các thành viên trong nhóm.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Quy định sử dụng gói cước:\n- Nhóm tối đa 6 thành viên (bao gồm chủ nhóm).\n- Dịch vụ GTGT: Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng Data của một số bên thứ ba như Apple, Facebook, Google,… trong các thao tác đăng nhập, chọn nhạc,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-dinh",
+      "slug": "home-dinh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME ĐỈNH",
+      "shortDesc": "Internet 500 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 500 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Truyền hình MyTV (App) đặc sắc.",
+        "Ưu đãi di động: 2GB/ngày, 1000p nội mạng, 50p ngoại mạng.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME ĐỈNH",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME ĐỈNH",
+              "369.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 500 Mbps.\n- Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n* Di động VinaPhone:\n- Ưu đãi chủ nhóm: 2GB/ngày, 1000p di động nội mạng, 50p di động ngoại mạng\n- Thoại nội nhóm: Miễn phí cước gọi di động giữa các thành viên trong nhóm\n* Truyền hình MyTV:\n- Khách hàng cài đặt Ứng dụng MyTV trên SmartTV.\n- Lựa chọn 1 trong 4 gói cước: MyTV Flexi 1/ MyTV Flexi 2/ MyTV Film/ MyTV Film +\nMyTV Flexi 1\nMyTV Flexi 2\nMyTV Film\nMyTV Film+\nGần 130 kênh truyền hình đặc sắc\nGần 100 kênh truyền hình đặc sắc\nGần 110 kênh truyền hình đặc sắc\nChùm kênh VTVcab\nChùm kênh SCTV\n2 kênh thể thao SPOTV độc quyền\nMiễn phí gói Galaxy cao cấp\nMiễn phí gói Galaxy VIP\nKho nội dung VoD phong phú (có quảng cáo)\nKho nội dung VoD phong phú (không quảng cáo)\n- Các tính năng nổi bật: Xem lại kênh truyền hình lên đến 72 giờ; Tua đi, tua lại kênh truyền hình trong vòng 2 giờ; Lưu tại điểm dừng (VOD); Điều khiển từ xa dịch vụ MyTV trên SmartTV bằng điện thoại di động; Thiết lập số hiệu kênh chủ động ...\n- Đăng nhập tối đa trên 5 thiết bị, xem đồng thời tối đa trên 2 thiết bị không phân biệt SmartTV, Smartphone/Tablet.\n- Link tải ứng dụng MyTV: https://mytv.com.vn/tai-ve\n- Để xem nội dung có bản quyền, yêu cầu thiết bị hỗ trợ DRM để giải mã.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: Tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Quy định sử dụng gói cước:\n- Nhóm tối đa 4 thành viên (bao gồm chủ nhóm)\n- Dịch vụ GTGT: Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng Data của một số bên thứ ba như Apple, Facebook, Google,… trong các thao tác đăng nhập, chọn nhạc,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí)",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-1",
+      "slug": "home-cam-1",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 1",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 1",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 1",
+              "215.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p)\n+ Thiết bị ONT 2 băng tần trong suốt thời gian sử dụng\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-1-mesh",
+      "slug": "home-cam-1-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 1 (Mesh)",
+      "shortDesc": "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 300 Mbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 1 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 1 (Mesh)",
+              "230.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 300 Mbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p)\n+ Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-2",
+      "slug": "home-cam-2",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 2",
+      "shortDesc": "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 2",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 2",
+              "240.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p).\n+ Thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-2-mesh",
+      "slug": "home-cam-2-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 2 (Mesh)",
+      "shortDesc": "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 2 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 2 (Mesh)",
+              "250.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p)\n+ Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-3",
+      "slug": "home-cam-3",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 3",
+      "shortDesc": "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 3",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 3",
+              "310.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p)\n+ Trang bị thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 1800 1166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-2-2-mesh",
+      "slug": "home-cam-2-2-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 2 (2 Mesh)",
+      "shortDesc": "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 500Mbps đến 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Miễn phí 02 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 2 (2 Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 2 (2 Mesh)",
+              "265.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 500Mbps đến 1Gbps (tùy thuộc vào chủng loại thiết bị và khoảng cách đến các thiết bị). Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p)\n+ Trang bị miễn phí 02 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-3-mesh",
+      "slug": "home-cam-3-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 3 (Mesh)",
+      "shortDesc": "Internet từ 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Miễn phí 01 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 3 (Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 3 (Mesh)",
+              "330.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p)\n+ Trang bị miễn phí 01 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-home-cam-3-2-mesh",
+      "slug": "home-cam-3-2-mesh",
+      "sourceId": "digishop",
+      "category": "Internet cá nhân/gia đình",
+      "title": "HOME CAM 3 (2 Mesh)",
+      "shortDesc": "Internet từ 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+      "features": [
+        "Internet từ 1Gbps. Hỗ trợ nâng cấp XGSPON.",
+        "Miễn phí 01 Camera Indoor + Cloud 3 ngày.",
+        "Miễn phí 02 Wifi Mesh 6.",
+        "Tặng 1 tháng khi đóng cước trước 12 tháng."
+      ],
+      "pricing": [
+        {
+          "name": "Giá gói HOME CAM 3 (2 Mesh)",
+          "columns": [
+            "Gói cước",
+            "Giá ưu đãi"
+          ],
+          "rows": [
+            [
+              "HOME CAM 3 (2 Mesh)",
+              "355.000đ/tháng"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước:\n* Internet Wifi VNPT:\n- Tốc độ từ 1Gbps. Hỗ trợ nâng cấp XGSPON theo khu vực.\n- Trang bị miễn phí:\n+ 01 Camera Indoor\n+ Gói lưu trữ Cloud 3: Lưu trữ 3 ngày, tối đa 4 tài khoản xem đồng thời (chi tiết Camera tại: https://vnpt-technology.vn/vi/product_detail/vnpt-smart-camera-is310p)\n+ Trang bị miễn phí 02 Wifi Mesh 6 và thiết bị ONT 2 băng tần trong suốt thời gian sử dụng.\n- Lắp đặt nhanh chóng, chăm sóc và hỗ trợ khách hàng 24/7.\n2. Khuyến mại đóng cước trước: tặng 1 tháng khi đóng cước trước 12 tháng.\n3. Giá cước:\n- Giá cước áp dụng theo khu vực lắp đặt. Quý khách vui lòng nhập địa chỉ lắp đặt để hiển thị giá cụ thể.\n4. Cước hoà mạng:\n- Cước hòa mạng áp dụng cho khách hàng cá nhân, hộ gia đình đăng ký mới dịch vụ: 300.000đ/thuê bao (đã bao gồm VAT).\n5. Tổng đài hỗ trợ: 18001166 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/internet-tv?tab=2488"
+    },
+    {
+      "id": "digishop-data-cpv10",
+      "slug": "goi-cpv10",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "CPV10",
+      "shortDesc": "5GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "5GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "5 phút gọi ngoại mạng.",
+        "Miễn phí các cuộc gọi di động nội mạng dưới 20 phút.",
+        "Miễn phí data truy cập ứng dụng Tiktok.",
+        "Quyền lợi sử dụng nội dung dịch vụ Cloudphone."
+      ],
+      "pricing": [
+        {
+          "name": "Gói CPV10",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "CPV10",
+              "24 Giờ",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ\n2. Ưu đãi gói cước:\n- 5GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- 5 phút gọi ngoại mạng.\n- Miễn phí các cuộc gọi di động nội mạng dưới 20 phút.\n- Miễn phí Data truy cập ứng dụng Tiktok.\n- Quyền lợi sử dụng nội dung dịch vụ Cloudphone.\nĐược sử dụng điện thoại ảo cấu hình: RAM 8GB, bộ nhớ trong 80GB, HDH Android 12.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Quy định sử dụng gói cước:\n- Ưu đãi miễn phí data truy cập ứng dụng Tiktok không bao gồm lưu lượng sử dụng để truy cập các địa chỉ liên kết ngoài ứng dụng. Trên thực tế trong quá trình sử dụng ứng dụng, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Messenger, Google,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: TRACUU CPV10 gửi 900.\n7. Hủy gói cước:\n- Soạn tin: HUY CPV10 gửi 900.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-cpv125",
+      "slug": "goi-cpv125",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "CPV125",
+      "shortDesc": "7GB Data/ngày (hết dung lượng dừng truy cập),",
+      "features": [
+        "7GB Data/ngày (hết dung lượng dừng truy cập),",
+        "Quyền lợi sử dụng nội dung dịch vụ Cloudphone"
+      ],
+      "pricing": [
+        {
+          "name": "Gói CPV125",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "CPV125",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày\n2. Ưu đãi gói cước:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Quyền lợi sử dụng nội dung dịch vụ Cloudphone.\nĐược sử dụng điện thoại ảo cấu hình: RAM 8GB, bộ nhớ trong 80GB, HDH Android 12\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY CPV125 gửi 888\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-ctg25",
+      "slug": "goi-ctg25",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "CTG25",
+      "shortDesc": "300MB Data (hết dung lượng dừng truy cập).",
+      "features": [
+        "300MB Data (hết dung lượng dừng truy cập).",
+        "Quyền lợi sử dụng nội dung dịch vụ Cartoon Game."
+      ],
+      "pricing": [
+        {
+          "name": "Gói CTG25",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "CTG25",
+              "7 Ngày",
+              "25.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 7 ngày.\n2. Ưu đãi gói cước:\n- 300MB Data (hết dung lượng dừng truy cập).\n- Quyền lợi sử dụng nội dung dịch vụ Cartoon Game.\nChơi game và tương tác trên cartoongame.vn .\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY CTG25 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-ctg5",
+      "slug": "goi-ctg5",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "CTG5",
+      "shortDesc": "150MB Data/24 giờ (hết dung lượng dừng truy cập).",
+      "features": [
+        "150MB Data/24 giờ (hết dung lượng dừng truy cập).",
+        "Quyền lợi sử dụng nội dung dịch vụ Cartoon Game."
+      ],
+      "pricing": [
+        {
+          "name": "Gói CTG5",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "CTG5",
+              "24 Giờ",
+              "5.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 150MB Data (hết dung lượng dừng truy cập).\n- Quyền lợi sử dụng nội dung dịch vụ Cartoon Game.\nChơi game và tương tác trên cartoongame.vn\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY CTG5 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-ctg90",
+      "slug": "goi-ctg90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "CTG90",
+      "shortDesc": "2GB Data (hết dung lượng dừng truy cập).",
+      "features": [
+        "2GB Data (hết dung lượng dừng truy cập).",
+        "Quyền lợi sử dụng nội dung dịch vụ Cartoon Game."
+      ],
+      "pricing": [
+        {
+          "name": "Gói CTG90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "CTG90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 2GB Data (hết dung lượng dừng truy cập).\n- Quyền lợi sử dụng nội dung dịch vụ Cartoon Game.\nChơi game và tương tác trên cartoongame.vn .\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY CTG90 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-dch90",
+      "slug": "goi-dch90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "DCH90",
+      "shortDesc": "8GB Data/30 ngày.",
+      "features": [
+        "8GB Data/30 ngày.",
+        "Data truy cập không giới hạn các ứng dụng Viber, WhatsApp."
+      ],
+      "pricing": [
+        {
+          "name": "Gói DCH90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "DCH90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 8GB Data (hết dung lượng dừng truy cập).\n- Data truy cập không giới hạn các ứng dụng Viber, WhatsApp.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước, trả sau (bao gồm cả thuê bao EZCOM) đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Gói DCH90 được đăng ký đồng thời với các gói cước khác (bao gồm gói chính, gói MASS khác,…).\n- Các gói cước trong dịch vụ Data IP Chat không được đăng ký đồng thời với nhau.\n- Quyền lợi data trong gói có hiệu lực ngay khi đăng ký/gia hạn gói thành công và có hiệu lực theo thời hạn của gói cước mà khách hàng đăng ký.\n- Data trong quyền lợi gói nếu không sử dụng hết trong chu kỳ trước sẽ không được cộng dồn vào chu kỳ tiếp theo.\n- Trường hợp khách hàng chủ động hủy gói, hệ thống sẽ thực hiện hủy quyền lợi của gói.\n- Nếu khách hàng hủy/chuyển đổi gói cước thì số tiền gói đã trừ của khách hàng khi đăng ký sẽ không được hoàn trả hay khấu trừ cho bất kỳ phát sinh cước nào của thuê bao (nếu có).\n- Nếu tài khoản chính bị khóa thì khách hàng không sử dụng được các ưu đãi còn lại, khách hàng phải nạp tiền thì mới tiếp tục được sử dụng.\n- Nếu có thay đổi về chính sách giá cước thì các thuê bao vẫn được áp dụng chính sách cũ cho đến hết chu kỳ.\n- Nếu có thay đổi về chính sách nội dung trong gói thì có hiệu lực áp dụng tương ứng.\n- Trường hợp chuyển đổi hình thức thanh toán từ trả sau sang trả trước hoặc ngược lại thì các gói đã đăng ký trước thời điểm chuyển đổi đều không được bảo lưu (bị xóa) khi chuyển sang hình thức thanh toán mới.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY DCH90 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-dgm90",
+      "slug": "goi-dgm90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "DGM90",
+      "shortDesc": "8GB Data/30 ngày.",
+      "features": [
+        "8GB Data/30 ngày.",
+        "Data truy cập không giới hạn các ứng dụng Game Liên quân, Free Fire, Fifa Online."
+      ],
+      "pricing": [
+        {
+          "name": "Gói DGM90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "DGM90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 8GB Data (hết dung lượng dừng truy cập).\n- Data truy cập không giới hạn các ứng dụng Game Liên quân, Free Fire, Fifa Online.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước, trả sau (bao gồm cả thuê bao EZCOM) đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Gói DGM90 được đăng ký đồng thời với các gói cước khác (bao gồm gói chính, gói MASS khác,…).\n- Các gói cước trong dịch vụ Data IP Game không được đăng ký đồng thời với nhau.\n- Quyền lợi data trong gói có hiệu lực ngay khi đăng ký/gia hạn gói thành công và có hiệu lực theo thời hạn của gói cước mà khách hàng đăng ký.\n- Data trong quyền lợi gói nếu không sử dụng hết trong chu kỳ trước sẽ không được cộng dồn vào chu kỳ tiếp theo.\n- Trường hợp khách hàng chủ động hủy gói, hệ thống sẽ thực hiện hủy quyền lợi của gói.\n- Nếu khách hàng hủy/chuyển đổi gói cước thì số tiền gói đã trừ của khách hàng khi đăng ký sẽ không được hoàn trả hay khấu trừ cho bất kỳ phát sinh cước nào của thuê bao (nếu có).\n- Nếu tài khoản chính bị khóa thì khách hàng không sử dụng được các ưu đãi còn lại, khách hàng phải nạp tiền thì mới tiếp tục được sử dụng.\n- Nếu có thay đổi về chính sách giá cước thì các thuê bao vẫn được áp dụng chính sách cũ cho đến hết chu kỳ.\n- Nếu có thay đổi về chính sách nội dung trong gói thì có hiệu lực áp dụng tương ứng.\n- Trường hợp chuyển đổi hình thức thanh toán từ trả sau sang trả trước hoặc ngược lại thì các gói đã đăng ký trước thời điểm chuyển đổi đều không được bảo lưu (bị xóa) khi chuyển sang hình thức thanh toán mới.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY DGM90 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí)",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-dgt90",
+      "slug": "goi-dgt90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "DGT90",
+      "shortDesc": "6GB Data/30 ngày.",
+      "features": [
+        "6GB Data/30 ngày.",
+        "Data truy cập không giới hạn các ứng dụng YouTube, VieON, NCT, TikTok."
+      ],
+      "pricing": [
+        {
+          "name": "Gói DGT90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "DGT90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 6GB Data (hết dung lượng dừng truy cập).\n- Data truy cập không giới hạn các ứng dụng YouTube, VieON, NCT, TikTok\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước, trả sau (bao gồm cả thuê bao EZCOM) đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Gói DGT90 được đăng ký đồng thời với các gói cước khác (bao gồm gói chính, gói MASS khác,…).\n- Các gói cước trong dịch vụ Data IP Giải trí không được đăng ký đồng thời với nhau.\n- Quyền lợi data trong gói có hiệu lực ngay khi đăng ký/gia hạn gói thành công và có hiệu lực theo thời hạn của gói cước mà khách hàng đăng ký.\n- Data trong quyền lợi gói nếu không sử dụng hết trong chu kỳ trước sẽ không được cộng dồn vào chu kỳ tiếp theo.\n- Trường hợp khách hàng chủ động hủy gói, hệ thống sẽ thực hiện hủy quyền lợi của gói.\n- Nếu khách hàng hủy/chuyển đổi gói cước thì số tiền gói đã trừ của khách hàng khi đăng ký sẽ không được hoàn trả hay khấu trừ cho bất kỳ phát sinh cước nào của thuê bao (nếu có).\n- Nếu tài khoản chính bị khóa thì khách hàng không sử dụng được các ưu đãi còn lại, khách hàng phải nạp tiền thì mới tiếp tục được sử dụng.\n- Nếu có thay đổi về chính sách giá cước thì các thuê bao vẫn được áp dụng chính sách cũ cho đến hết chu kỳ.\n- Nếu có thay đổi về chính sách nội dung trong gói thì có hiệu lực áp dụng tương ứng.\n- Trường hợp chuyển đổi hình thức thanh toán từ trả sau sang trả trước hoặc ngược lại thì các gói đã đăng ký trước thời điểm chuyển đổi đều không được bảo lưu (bị xóa) khi chuyển sang hình thức thanh toán mới.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY DGT90 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-ebook90",
+      "slug": "goi-ebook90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "EBOOK90",
+      "shortDesc": "8GB Data/30 ngày.",
+      "features": [
+        "8GB Data/30 ngày.",
+        "Data truy cập không giới hạn các ứng dụng Waka, VBOOKs, YouTube."
+      ],
+      "pricing": [
+        {
+          "name": "Gói EBOOK90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "EBOOK90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 8GB Data (hết dung lượng dừng truy cập).\n- Data truy cập không giới hạn các ứng dụng Waka, VBOOKs, YouTube\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước, trả sau (bao gồm cả thuê bao EZCOM) đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Gói EBOOK90 được đăng ký đồng thời với các gói cước khác (bao gồm gói chính, gói MASS khác,…).\n- Các gói cước trong dịch vụ Data IP Ebook không được đăng ký đồng thời với nhau.\n- Quyền lợi data trong gói có hiệu lực ngay khi đăng ký/gia hạn gói thành công và có hiệu lực theo thời hạn của gói cước mà khách hàng đăng ký.\n- Data trong quyền lợi gói nếu không sử dụng hết trong chu kỳ trước sẽ không được cộng dồn vào chu kỳ tiếp theo.\n- Trường hợp khách hàng chủ động hủy gói, hệ thống sẽ thực hiện hủy quyền lợi của gói.\n- Nếu khách hàng hủy/chuyển đổi gói cước thì số tiền gói đã trừ của khách hàng khi đăng ký sẽ không được hoàn trả hay khấu trừ cho bất kỳ phát sinh cước nào của thuê bao (nếu có).\n- Nếu tài khoản chính bị khóa thì khách hàng không sử dụng được các ưu đãi còn lại, khách hàng phải nạp tiền thì mới tiếp tục được sử dụng.\n- Nếu có thay đổi về chính sách giá cước thì các thuê bao vẫn được áp dụng chính sách cũ cho đến hết chu kỳ.\n- Nếu có thay đổi về chính sách nội dung trong gói thì có hiệu lực áp dụng tương ứng.\n- Trường hợp chuyển đổi hình thức thanh toán từ trả sau sang trả trước hoặc ngược lại thì các gói đã đăng ký trước thời điểm chuyển đổi đều không được bảo lưu (bị xóa) khi chuyển sang hình thức thanh toán mới.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY EBOOK90 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-ioe125",
+      "slug": "goi-ioe125",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "IOE125",
+      "shortDesc": "7GB/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "7GB/ngày (hết dung lượng dừng truy cập).",
+        "Cộng 1.000 RUBY",
+        "01 Mã Quyền Lợi IOE sử dụng trong 30 ngày."
+      ],
+      "pricing": [
+        {
+          "name": "Gói IOE125",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "IOE125",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày với trả trước/trả sau.\n2. Ưu đãi gói cước:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Cộng 1.000 RUBY\n- 01 Mã Quyền Lợi IOE sử dụng trong 30 ngày:\n+ Học tập không giới hạn theo chương trình Bộ GD&ĐT: Luyện nghe – nói – đọc – viết theo đúng chuẩn kiến thức từng lớp. Nâng cao năng lực và cải thiện điểm số rõ rệt sau mỗi tuần học.\n+ Luyện nói cùng AI – chuẩn phát âm từng âm tiết: Học sinh được luyện nói từ mức cơ bản đến nâng cao, được AI chấm điểm phát âm theo từng câu – từng từ, giúp tự tin giao tiếp và sửa lỗi ngay lập tức.\n+ Luyện viết cùng AI – phản hồi chi tiết theo từng câu: AI hướng dẫn cách viết đúng chuẩn, góp ý ngữ pháp – từ vựng – cấu trúc câu. Học sinh tiến bộ nhanh nhờ phản hồi thông minh theo thời gian thực.\n+ Thi thử Cambridge không giới hạn: Trải nghiệm bộ đề chuẩn quốc tế, luyện phản xạ và kỹ năng làm bài giúp học sinh tự tin khi bước vào các kỳ thi quan trọng.\n- Link website sử dụng: https://ioe.vn\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra ưu đãi:\n- Kiểm tra dung lượng data: Soạn tin DATA gửi 888.\n- Kiểm tra quyền lợi nội dung số: Soạn tin DATAIP gửi 888\n- Kiểm tra ưu đãi còn lại của gói cước: Soạn tin TRACUU IOE125 gửi 900\n6. Hủy gói cước:\n- Soạn tin: HUY IOE125 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-ioe5",
+      "slug": "goi-ioe5",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "IOE5",
+      "shortDesc": "300MB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói)",
+      "features": [
+        "300MB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói)",
+        "Cộng 500 RUBY.",
+        "01 Mã Quyền Lợi IOE sử dụng trong 24 giờ."
+      ],
+      "pricing": [
+        {
+          "name": "Gói IOE5",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "IOE5",
+              "24 Giờ",
+              "5.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ với trả trước/trả sau.\n2. Ưu đãi gói cước:\n- 300MB Data/24h (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói)\n- Cộng 500 RUBY.\n- 01 Mã Quyền Lợi IOE sử dụng trong 24 giờ:\n+ Học tập không giới hạn theo chương trình Bộ GD&ĐT: Luyện nghe – nói – đọc – viết theo đúng chuẩn kiến thức từng lớp. Nâng cao năng lực và cải thiện điểm số rõ rệt sau mỗi tuần học.\n+ Luyện nói cùng AI – chuẩn phát âm từng âm tiết: Học sinh được luyện nói từ mức cơ bản đến nâng cao, được AI chấm điểm phát âm theo từng câu – từng từ, giúp tự tin giao tiếp và sửa lỗi ngay lập tức.\n+ Luyện viết cùng AI – phản hồi chi tiết theo từng câu: AI hướng dẫn cách viết đúng chuẩn, góp ý ngữ pháp – từ vựng – cấu trúc câu. Học sinh tiến bộ nhanh nhờ phản hồi thông minh theo thời gian thực.\n+ Thi thử Cambridge không giới hạn: Trải nghiệm bộ đề chuẩn quốc tế, luyện phản xạ và kỹ năng làm bài giúp học sinh tự tin khi bước vào các kỳ thi quan trọng.\n- Link website sử dụng: https://ioe.vn\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra ưu đãi:\n- Kiểm tra dung lượng data: Soạn tin DATAKM gửi 888.\n- Kiểm tra quyền lợi nội dung số: Soạn tin DATAIP gửi 888\n- Kiểm tra ưu đãi còn lại của gói cước: Soạn tin TRACUU IOE5 gửi 900\n6. Hủy gói cước:\n- Soạn tin: HUY IOE5 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-office130",
+      "slug": "goi-office130",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "OFFICE130",
+      "shortDesc": "5GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "5GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV.",
+        "Quyền lợi sử dụng nội dung dịch vụ Microsoft 365."
+      ],
+      "pricing": [
+        {
+          "name": "Gói OFFICE130",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "OFFICE130",
+              "30 Ngày",
+              "130.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 5GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV và kho nội dung phim truyện, VOD giải trí với hàng nghìn video Full HD thuộc các thể loại (tải ứng dụng tại https://mytv.com.vn/tai-ve).\n- Quyền lợi sử dụng nội dung dịch vụ Microsoft 365.\n+ Dung lượng lưu trữ trên đám mây an toàn tương đương 1TB.\n+ Đăng nhập tối đa 5 thiết bị cùng lúc.\n+ Sử dụng các ứng dụng bản quyền với các tính năng cao cấp và quyền truy cập ngoại tuyến: Word, Excel, PowerPoint, Microsoft Defender, OneDrive, Outlook, Clipchamp, OneNote…\n+ Bảo mật thiết bị và dữ liệu.\n+ Email bảo mật, không quảng cáo.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY OFFICE130 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-scam99",
+      "slug": "goi-scam99",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "SCAM99",
+      "shortDesc": "1,5GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1,5GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Quyền lợi sử dụng nội dung dịch vụ SCAM S-Defender cho 1 thiết bị."
+      ],
+      "pricing": [
+        {
+          "name": "Gói SCAM99",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "SCAM99",
+              "30 Ngày",
+              "99.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày\n2. Ưu đãi gói cước:\n- 1,5GB Data/ngày (hết dung lượng dừng truy cập).\n- Quyền lợi sử dụng nội dung dịch vụ SCAM S-Defender cho 1 thiết bị.\n+ Lọc tin nhắn SMS lừa đảo với A.I (Chỉ hỗ trợ iOS & Android).\n+ Bảo vệ mua sắm trực tuyến với A.I.\n+ Bảo vệ truy cập trên browser, ngăn chặn link lừa đảo, nguy hại.\n+ Bảo vệ truy cập Wi-Fi (chỉ hỗ trợ Android).\n+ Chặn quảng cáo (không hỗ trợ Android).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY SCAM99 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-sde125",
+      "slug": "goi-sde125",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "SDE125",
+      "shortDesc": "7GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "7GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm kho phim Galaxy Play VIP.",
+        "Quyền lợi sử dụng nội dung dịch vụ SDE S-Defender cho 5 thiết bị."
+      ],
+      "pricing": [
+        {
+          "name": "Gói SDE125",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "SDE125",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày\n2. Ưu đãi gói cước:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí xem truyền hình MyTV Mobile bao gồm kho phim Galaxy Play VIP với hơn 3000 giờ phim điện ảnh đặc sắc, phim Hollywood bom tấn, phim Việt chiếu rạp mới nhất, phim bộ song song, độc quyền... (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n- Quyền lợi sử dụng nội dung dịch vụ SDE S-Defender cho 5 thiết bị.\n+ Quét diệt virus, mã độc, phần mềm gián điệp… (Không hỗ trợ iOS).\n+ Bảo vệ truy cập ngân hàng trực tuyến.\n+ Bảo vệ truy cập trên browser, ngăn chặn link lừa đảo, nguy hại.\n+ Tăng hiệu năng máy khi chơi game trên máy tính Windows.\n+ Bảo vệ trẻ nhỏ bằng cách chặn thời gian sử dụng trong ngày, chặn thời gian ban đêm, lọc nội dung không phù hợp (Tính năng bị giới hạn trên iOS).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY SDE125 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-sde35",
+      "slug": "goi-sde35",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "SDE35",
+      "shortDesc": "15GB/7 ngày (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói)",
+      "features": [
+        "15GB/7 ngày (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói)",
+        "Miễn phí data truy cập ứng dụng Tiktok",
+        "Quyền lợi sử dụng nội dung dịch vụ VNPT S-Defender"
+      ],
+      "pricing": [
+        {
+          "name": "Gói SDE35",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "SDE35",
+              "7 Ngày",
+              "35.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 7 ngày với trả trước/trả sau\n2. Ưu đãi gói cước\n- 15GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói)\n- Miễn phí data truy cập ứng dụng Tiktok\n- Quyền lợi sử dụng nội dung dịch vụ VNPT S-Defender\nSử dụng gói SDE thuộc Dịch vụ Bảo mật toàn diện VNPT S-Defender cho 5 thiết bị bao gồm:\n+ Quét diệt virus, mã độc, phần mềm gián điệp… (Không hỗ trợ iOS)\n+ Bảo vệ truy cập ngân hàng trực tuyến\n+ Bảo vệ truy cập trên browser, ngăn chặn link lừa đảo, nguy hại\n+ Tăng hiệu năng máy khi chơi game trên máy tính Windows.\n+ Bảo vệ trẻ nhỏ bằng cách chặn thời gian sử dụng trong ngày, chặn thời gian ban đêm, lọc nội dung không phù hợp (Tính năng bị giới hạn trên iOS)\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Quy định sử dụng gói cước:\n- Ưu đãi miễn phí data truy cập ứng dụng Tiktok không bao gồm lưu lượng sử dụng để truy cập các địa chỉ liên kết ngoài ứng dụng. Trên thực tế trong quá trình sử dụng ứng dụng, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Messenger, Google,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn\n6. Kiểm tra ưu đãi của gói cước:\n- Kiểm tra dung lượng Data: Soạn tin DATAKM gửi 888\n- Kiểm tra ưu đãi gói cước: Soạn tin TRACUU SDE35 gửi 900\n7. Hủy gói cước:\n- Soạn tin: HUY SDE35 gửi 888\n8. Link tải ứng dụng:\n- Website dịch vụ: https://s-defender.vnpt.vn/\n- Link tải ứng dụng: Tải ứng dụng tại CH PLAY hoặc APP STORE để sử dụng\n9. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-sh90",
+      "slug": "goi-sh90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "SH90",
+      "shortDesc": "10GB Data/30 ngày.",
+      "features": [
+        "10GB Data/30 ngày.",
+        "Data truy cập không giới hạn ứng dụng Sendo."
+      ],
+      "pricing": [
+        {
+          "name": "Gói SH90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "SH90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 10GB Data (hết dung lượng dừng truy cập).\n- Data truy cập không giới hạn ứng dụng Sendo\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước, trả sau (bao gồm cả thuê bao EZCOM) đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Gói SH90 được đăng ký đồng thời với các gói cước khác (bao gồm gói chính, gói MASS khác,…).\n- Các gói cước trong dịch vụ Data IP Shopping không được đăng ký đồng thời với nhau.\n- Quyền lợi data trong gói có hiệu lực ngay khi đăng ký/gia hạn gói thành công và có hiệu lực theo thời hạn của gói cước mà khách hàng đăng ký.\n- Data trong quyền lợi gói nếu không sử dụng hết trong chu kỳ trước sẽ không được cộng dồn vào chu kỳ tiếp theo.\n- Trường hợp khách hàng chủ động hủy gói, hệ thống sẽ thực hiện hủy quyền lợi của gói.\n- Nếu khách hàng hủy/chuyển đổi gói cước thì số tiền gói đã trừ của khách hàng khi đăng ký sẽ không được hoàn trả hay khấu trừ cho bất kỳ phát sinh cước nào của thuê bao (nếu có).\n- Nếu tài khoản chính bị khóa thì khách hàng không sử dụng được các ưu đãi còn lại, khách hàng phải nạp tiền thì mới tiếp tục được sử dụng.\n- Nếu có thay đổi về chính sách giá cước thì các thuê bao vẫn được áp dụng chính sách cũ cho đến hết chu kỳ.\n- Nếu có thay đổi về chính sách nội dung trong gói thì có hiệu lực áp dụng tương ứng.\n- Trường hợp chuyển đổi hình thức thanh toán từ trả sau sang trả trước hoặc ngược lại thì các gói đã đăng ký trước thời điểm chuyển đổi đều không được bảo lưu (bị xóa) khi chuyển sang hình thức thanh toán mới.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY SH90 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-soda125",
+      "slug": "goi-soda125",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "SODA125",
+      "shortDesc": "8GB Data/ngày trong 30 ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "8GB Data/ngày trong 30 ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9.",
+        "Miễn phí data truy cập ứng dụng MyTV, TikTok và YouTube.",
+        "Tài khoản sử dụng nội dung giáo dục trên website https://tienganh247.vn/"
+      ],
+      "pricing": [
+        {
+          "name": "Gói SODA125",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "SODA125",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước/trả sau).\n2. Ưu đãi gói cước:\n- 8GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9 (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n- Miễn phí data truy cập ứng dụng MyTV, TikTok và YouTube.\n- Tài khoản sử dụng nội dung giáo dục trên website https://tienganh247.vn/\n+ Là nền tảng luyện thi tiếng Anh hướng tới chứng chỉ Cambridge dành cho học sinh từ 4 đến 12 tuổi.\n+ Các tính năng chính như học bài thông qua video, tự luyện chuyên sâu theo từng kỹ năng Nghe – Nói – Đọc – Viết, thi thử, đánh giá và thống kê, báo cáo giúp người học ôn luyện một cách chủ động và đạt hiệu quả tốt nhất.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều theo tiêu dùng tài khoản chính.\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước\nƯu đãi miễn phí data truy cập ứng dụng TikTok, YouTube, MyTV Mobile không bao gồm lưu lượng sử dụng để truy cập các địa chỉ liên kết ngoài ứng dụng. Trên thực tế trong quá trình sử dụng ứng dụng, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Messenger, Google,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Kịch bản sử dụng nền tảng Cambridge\n- Bước 1: Khách hàng đăng ký gói cước thành công, nhận được License để kích hoạt quyền lợi.\n- Bước 2: Khàng hàng truy cập website/wapsite https://tienganh247.vn/ và đăng nhập tài khoản, sau đó kích hoạt License được cấp.\n- Bước 3: Khách hàng sử dụng các tính năng, nội dung để học tại website/wapsite https://tienganh247.vn/\n+ Đánh giá năng lực đầu vào;\n+ Học bài thông qua video;\n+ Tự luyện với chuỗi các bài tập chuyên sâu theo từng kỹ năng Nghe – Nói – Đọc – Viết;\n+ Thi thử;\n+ Xem thông tin kết quả học tập .\n6. Gói cước tự động gia hạn.\n7. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n8. Hủy gói cước:\n- Soạn tin: HUY SODA125 gửi 888.\n9. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-tcall7",
+      "slug": "goi-tcall7",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "TCALL7",
+      "shortDesc": "1GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "1GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Quyền lợi sử dụng nội dung dịch vụ Trustcall."
+      ],
+      "pricing": [
+        {
+          "name": "Gói TCALL7",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "TCALL7",
+              "24 Giờ",
+              "7.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 1GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Quyền lợi sử dụng nội dung dịch vụ Trustcall.\nSử dụng toàn bộ các tính năng trên ứng dụng TrustCall:\n+ Nhận diện cuộc gọi đến.\n+ Cho phép chặn cuộc gọi thủ công.\n+ Chặn cuộc gọi tự động, nâng cao.\n+ Tặng huy hiệu Premium cho thành viên.\n+ Đăng ký brandname cá nhân/ tổ chức để hiển thị thông tin trên cuộc gọi đi/đến.\n+ Cập nhật dữ liệu spam tự động.-Tra cứu thuê bao không giới hạn số lượt.\n+ Báo cáo thuê bao làm phiền.\n+ Đề xuất sửa thông tin thuê bao.\n+ Quản lý danh sách spam.\n+ Tắt quảng cáo, cảnh báo ai đã xem hồ sơ của tôi.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY TCALL7 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-th100",
+      "slug": "goi-th100",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "TH100",
+      "shortDesc": "8GB Data/30 ngày.",
+      "features": [
+        "8GB Data/30 ngày.",
+        "Data truy cập không giới hạn ứng dụng FPT Play, Galaxy Play, VieOn."
+      ],
+      "pricing": [
+        {
+          "name": "Gói TH100",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "TH100",
+              "30 Ngày",
+              "100.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 8GB Data (hết dung lượng dừng truy cập).\n- Data truy cập không giới hạn ứng dụng FPT Play, Galaxy Play, VieOn\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước, trả sau (bao gồm cả thuê bao EZCOM) đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Gói TH100 được đăng ký đồng thời với các gói cước khác (bao gồm gói chính, gói MASS khác,…).\n- Các gói cước trong dịch vụ Data IP Truyền hình không được đăng ký đồng thời với nhau.\n- Quyền lợi data trong gói có hiệu lực ngay khi đăng ký/gia hạn gói thành công và có hiệu lực theo thời hạn của gói cước mà khách hàng đăng ký.\n- Data trong quyền lợi gói nếu không sử dụng hết trong chu kỳ trước sẽ không được cộng dồn vào chu kỳ tiếp theo.\n- Trường hợp khách hàng chủ động hủy gói, hệ thống sẽ thực hiện hủy quyền lợi của gói.\n- Nếu khách hàng hủy/chuyển đổi gói cước thì số tiền gói đã trừ của khách hàng khi đăng ký sẽ không được hoàn trả hay khấu trừ cho bất kỳ phát sinh cước nào của thuê bao (nếu có).\n- Nếu tài khoản chính bị khóa thì khách hàng không sử dụng được các ưu đãi còn lại, khách hàng phải nạp tiền thì mới tiếp tục được sử dụng.\n- Nếu có thay đổi về chính sách giá cước thì các thuê bao vẫn được áp dụng chính sách cũ cho đến hết chu kỳ.\n- Nếu có thay đổi về chính sách nội dung trong gói thì có hiệu lực áp dụng tương ứng.\n- Trường hợp chuyển đổi hình thức thanh toán từ trả sau sang trả trước hoặc ngược lại thì các gói đã đăng ký trước thời điểm chuyển đổi đều không được bảo lưu (bị xóa) khi chuyển sang hình thức thanh toán mới.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY TH100 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-vcb120",
+      "slug": "goi-vcb120",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "VCB120",
+      "shortDesc": "1,5GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1,5GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Quyền lợi sử dụng nội dung dịch vụ VNPT Cloudbox."
+      ],
+      "pricing": [
+        {
+          "name": "Gói VCB120",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "VCB120",
+              "30 Ngày",
+              "120.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày.\n2. Ưu đãi gói cước:\n- 1,5GB Data/ngày (hết dung lượng dừng truy cập).\n- Quyền lợi sử dụng nội dung dịch vụ VNPT Cloudbox.\n01 license sử dụng 60GB lưu trữ VNPT Cloud Box.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY VCB120 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-vcb95",
+      "slug": "goi-vcb95",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "VCB95",
+      "shortDesc": "1GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Quyền lợi sử dụng nội dung dịch vụ VNPT Cloudbox."
+      ],
+      "pricing": [
+        {
+          "name": "Gói VCB95",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "VCB95",
+              "30 Ngày",
+              "95.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày\n2. Ưu đãi gói cước:\n- 1GB Data/ngày (hết dung lượng dừng truy cập).\n- Quyền lợi sử dụng nội dung dịch vụ VNPT Cloudbox.\n01 license sử dụng 40GB lưu trữ VNPT Cloud Box.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY VCB95 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-vita125",
+      "slug": "goi-vita125",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "VITA125",
+      "shortDesc": "3GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "3GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí data truy cập các ứng dụng Youtube, Tiktok, Facebook.",
+        "Quyền lợi sử dụng nội dung dịch vụ Gameasy."
+      ],
+      "pricing": [
+        {
+          "name": "Gói VITA125",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "VITA125",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày\n2. Ưu đãi gói cước:\n- 3GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí data truy cập các ứng dụng Youtube, Tiktok, Facebook.\n- Quyền lợi sử dụng nội dung dịch vụ Gameasy.\nTrải nghiệm chơi không giới hạn kho game đặc quyền Vip: Gameasy.vn và không quảng cáo.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Quy định sử dụng gói cước:\n- Ưu đãi miễn phí data truy cập ứng dụng Youtube, Tiktok, Facebook không bao gồm lưu lượng sử dụng để truy cập các địa chỉ liên kết ngoài ứng dụng. Trên thực tế trong quá trình sử dụng ứng dụng, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Messenger, Google,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n- Ưu đãi data Facebook không bao gồm lưu lượng data Gọi điện/Video Call qua ứng dụng Facebook Messenger.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY VITA125 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-vsign10",
+      "slug": "goi-vsign10",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "VSIGN10",
+      "shortDesc": "1,5GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "1,5GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Quyền lợi sử dụng nội dung dịch vụ Vsign."
+      ],
+      "pricing": [
+        {
+          "name": "Gói VSIGN10",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "VSIGN10",
+              "7 Ngày",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 7 ngày.\n2. Ưu đãi gói cước:\n- 1,5GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Quyền lợi sử dụng nội dung dịch vụ Vsign.\nChữ ký cuộc gọi (VSIGN) giúp các thuê bao VinaPhone gửi các thông điệp do thuê bao tự biên soạn (chữ ký cuộc gọi) lên màn hình điện thoại của người gọi đến hoặc người nhận cuộc gọi từ thuê bao.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY VSIGN10 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-vsign3",
+      "slug": "goi-vsign3",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "VSIGN3",
+      "shortDesc": "300MB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "300MB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Quyền lợi sử dụng nội dung dịch vụ Vsign."
+      ],
+      "pricing": [
+        {
+          "name": "Gói VSIGN3",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "VSIGN3",
+              "24 Giờ",
+              "3.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 300MB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Quyền lợi sử dụng nội dung dịch vụ Vsign.\nChữ ký cuộc gọi (VSIGN) giúp các thuê bao VinaPhone gửi các thông điệp do thuê bao tự biên soạn (chữ ký cuộc gọi) lên màn hình điện thoại của người gọi đến hoặc người nhận cuộc gọi từ thuê bao.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY VSIGN3 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-wcall20",
+      "slug": "goi-wcall20",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "WCALL20",
+      "shortDesc": "1,5GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "1,5GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Quyền lợi sử dụng nội dung dịch vụ Whocall."
+      ],
+      "pricing": [
+        {
+          "name": "Gói WCALL20",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "WCALL20",
+              "7 Ngày",
+              "20.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 7 ngày.\n2. Ưu đãi gói cước:\n- 1,5GB Data(hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Quyền lợi sử dụng nội dung dịch vụ Whocall.\nKhách hàng tải ứng dụng tại http://whocall.vn, sau đó đăng nhập và sử dụng các tính năng trong ứng dụng của whocall như:\n- Nhận diện người gọi đến có phải là cuộc gọi spam không? Nếu màu Đỏ là cuộc gọi có thể làm phiền, người dùng có quyền lựa chọn nhấc máy hoặc không.\n- Chặn người gọi đến theo nhiều lựa chọn khác nhau trong ứng dụng như:\n+ Chặn theo danh sách báo spam mà hệ thống Whocall đã thu thập.\n+ Chặn theo danh sách người dùng mong muốn.\n+ Chặn các số nằm ngoài danh bạ của người dùng.\n+ Chặn theo mã vùng quốc gia.\n+ Chặn tin nhắn theo tên hoặc số điện thoại\n- Gửi báo cáo đến hệ thống whocall thuê bao gọi đến có phải spam không.\n- Tra cứu thuê bao xem thuê bao nào đó có phải là spam hay không (nếu hệ thống hiển thị màu đỏ: có thể là spam).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY WCALL20 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-wcall4",
+      "slug": "goi-wcall4",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "WCALL4",
+      "shortDesc": "300MB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "300MB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Quyền lợi sử dụng nội dung dịch vụ Whocall."
+      ],
+      "pricing": [
+        {
+          "name": "Gói WCALL4",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "WCALL4",
+              "24 Giờ",
+              "4.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 300MB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Quyền lợi sử dụng nội dung dịch vụ Whocall.\nKhách hàng tải ứng dụng tại http://whocall.vn, sau đó đăng nhập và sử dụng các\ntính năng trong ứng dụng của whocall như:\n- Nhận diện người gọi đến có phải là cuộc gọi spam không? Nếu màu Đỏ là cuộc gọi có thể làm phiền, người dùng có quyền lựa chọn nhấc máy hoặc không.\n- Chặn người gọi đến theo nhiều lựa chọn khác nhau trong ứng dụng như:\n+ Chặn theo danh sách báo spam mà hệ thống Whocall đã thu thập.\n+ Chặn theo danh sách người dùng mong muốn.\n+ Chặn các số nằm ngoài danh bạ của người dùng.\n+ Chặn theo mã vùng quốc gia.\n+ Chặn tin nhắn theo tên hoặc số điện thoại.\n- Gửi báo cáo đến hệ thống whocall thuê bao gọi đến có phải spam không.\n- Tra cứu thuê bao xem thuê bao nào đó có phải là spam hay không (nếu hệ thống\nhiển thị màu đỏ: có thể là spam).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước được đăng ký đồng thời với các gói DATA/COMBO khác.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY WCALL4 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-5g30",
+      "slug": "goi-5g30",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "5G30",
+      "shortDesc": "7GB Data/ngày trong 03 ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "7GB Data/ngày trong 03 ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí data truy cập ứng dụng Tiktok.",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói 5G30",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "5G30",
+              "3 Ngày",
+              "30.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 03 ngày.\n2. Ưu đãi gói cước:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí data truy cập ứng dụng Tiktok.\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV và kho nội dung phim truyện, VOD giải trí với hàng nghìn video Full HD thuộc các thể loại (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Facebook, Google,… trong các thao tác đăng nhập, chọn nhạc,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra ưu đãi còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY 5G30 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-5g70",
+      "slug": "goi-5g70",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "5G70",
+      "shortDesc": "8GB Data/ngày trong 07 ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "8GB Data/ngày trong 07 ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí data truy cập ứng dụng Tiktok.",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói 5G70",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "5G70",
+              "7 Ngày",
+              "70.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 07 ngày.\n2. Ưu đãi gói cước:\n- 8GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí data truy cập ứng dụng Tiktok.\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV và kho nội dung phim truyện, VOD giải trí với hàng nghìn video Full HD thuộc các thể loại (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Facebook, Google,… trong các thao tác đăng nhập, chọn nhạc,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra ưu đãi còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY 5G70 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-5g150",
+      "slug": "goi-5g150",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "5G150",
+      "shortDesc": "7GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "7GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí data truy cập ứng dụng Tiktok, YouTube và Facebook.",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói 5G150",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "5G150",
+              "30 Ngày",
+              "150.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí data truy cập các ứng dụng TikTok, YouTube và Facebook.\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV và kho nội dung phim truyện, VOD giải trí với hàng nghìn video Full HD thuộc các thể loại (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Facebook, Google,… trong các thao tác đăng nhập, chọn nhạc,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này\n- Ưu đãi data Facebook không bao gồm lưu lượng data Gọi điện/Video Call qua ứng dụng Facebook Messenger.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY 5G150 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-h6",
+      "slug": "goi-h6",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "H6",
+      "shortDesc": "6GB Data/06 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "6GB Data/06 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Miễn phí data truy cập ứng dụng TikTok."
+      ],
+      "pricing": [
+        {
+          "name": "Gói H6",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "H6",
+              "6 Giờ",
+              "6.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 06 giờ.\n2. Ưu đãi gói cước:\n- 6GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Miễn phí data truy cập ứng dụng TikTok.\n- Ưu đãi miễn phí data truy cập ứng dụng TikTok không bao gồm lưu lượng sử dụng để truy cập các địa chỉ liên kết ngoài ứng dụng. Trên thực tế trong quá trình sử dụng ứng dụng TikTok, người dùng có khả năng phát sinh lưu lượng Data của một số bên thứ ba như Apple, Messenger, Google,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước được khởi tạo theo bộ SIM GIOITRE (không bao gồm thuê bao ezCom).\n4. Gói cước không tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY H6 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-d20",
+      "slug": "goi-d20",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "D20",
+      "shortDesc": "25GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "25GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Miễn phí data truy cập ứng dụng MyTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói D20",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "D20",
+              "1 Ngày",
+              "20.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 25GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Miễn phí data truy cập ứng dụng MyTV (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY D20 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-d6v",
+      "slug": "goi-d6v",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "D6V",
+      "shortDesc": "2GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "2GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9."
+      ],
+      "pricing": [
+        {
+          "name": "Gói D6V",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "D6V",
+              "1 Ngày",
+              "6.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1.Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 2GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9 (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Thuê bao đang có gói D6V được đăng ký đồng thời tất cả các gói (ngoại trừ các gói thuộc hệ sinh thái, gói MyTV).\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY D6V gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-d6sc",
+      "slug": "goi-d6sc",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "D6SC",
+      "shortDesc": "2GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+      "features": [
+        "2GB Data/24 giờ (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói D6SC",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "D6SC",
+              "1 Ngày",
+              "6.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 2GB Data (hết dung lượng truy cập theo gói Data đang có hoặc dừng truy cập nếu không có gói).\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV và kho nội dung phim truyện, VOD giải trí với hàng nghìn video Full HD thuộc các thể loại (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n4. Gói cước tự động gia hạn.\n5. Cách kiểm tra ưu đãi còn lại của gói cước\n- Cú pháp tra cứu: DATAKM gửi 888.\n6. Cách hủy gói cước.\n- Cú pháp hủy: HUY D6SC gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-dt40sc",
+      "slug": "goi-dt40sc",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "DT40SC",
+      "shortDesc": "10GB Data/07 ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "10GB Data/07 ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói DT40SC",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "DT40SC",
+              "7 Ngày",
+              "40.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 07 ngày.\n2. Ưu đãi gói cước:\n- 10GB Data/07 ngày (24 giờ x 7 ngày) (hết dung lượng dừng truy cập).\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV và kho nội dung phim truyện, VOD giải trí với hàng nghìn video Full HD thuộc các thể loại (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY DT40SC gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-vnc155",
+      "slug": "goi-vnc155",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "VNC155",
+      "shortDesc": "7 GB Data/ngày (Hết lưu lượng dừng truy cập)",
+      "features": [
+        "7 GB Data/ngày (Hết lưu lượng dừng truy cập)",
+        "Quyền lợi sử dụng 50 GB lưu trữ trên ứng dụng VinaCloud"
+      ],
+      "pricing": [
+        {
+          "name": "Gói VNC155",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "VNC155",
+              "30 Ngày",
+              "155.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Ưu đãi gói cước\n- 7 GB Data/ngày (Hết lưu lượng dừng truy cập)\n- Quyền lợi sử dụng 50 GB lưu trữ trên ứng dụng VinaCloud: là một dịch vụ lưu trữ và chia sẻ tệp trên đám mây, cung cấp khả năng truy cập dễ dàng để chia sẻ và cộng tác từ mọi nơi, mọi lúc\n2. Điều kiện đăng ký gói cước\n- Thuê bao Vinaphone trả trước kích hoạt mới trong vòng 30 ngày kể từ ngày kích hoạt thành công.\n- Thuê bao di động VinaPhone trả trước hoạt động 2 chiều theo danh sách.\n3. Gia hạn gói cước\n- Gói cước tự động gia hạn\n4. Cách kiểm tra các ưu đãi còn lại của gói cước\n- Cú pháp tra cứu: DATA gửi 888\n5. Cách hủy gói cước\n- Cú pháp hủy: HUY VNC155 gửi 888\n6. Quy định sử dụng gói cước\n- Quyền lợi sử dụng tính năng lưu trữ trên ứng dụng VinaCloud được tính ngay khi đăng ký/gia hạn gói cước thành công (không miễn cước Data sử dụng ứng dụng) và bị hủy ngay khi hủy gói. Dữ liệu của Quý khách được lưu trữ trong vòng 90 ngày sau khi hủy gói.\n- Các gói cước dịch vụ VinaCloud không được đăng ký đồng thời với nhau\n7. Link tải ứng dụng\n- Link tải trên App Store: BẤM VÀO ĐÂY\n- Link tải trên Google Play: BẤM VÀO ĐÂY\n8. Tổng đài hỗ trợ về dịch vụ di động\n- Để được hỗ trợ về dịch vụ di động, Quý khách vui lòng liên hệ 1800 1091 (miễn phí)",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-yolo35",
+      "slug": "goi-yolo35",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "YOLO35",
+      "shortDesc": "1GB Data/ngày trong 15 ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1GB Data/ngày trong 15 ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí data truy cập ứng dụng MyTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói YOLO35",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "YOLO35",
+              "15 Ngày",
+              "35.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 15 ngày.\n2. Ưu đãi gói cước:\n- 1GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí data truy cập ứng dụng MyTV (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATAKM gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY YOLO35 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-yolo100m",
+      "slug": "goi-yolo100m",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "YOLO100M",
+      "shortDesc": "1GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí data truy cập ứng dụng Facebook, YouTube, Tiktok, MyTV.",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9."
+      ],
+      "pricing": [
+        {
+          "name": "Gói YOLO100M",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "YOLO100M",
+              "30 Ngày",
+              "100.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 1GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí data truy cập ứng dụng Facebook, YouTube, Tiktok, MyTV.\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9 (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng (không bao gồm thuê bao ezCom).\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng (không bao gồm thuê bao ezCom).\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước\n- Ưu đãi miễn phí data truy cập ứng dụng TikTok, YouTube, Facebook, MyTV Mobile không bao gồm lưu lượng sử dụng để truy cập các địa chỉ liên kết ngoài ứng dụng. Trên thực tế trong quá trình sử dụng ứng dụng, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Messenger, Google,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n- Ưu đãi data Facebook không bao gồm lưu lượng data Gọi điện/Video Call qua ứng dụng Facebook Messenger.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY YOLO100M gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-yolo90",
+      "slug": "goi-yolo90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "YOLO90",
+      "shortDesc": "1,5GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1,5GB Data/ngày (hết dung lượng dừng truy cập)."
+      ],
+      "pricing": [
+        {
+          "name": "Gói YOLO90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "YOLO90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 1,5GB Data/ngày (hết dung lượng dừng truy cập).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng (không bao gồm thuê bao ezCom).\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng (không bao gồm thuê bao ezCom).\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY YOLO90 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-yolo100sc",
+      "slug": "goi-yolo100sc",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "YOLO100SC",
+      "shortDesc": "1GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí data truy cập các ứng dụng TikTok, YouTube và Facebook.",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV."
+      ],
+      "pricing": [
+        {
+          "name": "Gói YOLO100SC",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "YOLO100SC",
+              "30 Ngày",
+              "100.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 1GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí data truy cập các ứng dụng TikTok, YouTube và Facebook.\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh SCTV và kho nội dung phim truyện, VOD giải trí với hàng nghìn video Full HD thuộc các thể loại (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Facebook, Google,… trong các thao tác đăng nhập, chọn nhạc,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n- Ưu đãi data Facebook không bao gồm lưu lượng data Gọi điện/Video Call qua ứng dụng Facebook Messenger.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY YOLO100SC gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-yolo125v",
+      "slug": "goi-yolo125v",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "YOLO125V",
+      "shortDesc": "7GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "7GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9.",
+        "Tài khoản sử dụng nội dung dịch vụ Reavol."
+      ],
+      "pricing": [
+        {
+          "name": "Gói YOLO125V",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "YOLO125V",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Miễn phí xem truyền hình MyTV Mobile bao gồm chùm kênh VTVcab, ngoại trừ chùm kênh VTV2-VTV9 (tải ứng dụng tại https://mytv.com.vn/tai-ve ).\n- Tài khoản sử dụng nội dung dịch vụ Reavol.\nReavol là thư viện sách tóm tắt hàng đầu Việt Nam giúp người dùng có thể tiết kiệm 80% thời gian so với việc đọc một cuốn sách thông thường. Ứng dụng phát triển với hàm lượng công nghệ cao, dựa trên việc phát triển công nghệ AI để số hóa sách giúp cho người dùng thuận tiện hơn trong việc lưu trữ văn bản từ sách giấy lên ứng dụng số.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng dịch vụ nội dung đọc sách Reavol trong gói:\n- Tài khoản sử dụng dịch vụ Reavol được cung cấp cho TB khi đăng ký thành công gói cước. KH truy cập ứng dụng Reavol để kích hoạt tài khoản.\n- Tài khoản được tiếp tục cộng thời hạn sử dụng ngay khi gia hạn gói thành công (KH không cần kích hoạt lại).\n- Trong chu kỳ có gói cước, nếu KH hủy/chuyển đổi gói cước thì quyền lợi nội dung Reavol của gói cước sẽ không được bảo lưu.\n- Ưu đãi về nội dung Reavol vẫn sẽ được giữ nguyên khi chuyển đổi giữa các gói YOLO125V các chu kỳ.\n- Hướng dẫn kích hoạt dịch vụ:\nLicense sử dụng Reavol được cung cấp cho Thuê bao khi đăng ký thành công gói cước, Khách hàng truy cập ứng dụng Reavol để kích hoạt license. License được tiếp tục cộng thời hạn sử dụng ngay khi gia hạn gói thành công (Khách hàng không cần kích hoạt lại).\n+ Bước 1: Khách hàng đăng nhập vào Website (desktop)/Application Reavol sau khi đăng ký gói thành công và nhận được mã license kích hoạt dịch vụ;\n+ Bước 2: Khách hàng click vào biểu tượng chiếc khóa góc trên màn hình và làm theo hướng dẫn để kích hoạt license;\n+ Bước 3: Khách hàng được cấp quyền lợi gói và sử dụng Reavol; Khách hàng có thể xem thông tin chi tiết về gói cước được cấp, ngày được cấp ở mục thông tin cá nhân.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY YOLO125V gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-yolo125g",
+      "slug": "goi-yolo125g",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "YOLO125G",
+      "shortDesc": "7GB Data/ngày trong 30 ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "7GB Data/ngày trong 30 ngày (hết dung lượng dừng truy cập).",
+        "Chơi không giới hạn kho game cung cấp trên website/wapsite: gameasy.vn .",
+        "Nhận 10.000 xu vào tài khoản game để chơi các game trên website/wapsite: ontgame.vn .",
+        "Miễn phí data truy cập game Liên Quân Mobile, Freefire, FC Online."
+      ],
+      "pricing": [
+        {
+          "name": "Gói YOLO125G",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "YOLO125G",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước/trả sau).\n2. Ưu đãi gói cước:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Chơi không giới hạn kho game cung cấp trên website/wapsite: gameasy.vn .\n- Nhận 10.000 xu vào tài khoản game để chơi các game trên website/wapsite: ontgame.vn .\n- Miễn phí data truy cập game Liên Quân Mobile, Freefire, FC Online.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY YOLO125G gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-vie125",
+      "slug": "goi-vie125",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "VIE125",
+      "shortDesc": "7GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "7GB Data/ngày (hết dung lượng dừng truy cập).",
+        "Tặng 1 tài khoản VieON Telco 3 sử dụng xem nội dung trên ứng dụng VieON kèm các quyền lợi đặc biệt khác theo từng thời điểm."
+      ],
+      "pricing": [
+        {
+          "name": "Gói VIE125",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "VIE125",
+              "30 Ngày",
+              "125.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 90 ngày.\n2. Ưu đãi gói cước trong mỗi 30 ngày:\n- 7GB Data/ngày (hết dung lượng dừng truy cập).\n- Tặng 1 tài khoản VieON Telco 3 sử dụng xem nội dung trên ứng dụng VieON:\n+ Toàn bộ kênh truyền hình VieON thuộc gói VIP.\n+ Toàn bộ nội dung VOD VIP.\n+ Toàn bộ nội dung Gameshow VieON.\n+ Tương đương nội dung gói VieON VIP.\n+ Kèm các quyền lợi đặc biệt khác theo từng thời điểm (bình chọn các chương trình do VieON sản xuất…).\n+ Link tải ứng dụng: https://vieon.vn/download-app/\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước hòa mạng mới đăng ký gói trong vòng 30 ngày kể từ ngày hòa mạng.\n- Thuê bao trả trước đang hoạt động 2 chiều đăng ký gói theo điều kiện tiêu dùng.\n4. Gói cước gia hạn tự động.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY 3VIE125 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-game10",
+      "slug": "goi-game10",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "GAME10",
+      "shortDesc": "7 GB Data/24 giờ (hết dung lượng dừng truy cập).",
+      "features": [
+        "7 GB Data/24 giờ (hết dung lượng dừng truy cập).",
+        "Chơi không giới hạn kho game cung cấp trên website/wapsite: gameasy.vn.",
+        "Nhận 1.000 xu vào tài khoản game để chơi các game trên website/wapsite: ontgame.vn ."
+      ],
+      "pricing": [
+        {
+          "name": "Gói GAME10",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "GAME10",
+              "1 Ngày",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 24 giờ.\n2. Ưu đãi gói cước:\n- 7GB Data (hết dung lượng dừng truy cập).\n- Chơi không giới hạn kho game cung cấp trên website/wapsite: gameasy.vn .\n- Nhận 1.000 xu vào tài khoản game để chơi các game trên website/wapsite: ontgame.vn . Trong đó:\n+ Khách hàng đăng ký thành công tài khoản chơi game lần đầu tiên sẽ được tặng thêm 1.000 Xu cho người chơi mới.\n+ Xu là vật phẩm chỉ sử dụng để chơi game, không có giá trị quy đổi ngược lại thành tiền, thẻ thanh toán, phiếu thưởng hoặc các hiện vật có giá trị giao dịch bên ngoài trò chơi. Hình thức và nội dung quyền lợi khách hàng được hưởng trong game theo chính sách của nhà phát hành. Quyền lợi khách hàng được hưởng trong game có thể được thay đổi tùy theo chính sách của nhà phát hành.\n3. Đối tượng sử dụng:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều (không bao gồm thuê bao ezCom).\n4. Quy định sử dụng gói cước:\n- Gói GAME10 không đăng ký đồng thời với các gói cước khác của dịch vụ Gameasy, Cloudgaming và các gói YOLO125G.\n- Gói GAME10 được đăng ký đồng thời với các gói cước viễn thông (data, thoại, SMS) cơ bản khác.\n- Quyền lợi chơi game trên website/wapsite dịch vụ được tính ngay khi thuê bao khách hàng đăng ký/gia hạn gói cước thành công.\n- Không miễn cước Data chơi game trên website/wapsite dịch vụ.\n5. Gói cước tự động gia hạn.\n6. Cách kiểm tra các ưu đãi còn lại của gói cước\n- Cú pháp tra cứu: DATAKM gửi 888.\n7. Hủy gói cước:\n- Cú pháp hủy: HUY GAME10 gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-fb10a",
+      "slug": "goi-fb10a",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "FB10A",
+      "shortDesc": "Data truy cập không giới hạn ứng dụng Facebook và sử dụng tính năng nhắn tin/gửi tệp qua ứng dụng Facebook Messenger trong 30 ngày.",
+      "features": [
+        "Data truy cập không giới hạn ứng dụng Facebook và sử dụng tính năng nhắn tin/gửi tệp qua ứng dụng Facebook Messenger trong 30 ngày."
+      ],
+      "pricing": [
+        {
+          "name": "Gói FB10A",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "FB10A",
+              "30 Ngày",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước/trả sau).\n2. Ưu đãi gói cước:\n- Data truy cập không giới hạn ứng dụng Facebook và sử dụng tính năng nhắn tin/gửi tệp qua ứng dụng Facebook Messenger (không bao gồm lưu lượng data Gọi điện/Video call qua ứng dụng Facebook Messenger. Sử dụng các tính năng này sẽ phát sinh cước phí).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước chỉ đăng ký được khi thuê bao đang có gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Google,… trong các thao tác đăng nhập, các hoạt động tương tác,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n- Ưu đãi data Facebook không bao gồm lưu lượng data Gọi điện/Video Call qua ứng dụng Facebook Messenger.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\nSoạn tin: HUY FB10A gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-tk10a",
+      "slug": "goi-tk10a",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "TK10A",
+      "shortDesc": "Data truy cập không giới hạn ứng dụng Tiktok trong 30 ngày.",
+      "features": [
+        "Data truy cập không giới hạn ứng dụng Tiktok trong 30 ngày."
+      ],
+      "pricing": [
+        {
+          "name": "Gói TK10A",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "TK10A",
+              "30 Ngày",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước/trả sau).\n2. Ưu đãi gói cước:\n- Data truy cập không giới hạn ứng dụng Tiktok.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước chỉ đăng ký được khi thuê bao đang có gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Google,… trong các thao tác đăng nhập, các hoạt động tương tác,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY TK10A gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-yt10a",
+      "slug": "goi-yt10a",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "YT10A",
+      "shortDesc": "Data truy cập không giới hạn ứng dụng YouTube trong 30 ngày.",
+      "features": [
+        "Data truy cập không giới hạn ứng dụng YouTube trong 30 ngày."
+      ],
+      "pricing": [
+        {
+          "name": "Gói YT10A",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "YT10A",
+              "30 Ngày",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước/trả sau).\n2. Ưu đãi gói cước:\n- Data truy cập không giới hạn ứng dụng YouTube.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước chỉ đăng ký được khi thuê bao đang có gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng Data của một số bên thứ ba như Apple, Google,… trong các thao tác đăng nhập, các hoạt động tương tác,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY YT10A gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-lq10a",
+      "slug": "goi-lq10a",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "LQ10A",
+      "shortDesc": "Data truy cập không giới hạn ứng dụng Liên quân Mobile trong 30 ngày.",
+      "features": [
+        "Data truy cập không giới hạn ứng dụng Liên quân Mobile trong 30 ngày."
+      ],
+      "pricing": [
+        {
+          "name": "Gói LQ10A",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "LQ10A",
+              "30 Ngày",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước/trả sau).\n2. Ưu đãi gói cước:\n- Data truy cập không giới hạn ứng dụng Liên Quân Mobile.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước chỉ đăng ký được khi thuê bao đang có gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng data của một số bên thứ ba như Apple, Google,… trong các thao tác đăng nhập, các hoạt động tương tác,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY LQ10A gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-fr10a",
+      "slug": "goi-fr10a",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "FR10A",
+      "shortDesc": "Data truy cập không giới hạn ứng dụng Freefire trong 30 ngày.",
+      "features": [
+        "Data truy cập không giới hạn ứng dụng Freefire trong 30 ngày."
+      ],
+      "pricing": [
+        {
+          "name": "Gói FR10A",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "FR10A",
+              "30 Ngày",
+              "10.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước/trả sau).\n2. Ưu đãi gói cước:\n- Data truy cập không giới hạn ứng dụng Freefire.\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều.\n- Gói cước chỉ đăng ký được khi thuê bao đang có gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Quy định sử dụng gói cước:\n- Trên thực tế trong quá trình sử dụng ứng dụng nêu trên, người dùng có khả năng phát sinh lưu lượng Data của một số bên thứ ba như Apple, Google,… trong các thao tác đăng nhập, các hoạt động tương tác,… Do đó, thuê bao vẫn có khả năng phát sinh cước data cho các lưu lượng truy cập này.\n5. Gói cước tự động gia hạn.\n6. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n7. Hủy gói cước:\n- Soạn tin: HUY FR10A gửi 888.\n8. Tổng đài hỗ trợ khách hàng: 18001091(miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-big90",
+      "slug": "goi-big90",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "BIG90",
+      "shortDesc": "1GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "1GB Data/ngày (hết dung lượng dừng truy cập)."
+      ],
+      "pricing": [
+        {
+          "name": "Gói BIG90",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "BIG90",
+              "30 Ngày",
+              "90.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 1GB Data/ngày (hết dung lượng dừng truy cập).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều (không bao gồm thuê bao ezCom).\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY BIG90 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-big120",
+      "slug": "goi-big120",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "BIG120",
+      "shortDesc": "2GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "2GB Data/ngày (hết dung lượng dừng truy cập)."
+      ],
+      "pricing": [
+        {
+          "name": "Gói BIG120",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "BIG120",
+              "30 Ngày",
+              "120.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 2GB Data/ngày (hết dung lượng dừng truy cập).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều (không bao gồm thuê bao ezCom).\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Gói cước tự động gia hạn.\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY BIG120 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    },
+    {
+      "id": "digishop-data-big200",
+      "slug": "goi-big200",
+      "sourceId": "digishop",
+      "category": "Gói data di động",
+      "title": "BIG200",
+      "shortDesc": "4GB Data/ngày (hết dung lượng dừng truy cập).",
+      "features": [
+        "4GB Data/ngày (hết dung lượng dừng truy cập)."
+      ],
+      "pricing": [
+        {
+          "name": "Gói BIG200",
+          "columns": [
+            "Gói cước",
+            "Chu kỳ",
+            "Giá"
+          ],
+          "rows": [
+            [
+              "BIG200",
+              "30 Ngày",
+              "200.000đ"
+            ]
+          ]
+        }
+      ],
+      "images": [],
+      "bodyText": "1. Chu kỳ gói cước: 30 ngày (đối với TB trả trước)/01 tháng (đối với TB trả sau).\n2. Ưu đãi gói cước:\n- 4GB Data/ngày (hết dung lượng dừng truy cập).\n3. Điều kiện đăng ký gói cước:\n- Thuê bao trả trước/trả sau đang hoạt động 2 chiều (không bao gồm thuê bao ezCom).\n- Gói cước không đăng ký đồng thời với các gói DATA/COMBO chu kỳ từ 30 ngày/01 tháng trở lên.\n4. Gói cước tự động gia hạn:\n5. Kiểm tra dung lượng còn lại của gói cước:\n- Soạn tin: DATA gửi 888.\n6. Hủy gói cước:\n- Soạn tin: HUY BIG200 gửi 888.\n7. Tổng đài hỗ trợ khách hàng: 18001091 (miễn phí).",
+      "sourceUrl": "https://digishop.vnpt.vn/di-dong?tab=c333"
+    }
+  ],
   "articles": [
     {
       "id": "digishop-giai-dap-5-cau-hoi-ve-goi-cuoc-mytv-vnpt",

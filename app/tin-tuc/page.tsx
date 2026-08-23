@@ -1,33 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Bell,
-  Cpu,
-  Gift,
-  Layers,
-  Megaphone,
-  Newspaper,
-  Package,
-  PartyPopper,
-  Search,
-  Workflow,
-} from "lucide-react";
+import { Bell, Layers, Megaphone, Newspaper, Search } from "lucide-react";
 import Breadcrumb from "@/components/layout/Breadcrumb";
 import { getAllArticles } from "@/lib/data";
 import type { Article } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tin tức — VNPT Nam Sài Gòn" };
 
+// Trang tin tức chỉ phục vụ 2 nhóm nội dung: tin về VNPT và bài tư vấn dịch vụ.
 const DANH_MUC = [
-  { icon: Layers, label: "Tất cả tin tức" },
-  { icon: Newspaper, label: "Tin tức VNPT" },
-  { icon: Package, label: "Sản phẩm - Dịch vụ" },
-  { icon: Cpu, label: "Công nghệ" },
-  { icon: Workflow, label: "Chuyển đổi số" },
-  { icon: PartyPopper, label: "Sự kiện" },
-  { icon: Gift, label: "Khuyến mãi" },
-  { icon: Megaphone, label: "Hướng dẫn sử dụng" },
+  { icon: Newspaper, label: "Tin VNPT" },
+  { icon: Megaphone, label: "Tư vấn" },
 ];
 
 function excerpt(bodyText: string, len = 130): string {
@@ -112,7 +96,7 @@ export default function TinTucPage() {
               variant="light"
               items={[{ label: "Trang chủ", href: "/" }, { label: "Tin tức" }]}
             />
-            <h1 className="mt-3 text-3xl font-extrabold">TIN TỨC</h1>
+            <h1 className="mt-3">TIN TỨC</h1>
             <p className="mt-2 text-white/85">
               Cập nhật thông tin mới nhất từ VNPT và các giải pháp công nghệ.
             </p>
@@ -122,7 +106,7 @@ export default function TinTucPage() {
                 placeholder="Nhập từ khóa cần tìm..."
                 className="w-full bg-white px-4 py-2.5 text-sm text-slate-800 outline-none placeholder:text-slate-400"
               />
-              <button type="submit" className="flex items-center justify-center bg-vnpt-accent px-4 hover:bg-orange-600">
+              <button type="submit" className="flex items-center justify-center bg-vnpt text-white px-4 hover:bg-vnpt-dark">
                 <Search size={18} />
               </button>
             </form>
@@ -130,7 +114,7 @@ export default function TinTucPage() {
             <div className="mt-6 grid grid-cols-3 gap-4">
               {[
                 { icon: Newspaper, value: `${articles.length}+`, label: "Bài viết" },
-                { icon: Layers, value: `${DANH_MUC.length - 1}`, label: "Chuyên mục" },
+                { icon: Layers, value: `${DANH_MUC.length}`, label: "Chuyên mục" },
                 { icon: Bell, value: "Hằng ngày", label: "Cập nhật tin mới" },
               ].map((s) => (
                 <div key={s.label} className="flex items-center gap-2">
@@ -225,29 +209,6 @@ export default function TinTucPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-vnpt p-5 text-white">
-            <div className="flex items-center gap-2 font-semibold">
-              <Bell size={18} /> ĐĂNG KÝ NHẬN TIN
-            </div>
-            <p className="mt-2 text-sm text-white/80">
-              Nhận thông tin, chương trình khuyến mãi mới nhất từ VNPT Nam Sài Gòn.
-            </p>
-            <form className="mt-3 space-y-2">
-              <input
-                type="email"
-                required
-                placeholder="Nhập email của bạn..."
-                className="w-full rounded-md px-3 py-2 text-sm text-slate-800 outline-none"
-              />
-              <button
-                type="submit"
-                className="w-full rounded-md bg-vnpt-accent py-2 text-sm font-semibold hover:bg-orange-600"
-              >
-                ĐĂNG KÝ NGAY
-              </button>
-            </form>
-            <p className="mt-2 text-xs text-white/60">Chúng tôi cam kết bảo mật thông tin của bạn.</p>
-          </div>
         </aside>
       </section>
     </div>

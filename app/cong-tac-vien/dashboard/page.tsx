@@ -202,7 +202,7 @@ export default function CtvDashboardPage() {
             </div>
             <Link
               href="/cong-tac-vien/dashboard/link-gioi-thieu"
-              className="mt-4 rounded-md bg-vnpt-accent px-3 py-2 text-center text-xs font-semibold hover:bg-orange-600"
+              className="mt-4 rounded-md bg-white text-vnpt-dark px-3 py-2 text-center text-xs font-semibold hover:bg-slate-100"
             >
               TẠO LINK NGAY
             </Link>

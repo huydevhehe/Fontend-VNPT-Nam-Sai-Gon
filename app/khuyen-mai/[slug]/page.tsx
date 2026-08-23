@@ -83,7 +83,7 @@ export default async function PromotionDetailPage({
               <span className="inline-block rounded-md bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
                 {promo.badge}
               </span>
-              <h1 className="mt-3 text-3xl font-extrabold uppercase leading-tight">
+              <h1 className="mt-3 uppercase leading-tight">
                 {promo.title}
               </h1>
               <p className="mt-2 text-white/85">{promo.subtitle}</p>

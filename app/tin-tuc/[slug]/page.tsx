@@ -77,7 +77,7 @@ export default async function ArticleDetailPage({
               {article.category}
             </span>
           )}
-          <h1 className="mt-3 text-2xl font-extrabold leading-tight text-slate-800 md:text-3xl">
+          <h1 className="mt-3 leading-tight text-slate-800">
             {article.title}
           </h1>
 

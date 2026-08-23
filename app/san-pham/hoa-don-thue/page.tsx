@@ -164,7 +164,7 @@ export default function HoaDonThuePage() {
               <span className="inline-block rounded-full bg-emerald-500 px-4 py-1 text-xs font-bold tracking-wide">
                 HÓA ĐƠN - THUẾ
               </span>
-              <h1 className="mt-4 text-3xl font-extrabold leading-tight md:text-4xl">
+              <h1 className="mt-4 leading-tight">
                 HÓA ĐƠN ĐIỆN TỬ VNPT INVOICE
               </h1>
               <p className="mt-1 text-2xl font-bold text-emerald-400">
@@ -218,7 +218,7 @@ export default function HoaDonThuePage() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         {/* BỘ GIẢI PHÁP */}
         <section>
-          <h2 className="text-xl font-bold text-slate-800">
+          <h2 className="text-slate-800">
             BỘ GIẢI PHÁP HÓA ĐƠN - THUẾ TOÀN DIỆN
           </h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -249,7 +249,7 @@ export default function HoaDonThuePage() {
         {/* DANH CHO AI + VI SAO CHON */}
         <section className="mt-14 grid gap-8 lg:grid-cols-2">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">DÀNH CHO AI?</h2>
+            <h2 className="text-slate-800">DÀNH CHO AI?</h2>
             <div className="mt-6 grid grid-cols-2 gap-4">
               {DANH_CHO_AI.map((d) => (
                 <div
@@ -269,7 +269,7 @@ export default function HoaDonThuePage() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-slate-800">VÌ SAO CHỌN VNPT INVOICE?</h2>
+            <h2 className="text-slate-800">VÌ SAO CHỌN VNPT INVOICE?</h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-[1fr_260px]">
               <ul className="space-y-3">
                 {VI_SAO_CHON.map((v) => (
@@ -300,7 +300,7 @@ export default function HoaDonThuePage() {
 
         {/* DUNG DE LAM GI */}
         <section className="mt-14">
-          <h2 className="text-xl font-bold text-slate-800">DÙNG ĐỂ LÀM GÌ?</h2>
+          <h2 className="text-slate-800">DÙNG ĐỂ LÀM GÌ?</h2>
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
             {DUNG_DE_LAM_GI.map((d) => (
               <div
@@ -317,7 +317,7 @@ export default function HoaDonThuePage() {
         {/* BANG GIA */}
         {vnptInvoice && vnptInvoice.pricing.length > 0 && (
           <section id="bang-gia" className="mt-14 scroll-mt-24">
-            <h2 className="text-xl font-bold text-slate-800">BẢNG GIÁ DỊCH VỤ VNPT INVOICE</h2>
+            <h2 className="text-slate-800">BẢNG GIÁ DỊCH VỤ VNPT INVOICE</h2>
             <div className="mt-6">
               <PricingTable pricing={vnptInvoice.pricing} />
             </div>
@@ -327,7 +327,7 @@ export default function HoaDonThuePage() {
 
         {/* QUY TRINH */}
         <section className="mt-14">
-          <h2 className="text-xl font-bold text-slate-800">QUY TRÌNH ĐĂNG KÝ & TRIỂN KHAI</h2>
+          <h2 className="text-slate-800">QUY TRÌNH ĐĂNG KÝ & TRIỂN KHAI</h2>
           <div className="mt-8 flex flex-wrap items-start justify-between gap-y-6">
             {QUY_TRINH.map((q, i) => (
               <div key={q.label} className="flex items-start">
@@ -351,7 +351,7 @@ export default function HoaDonThuePage() {
         {/* HUONG DAN + TAI LIEU */}
         <section className="mt-14 grid gap-8 lg:grid-cols-2">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">HƯỚNG DẪN SỬ DỤNG</h2>
+            <h2 className="text-slate-800">HƯỚNG DẪN SỬ DỤNG</h2>
             <div className="mt-6 grid grid-cols-3 gap-4">
               {HUONG_DAN_SU_DUNG.map((h) => (
                 <div key={h} className="rounded-xl border border-slate-100 p-4 text-center">
@@ -366,7 +366,7 @@ export default function HoaDonThuePage() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-slate-800">TÀI LIỆU & BIỂU MẪU</h2>
+            <h2 className="text-slate-800">TÀI LIỆU & BIỂU MẪU</h2>
             <div className="mt-6 grid grid-cols-2 gap-4">
               {TAI_LIEU.map((t) => (
                 <div
@@ -389,7 +389,7 @@ export default function HoaDonThuePage() {
         {/* FAQ + CAN HO TRO */}
         <section className="mt-14 grid gap-8 lg:grid-cols-[1fr_320px]">
           <div id="faq" className="scroll-mt-24">
-            <h2 className="text-xl font-bold text-slate-800">CÂU HỎI THƯỜNG GẶP</h2>
+            <h2 className="text-slate-800">CÂU HỎI THƯỜNG GẶP</h2>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {FAQ.map((f, i) => (
                 <details

@@ -51,7 +51,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
       ))}
       <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-6">
         <div className="max-w-xl text-white [filter:drop-shadow(0_2px_3px_rgba(0,0,0,0.9))_drop-shadow(0_8px_20px_rgba(0,0,0,0.6))]">
-          <h1 className="text-3xl font-extrabold leading-tight md:text-4xl">
+          <h1 className="leading-tight">
             {slide.title.map((line, i) => (
               <span key={line}>
                 {line}

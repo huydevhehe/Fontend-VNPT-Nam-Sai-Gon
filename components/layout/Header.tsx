@@ -4,22 +4,43 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { ChevronDown, LayoutDashboard, Menu, Search, X } from "lucide-react";
-import { categories } from "@/content/category-map";
+// Lưu ý: bật lại nút tìm kiếm thì import thêm icon Search.
+import { ChevronDown, LayoutDashboard, Menu, Phone, X } from "lucide-react";
+import { INTERNET_GROUPS } from "@/content/internet-groups";
 
+const HOTLINE = "0838 999 333";
+
+// Menu theo brief: Internet/Truyền hình - Sim số - Dịch vụ CNTT - SP Viễn thông - Hotline.
 const NAV = [
-  { label: "Trang chủ", href: "/" },
-  { label: "Giới thiệu", href: "/gioi-thieu" },
   {
-    label: "Sản phẩm",
-    href: "/san-pham",
-    children: categories.map((c) => ({ label: c.name, href: `/san-pham/${c.slug}` })),
+    label: "Internet/Truyền hình",
+    href: "/san-pham/bang-rong-co-dinh",
+    children: INTERNET_GROUPS.map((g) => ({ label: g.name, href: `/san-pham/${g.slug}` })),
   },
-  { label: "Khuyến mãi", href: "/khuyen-mai" },
-  { label: "Tin tức", href: "/tin-tuc" },
-  { label: "Khách hàng", href: "/khach-hang" },
-  { label: "Liên hệ", href: "/lien-he" },
+  { label: "Sim số", href: "/san-pham/di-dong-vinaphone" },
+  {
+    label: "Dịch vụ CNTT",
+    href: "/san-pham/chuyen-doi-so",
+    children: [
+      { label: "Chữ ký số", href: "/san-pham/chu-ky-so" },
+      { label: "Hoá đơn điện tử", href: "/san-pham/hoa-don-thue" },
+      { label: "Hợp đồng điện tử", href: "/san-pham/hop-dong-dien-tu" },
+      { label: "vnEdu (Giáo dục số)", href: "/san-pham/vnedu" },
+      { label: "Cloud & Data Center", href: "/san-pham/cloud-idc" },
+      { label: "Chuyển đổi số", href: "/san-pham/chuyen-doi-so" },
+      { label: "Plugin & Công cụ", href: "/plugin-cong-cu" },
+    ],
+  },
+  { label: "SP Viễn thông", href: "/san-pham-vien-thong" },
 ] as const;
+
+// Các mục cũ tạm ẩn theo brief, giữ lại để bật lại khi cần:
+// { label: "Trang chủ", href: "/" },
+// { label: "Giới thiệu", href: "/gioi-thieu" },
+// { label: "Khuyến mãi", href: "/khuyen-mai" },
+// { label: "Tin tức", href: "/tin-tuc" },
+// { label: "Khách hàng", href: "/khach-hang" },
+// { label: "Liên hệ", href: "/lien-he" },
 
 export default function Header() {
   const router = useRouter();
@@ -112,14 +133,6 @@ export default function Header() {
             </nav>
 
             <div className="hidden items-center gap-3 lg:flex">
-              <button
-                type="button"
-                aria-label="Tìm kiếm"
-                onClick={() => setSearchOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-vnpt-light hover:text-vnpt"
-              >
-                <Search size={18} />
-              </button>
               <Link
                 href="/cong-tac-vien/dashboard"
                 title="Dashboard CTV (demo)"
@@ -128,12 +141,18 @@ export default function Header() {
               >
                 <LayoutDashboard size={18} />
               </Link>
-              <Link
-                href="/lien-he"
-                className="rounded-md bg-vnpt-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-md"
+              <a
+                href={`tel:${HOTLINE.replace(/\s/g, "")}`}
+                className="flex items-center gap-2 rounded-md bg-vnpt px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-vnpt-dark hover:shadow-md"
               >
-                ĐĂNG KÝ TƯ VẤN
-              </Link>
+                <Phone size={16} /> {HOTLINE}
+              </a>
+
+              {/* Tạm ẩn theo brief, giữ lại để bật khi cần:
+              <button type="button" aria-label="Tìm kiếm" onClick={() => setSearchOpen(true)}>
+                <Search size={18} />
+              </button>
+              <Link href="/lien-he">ĐĂNG KÝ TƯ VẤN</Link> */}
             </div>
           </>
         )}
@@ -150,15 +169,36 @@ export default function Header() {
       {mobileOpen && (
         <nav className="flex flex-col gap-1 border-t border-slate-100 px-6 py-3 lg:hidden">
           {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="py-2 text-sm font-medium text-slate-700"
-              onClick={() => setMobileOpen(false)}
-            >
-              {item.label}
-            </Link>
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                className="block py-2 text-sm font-medium text-slate-700"
+                onClick={() => setMobileOpen(false)}
+              >
+                {item.label}
+              </Link>
+              {"children" in item && (
+                <div className="ml-4 flex flex-col border-l border-slate-100 pl-3">
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className="py-1.5 text-sm text-slate-500"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
+          <a
+            href={`tel:${HOTLINE.replace(/\s/g, "")}`}
+            className="mt-2 flex items-center gap-2 rounded-md bg-vnpt px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            <Phone size={16} /> {HOTLINE}
+          </a>
         </nav>
       )}
     </header>

@@ -150,7 +150,7 @@ export default function ChuKySoPage() {
           />
           <div className="mt-4 grid items-center gap-10 lg:grid-cols-2">
             <div className="relative z-10 text-white">
-              <h1 className="text-3xl font-extrabold leading-tight md:text-4xl">
+              <h1 className="leading-tight">
                 CHỮ KÝ SỐ TỪ XA
                 <br />
                 VNPT SMARTCA
@@ -170,7 +170,7 @@ export default function ChuKySoPage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/lien-he"
-                  className="rounded-md bg-vnpt-accent px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+                  className="rounded-md bg-white px-5 py-3 text-sm font-semibold text-vnpt-dark hover:bg-slate-100"
                 >
                   ĐĂNG KÝ NGAY
                 </Link>
@@ -220,7 +220,7 @@ export default function ChuKySoPage() {
           <div className="space-y-12">
             {/* DÀNH CHO AI */}
             <div>
-              <h2 className="mb-6 text-center text-xl font-bold text-slate-800">DÀNH CHO AI?</h2>
+              <h2 className="mb-6 text-center text-slate-800">DÀNH CHO AI?</h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 {DANH_CHO_AI.map((d) => (
                   <div
@@ -239,7 +239,7 @@ export default function ChuKySoPage() {
 
             {/* TẠI SAO CHỌN */}
             <div>
-              <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+              <h2 className="mb-6 text-center text-slate-800">
                 TẠI SAO CHỌN VNPT SMARTCA?
               </h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -255,7 +255,7 @@ export default function ChuKySoPage() {
 
             {/* SMARTCA DÙNG ĐỂ LÀM GÌ */}
             <div>
-              <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+              <h2 className="mb-6 text-center text-slate-800">
                 SMARTCA DÙNG ĐỂ LÀM GÌ?
               </h2>
               <div className="rounded-2xl border border-slate-100 p-6 shadow-sm">
@@ -279,7 +279,7 @@ export default function ChuKySoPage() {
 
             {/* BẢNG GIÁ */}
             <div>
-              <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+              <h2 className="mb-6 text-center text-slate-800">
                 BẢNG GIÁ VNPT SMARTCA
               </h2>
               <div className="grid gap-6 md:grid-cols-2">
@@ -304,7 +304,7 @@ export default function ChuKySoPage() {
 
             {/* QUY TRÌNH ĐĂNG KÝ */}
             <div>
-              <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+              <h2 className="mb-6 text-center text-slate-800">
                 QUY TRÌNH ĐĂNG KÝ SMARTCA
               </h2>
               <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
@@ -325,7 +325,7 @@ export default function ChuKySoPage() {
 
             {/* HƯỚNG DẪN SỬ DỤNG */}
             <div>
-              <h2 className="mb-6 text-xl font-bold text-slate-800">HƯỚNG DẪN SỬ DỤNG</h2>
+              <h2 className="mb-6 text-slate-800">HƯỚNG DẪN SỬ DỤNG</h2>
               <div className="grid gap-4 sm:grid-cols-3">
                 {HUONG_DAN.map((h) => (
                   <div key={h.title} className="overflow-hidden rounded-xl border border-slate-100 shadow-sm">
@@ -394,7 +394,7 @@ export default function ChuKySoPage() {
             </div>
             <Link
               href="/lien-he"
-              className="mt-4 inline-block rounded-md bg-vnpt-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-orange-600"
+              className="mt-4 inline-block rounded-md bg-white px-4 py-2.5 text-center text-sm font-semibold text-vnpt-dark hover:bg-slate-100"
             >
               ĐĂNG KÝ NGAY
             </Link>

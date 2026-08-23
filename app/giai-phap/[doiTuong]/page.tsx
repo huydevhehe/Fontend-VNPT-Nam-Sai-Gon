@@ -47,7 +47,7 @@ export default async function GiaiPhapPage({
               <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide">
                 GIẢI PHÁP CHO
               </span>
-              <h1 className="mt-3 text-3xl font-extrabold leading-tight md:text-4xl">
+              <h1 className="mt-3 leading-tight">
                 {audience.label.toUpperCase()}
               </h1>
               <p className="mt-3 max-w-lg text-white/85">{audience.heroDesc}</p>
@@ -81,7 +81,7 @@ export default async function GiaiPhapPage({
 
       {/* DỊCH VỤ DÀNH CHO ĐỐI TƯỢNG */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="text-center text-xl font-bold text-slate-800">
+        <h2 className="text-center text-slate-800">
           DỊCH VỤ DÀNH CHO {audience.label.toUpperCase()}
         </h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -106,7 +106,7 @@ export default async function GiaiPhapPage({
       {/* LỢI ÍCH */}
       <section className="bg-vnpt-light px-6 py-12">
         <div className="mx-auto max-w-7xl">
-          <h2 className="text-center text-xl font-bold text-slate-800">
+          <h2 className="text-center text-slate-800">
             LỢI ÍCH KHI SỬ DỤNG DỊCH VỤ VNPT
           </h2>
           <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
@@ -123,7 +123,7 @@ export default async function GiaiPhapPage({
 
       {/* KHÁCH HÀNG TIÊU BIỂU */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-6 text-center text-xl font-bold text-slate-800">
+        <h2 className="mb-6 text-center text-slate-800">
           {audience.customerTitle.toUpperCase()}
         </h2>
         <div className="grid items-center gap-8 rounded-xl border border-slate-100 p-6 shadow-sm lg:grid-cols-[280px_1fr]">
@@ -157,7 +157,7 @@ export default async function GiaiPhapPage({
       {/* CTA CUỐI TRANG */}
       <section className="bg-gradient-to-br from-vnpt-darker via-vnpt-dark to-vnpt px-6 py-12 text-center text-white">
         <div className="mx-auto max-w-2xl">
-          <h2 className="text-xl font-extrabold">
+          <h2>
             Sẵn sàng đồng hành cùng VNPT Nam Sài Gòn?
           </h2>
           <p className="mt-2 text-white/80">
@@ -165,7 +165,7 @@ export default async function GiaiPhapPage({
           </p>
           <Link
             href="/lien-he"
-            className="mt-5 inline-block rounded-md bg-vnpt-accent px-6 py-3 text-sm font-semibold hover:bg-orange-600"
+            className="mt-5 inline-block rounded-md bg-white text-vnpt-dark px-6 py-3 text-sm font-semibold hover:bg-slate-100"
           >
             ĐĂNG KÝ TƯ VẤN NGAY
           </Link>

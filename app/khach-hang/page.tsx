@@ -134,7 +134,7 @@ export default function KhachHangPage() {
               variant="light"
               items={[{ label: "Trang chủ", href: "/" }, { label: "Khách hàng" }]}
             />
-            <h1 className="mt-3 text-3xl font-extrabold">KHÁCH HÀNG</h1>
+            <h1 className="mt-3">KHÁCH HÀNG</h1>
             <p className="mt-2 text-white/85">
               VNPT Nam Sài Gòn tự hào là đối tác tin cậy của hàng nghìn khách hàng trên mọi
               lĩnh vực.
@@ -161,7 +161,7 @@ export default function KhachHangPage() {
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-6 flex items-end justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">DỰ ÁN TIÊU BIỂU</h2>
+            <h2 className="text-slate-800">DỰ ÁN TIÊU BIỂU</h2>
             <p className="mt-1 text-sm text-slate-500">
               Những dự án, công trình chuyển đổi số nổi bật mà VNPT Nam Sài Gòn đã triển khai
               và mang lại hiệu quả rõ rệt cho khách hàng.
@@ -207,7 +207,7 @@ export default function KhachHangPage() {
       {/* KHÁCH HÀNG DOANH NGHIỆP */}
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-6 flex items-end justify-between">
-          <h2 className="text-xl font-bold text-slate-800">KHÁCH HÀNG DOANH NGHIỆP</h2>
+          <h2 className="text-slate-800">KHÁCH HÀNG DOANH NGHIỆP</h2>
           <Link
             href="/khach-hang"
             className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-vnpt hover:underline sm:flex"
@@ -230,7 +230,7 @@ export default function KhachHangPage() {
       {/* KHÁCH HÀNG HỘ CÁ NHÂN / HCNS */}
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-6 flex items-end justify-between">
-          <h2 className="text-xl font-bold text-slate-800">KHÁCH HÀNG HỘ CÁ NHÂN / HCNS</h2>
+          <h2 className="text-slate-800">KHÁCH HÀNG HỘ CÁ NHÂN / HCNS</h2>
           <Link
             href="/khach-hang"
             className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-vnpt hover:underline sm:flex"
@@ -258,7 +258,7 @@ export default function KhachHangPage() {
             <div className="mt-4 space-y-2">
               <Link
                 href="/lien-he"
-                className="block rounded-md bg-vnpt-accent px-3 py-2 text-center text-xs font-semibold hover:bg-orange-600"
+                className="block rounded-md bg-white text-vnpt-dark px-3 py-2 text-center text-xs font-semibold hover:bg-slate-100"
               >
                 ĐĂNG KÝ TƯ VẤN NGAY
               </Link>
@@ -273,7 +273,7 @@ export default function KhachHangPage() {
       {/* CASE STUDY */}
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-6 flex items-end justify-between">
-          <h2 className="text-xl font-bold text-slate-800">CASE STUDY – CÂU CHUYỆN THÀNH CÔNG</h2>
+          <h2 className="text-slate-800">CASE STUDY – CÂU CHUYỆN THÀNH CÔNG</h2>
           <Link
             href="/khach-hang"
             className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-vnpt hover:underline sm:flex"
@@ -323,7 +323,7 @@ export default function KhachHangPage() {
       <section className="mx-auto max-w-7xl px-6 pb-14">
         <div className="grid gap-8 rounded-xl bg-vnpt-light p-6 lg:grid-cols-[1.2fr_1fr] lg:p-10">
           <div className="flex flex-col justify-center">
-            <h2 className="text-2xl font-extrabold text-slate-800">
+            <h2 className="text-slate-800">
               Bạn đã sẵn sàng trải nghiệm dịch vụ của VNPT?
             </h2>
             <p className="mt-3 text-slate-600">
@@ -333,7 +333,7 @@ export default function KhachHangPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/lien-he"
-                className="rounded-md bg-vnpt-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
+                className="rounded-md bg-vnpt px-5 py-2.5 text-sm font-semibold text-white hover:bg-vnpt-dark"
               >
                 ĐĂNG KÝ TƯ VẤN NGAY
               </Link>

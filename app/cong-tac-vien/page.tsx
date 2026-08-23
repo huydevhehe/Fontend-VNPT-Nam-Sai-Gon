@@ -118,7 +118,7 @@ export default function CongTacVienPage() {
               variant="light"
               items={[{ label: "Trang chủ", href: "/" }, { label: "Cộng tác viên" }]}
             />
-            <h1 className="mt-3 text-3xl font-extrabold">TRỞ THÀNH CỘNG TÁC VIÊN VNPT</h1>
+            <h1 className="mt-3">TRỞ THÀNH CỘNG TÁC VIÊN VNPT</h1>
             <p className="mt-2 text-white/85">
               Giới thiệu khách hàng sử dụng dịch vụ VNPT, nhận hoa hồng hấp dẫn, thanh toán minh
               bạch.
@@ -126,7 +126,7 @@ export default function CongTacVienPage() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="#dang-ky"
-                className="rounded-md bg-vnpt-accent px-5 py-2.5 text-sm font-semibold hover:bg-orange-600"
+                className="rounded-md bg-white text-vnpt-dark px-5 py-2.5 text-sm font-semibold hover:bg-slate-100"
               >
                 ĐĂNG KÝ NGAY
               </Link>
@@ -143,7 +143,7 @@ export default function CongTacVienPage() {
 
       {/* VÌ SAO NÊN TRỞ THÀNH CTV */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-8 text-center text-xl font-bold text-slate-800">
+        <h2 className="mb-8 text-center text-slate-800">
           VÌ SAO NÊN TRỞ THÀNH CỘNG TÁC VIÊN CỦA VNPT?
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -161,7 +161,7 @@ export default function CongTacVienPage() {
 
       {/* QUYỀN LỢI + BẢNG HOA HỒNG */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-8 text-center text-xl font-bold text-slate-800">
+        <h2 className="mb-8 text-center text-slate-800">
           BẠN SẼ NHẬN ĐƯỢC GÌ KHI THAM GIA?
         </h2>
         <div className="grid gap-8 lg:grid-cols-2">
@@ -180,7 +180,7 @@ export default function CongTacVienPage() {
 
       {/* QUY TRÌNH */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-8 text-center text-xl font-bold text-slate-800">
+        <h2 className="mb-8 text-center text-slate-800">
           QUY TRÌNH TRỞ THÀNH CỘNG TÁC VIÊN
         </h2>
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-5">
@@ -199,7 +199,7 @@ export default function CongTacVienPage() {
       {/* TESTIMONIALS */}
       <section className="mx-auto max-w-7xl px-6 py-12">
         <div className="relative mb-8 text-center">
-          <h2 className="text-xl font-bold text-slate-800">CỘNG TÁC VIÊN NÓI VỀ CHÚNG TÔI</h2>
+          <h2 className="text-slate-800">CỘNG TÁC VIÊN NÓI VỀ CHÚNG TÔI</h2>
           <Link
             href="/khach-hang"
             className="absolute right-0 top-1/2 -translate-y-1/2 text-sm font-semibold text-vnpt"
@@ -244,7 +244,7 @@ export default function CongTacVienPage() {
           </div>
           <Link
             href="/lien-he"
-            className="shrink-0 rounded-md bg-vnpt-accent px-6 py-3 text-sm font-semibold hover:bg-orange-600"
+            className="shrink-0 rounded-md bg-white text-vnpt-dark px-6 py-3 text-sm font-semibold hover:bg-slate-100"
           >
             ĐĂNG KÝ NGAY →
           </Link>

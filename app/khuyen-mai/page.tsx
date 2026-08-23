@@ -38,7 +38,7 @@ export default function KhuyenMaiPage() {
               variant="light"
               items={[{ label: "Trang chủ", href: "/" }, { label: "Khuyến mãi" }]}
             />
-            <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">KHUYẾN MÃI</h1>
+            <h1 className="mt-3">KHUYẾN MÃI</h1>
             <p className="mt-2 text-white/85">
               Nhiều ưu đãi hấp dẫn dành cho cá nhân và doanh nghiệp
             </p>

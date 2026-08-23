@@ -139,7 +139,7 @@ export default async function ProductDetailPage({
 
         {/* NỘI DUNG CHÍNH */}
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-800">{product.title}</h1>
+          <h1 className="text-slate-800">{product.title}</h1>
           <p className="mt-1 font-medium text-emerald-600">{product.shortDesc}</p>
 
           <div className="mt-6 grid gap-8 md:grid-cols-2">

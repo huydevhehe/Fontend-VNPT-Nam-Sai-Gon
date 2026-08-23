@@ -16,3 +16,8 @@ next-env.d.ts
 /*.png
 /*.jpg
 /*.jpeg
+
+# tài liệu góp ý của khách hàng + file tạm của Word, không đẩy lên git
+*.docx
+*.docx.backup
+~$*

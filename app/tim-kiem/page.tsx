@@ -21,7 +21,7 @@ export default async function TimKiemPage({
     <div>
       <section className="mx-auto max-w-7xl px-6 py-8">
         <Breadcrumb items={[{ label: "Trang chủ", href: "/" }, { label: "Tìm kiếm" }]} />
-        <h1 className="mt-3 text-2xl font-bold text-slate-800">
+        <h1 className="mt-3 text-slate-800">
           {q ? (
             <>
               Kết quả tìm kiếm cho <span className="text-vnpt">&quot;{q}&quot;</span>

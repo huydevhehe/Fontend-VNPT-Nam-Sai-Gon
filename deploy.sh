@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# Script deploy thủ công cho VNPT Nam Sài Gòn FE trên server (chạy bằng nohup, chưa có BE).
+# Script deploy cho VNPT Nam Sài Gòn FE trên server dùng PM2 (chưa có BE).
 # Cách dùng: ./deploy.sh   (chạy trên server, trong thư mục project)
-# Tự động: pull code mới -> install -> kill bản cũ đang chạy (nohup) -> build -> chạy lại.
+# Tự động: pull code mới -> install -> dừng app cũ -> build -> start/restart qua PM2.
 #
-# Lưu ý: dừng server cũ TRƯỚC khi build (không build song song với server đang chạy)
-# để tránh lỗi 500 do server cũ đọc phải file .next đang bị build mới ghi đè dở dang.
+# Lưu ý: dừng app cũ TRƯỚC khi build (không build song song với app đang chạy)
+# để tránh lỗi 500 do app cũ đọc phải file .next đang bị build mới ghi đè dở dang.
 
 set -e
 
-PORT=8010
+PORT=8086
+APP_NAME="vnpt-nam-sai-gon"
 
 BEFORE_COMMIT=$(git rev-parse HEAD)
 
@@ -24,36 +25,20 @@ else
   echo "==> package.json unchanged, skipping npm install."
 fi
 
-# lsof không nhận diện được process trên server này (không hiện gì dù cổng đang bị chiếm),
-# nên dò bằng `ss` (đáng tin cậy hơn) thay vì lsof.
-find_port_pids() {
-  ss -ltnp 2>/dev/null | grep ":$PORT " | sed -n 's/.*pid=\([0-9]\+\).*/\1/p' | sort -u
-}
-
-echo "==> Stopping old process on port $PORT (if any)..."
-OLD_PIDS=$(find_port_pids)
-if [ -n "$OLD_PIDS" ]; then
-  echo "$OLD_PIDS" | xargs kill -9
-  sleep 2
-  STILL_ALIVE=$(find_port_pids)
-  if [ -n "$STILL_ALIVE" ]; then
-    echo "==> ERROR: port $PORT still occupied by PID(s): $STILL_ALIVE — aborting."
-    exit 1
-  fi
-  echo "==> Killed old process(es): $OLD_PIDS"
-else
-  echo "==> No process running on port $PORT."
-fi
+echo "==> Stopping app (if running) before build..."
+pm2 stop "$APP_NAME" > /dev/null 2>&1 || echo "==> App not running yet, skipping stop."
 
 echo "==> Building production..."
 npm run build
 
-echo "==> Starting app with nohup on port $PORT..."
-PORT=$PORT nohup npm start > nohup.out 2>&1 &
-disown
+echo "==> Starting/restarting app via PM2 on port $PORT..."
+if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
+  pm2 restart "$APP_NAME" --update-env
+else
+  PORT=$PORT pm2 start npm --name "$APP_NAME" -- start
+fi
+pm2 save
 
-# Đợi và xác nhận server mới thực sự lên (tránh báo "Done" giả khi start thất bại,
-# ví dụ EADDRINUSE do vẫn còn tiến trình cũ chiếm cổng).
 echo "==> Waiting for server to respond on port $PORT..."
 READY=0
 for i in $(seq 1 15); do
@@ -65,11 +50,11 @@ for i in $(seq 1 15); do
 done
 
 if [ "$READY" -eq 1 ]; then
-  echo "==> Done. App is running again on port $PORT."
+  echo "==> Done. App is running again on port $PORT (pm2 name: $APP_NAME)."
 else
-  echo "==> ERROR: server did not respond on port $PORT after 15s. Last log lines:"
-  tail -30 nohup.out
+  echo "==> ERROR: server did not respond on port $PORT after 15s. Last logs:"
+  pm2 logs "$APP_NAME" --lines 30 --nostream
   exit 1
 fi
 
-echo "==> Check logs with: tail -f nohup.out"
+echo "==> Check logs with: pm2 logs $APP_NAME"

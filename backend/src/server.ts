@@ -8,6 +8,7 @@ import { customerRouter } from "./modules/customer/customer.controller.js";
 import { territoryRouter } from "./modules/territory/territory.controller.js";
 import { dashboardRouter } from "./modules/dashboard/dashboard.controller.js";
 import { authRouter } from "./modules/auth/auth.controller.js";
+import { serviceRouter } from "./modules/service/service.controller.js";
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/renewals", renewalRouter);
 app.use("/api/customers", customerRouter);
 app.use("/api/territories", territoryRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/services", serviceRouter);
 
 // Initialize DB and Start Server
 async function start() {

@@ -127,6 +127,19 @@ export async function initDatabase() {
     )
   `);
 
+  // 6b. Services table (Dịch vụ & Cảnh báo hết hạn)
+  await run(`
+    CREATE TABLE IF NOT EXISTS services (
+      id TEXT PRIMARY KEY,
+      customer_name TEXT NOT NULL,
+      service_name TEXT NOT NULL,
+      service_code TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      expiration_date TEXT NOT NULL,
+      staff_name TEXT NOT NULL
+    )
+  `);
+
   // 6. Audit Logs
   await run(`
     CREATE TABLE IF NOT EXISTS audit_logs (
@@ -162,6 +175,32 @@ export async function initDatabase() {
   if (userCountRes[0]?.count === 0) {
     await seedUsers();
   }
+
+  // Seed services table independently (table may be newer than the rest of the schema)
+  const serviceCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM services");
+  if (serviceCountRes[0]?.count === 0) {
+    await seedServices();
+  }
+}
+
+async function seedServices() {
+  console.log("[Database] Seeding dữ liệu dịch vụ & cảnh báo hết hạn...");
+
+  const services = [
+    ["SRV-01", "Công ty TNHH Thương mại Minh Phát", "Internet Fiber", "FTTH-100238", "2025-11-01", "2026-11-10", "Nguyễn Thị Tình"],
+    ["SRV-02", "Hộ kinh doanh An Bình", "Chữ ký số SmartCA", "CA-100451", "2025-11-05", "2026-11-20", "Nguyễn Đức Tiến"],
+    ["SRV-03", "Công ty Cổ phần Xây dựng Đại Thành", "Hóa đơn điện tử VNPT Invoice", "INV-100782", "2025-10-15", "2026-10-30", "Nguyễn Thị Huyền Trang"],
+    ["SRV-04", "Nguyễn Văn An", "Internet Fiber & MyTV", "FTTH-101003", "2025-09-01", "2026-09-05", "Phạm Thanh Hà"],
+    ["SRV-05", "Hộ kinh doanh Phát Đạt", "Camera an ninh VNPT iAlert", "CAM-101220", "2025-11-02", "2026-12-01", "Nguyễn Lê Vi"],
+  ];
+  for (const s of services) {
+    await run(
+      "INSERT OR REPLACE INTO services (id, customer_name, service_name, service_code, start_date, expiration_date, staff_name) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      s
+    );
+  }
+
+  console.log("[Database] Đã seed dữ liệu dịch vụ!");
 }
 
 async function seedUsers() {

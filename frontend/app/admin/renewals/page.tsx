@@ -1,51 +1,102 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RotateCw, UploadCloud, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { RenewalRecord } from "@/lib/crm/types/crm.types";
-import { getRenewals } from "@/lib/api/renewals.api";
+import {
+  RenewalRecord,
+  RenewalStatus,
+} from "@/lib/crm/types/crm.types";
+import {
+  getRenewals,
+  importRenewalsExcel,
+  updateRenewalStatus,
+} from "@/lib/api/renewals.api";
+
+const RENEWAL_STATUS_OPTIONS: RenewalStatus[] = [
+  "Chưa xử lý",
+  "Khách hẹn thanh toán",
+  "Hoàn thành",
+  "Thất bại",
+];
 
 export default function RenewalsPage() {
   const [data, setData] = useState<RenewalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedCohort, setSelectedCohort] = useState<"ALL" | "THÁNG T" | "THÁNG T-1">("ALL");
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadRenewals() {
-      setLoading(true);
-      setError(null);
-      try {
-        const renewals = await getRenewals();
-        if (isMounted) {
-          setData(renewals);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Không thể tải dữ liệu gia hạn. Vui lòng thử lại."
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
+  async function loadRenewals() {
+    setLoading(true);
+    setError(null);
+    try {
+      const renewals = await getRenewals();
+      setData(renewals);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Không thể tải dữ liệu gia hạn. Vui lòng thử lại."
+      );
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadRenewals();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  async function handleFileSelected(file: File) {
+    const cohort = selectedCohort === "ALL" ? "THÁNG T" : selectedCohort;
+    setImporting(true);
+    try {
+      const result = await importRenewalsExcel(file, cohort);
+      const errorSummary = result.errors.length
+        ? `\nChi tiết lỗi:\n${result.errors.slice(0, 10).join("\n")}${
+            result.errors.length > 10 ? `\n...và ${result.errors.length - 10} lỗi khác` : ""
+          }`
+        : "";
+      alert(
+        `Import thành công: ${result.importedCount}/${result.totalProcessed} dòng. Trùng mã: ${result.duplicateCount}. Bỏ qua ${result.skippedCount} dòng lỗi.${errorSummary}`
+      );
+      await loadRenewals();
+    } catch (err) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Import file gia hạn thất bại. Vui lòng thử lại."
+      );
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  async function handleStatusChange(item: RenewalRecord, nextStatus: RenewalStatus) {
+    setUpdatingId(item.id);
+    try {
+      await updateRenewalStatus(item.id, nextStatus);
+      setData((prev) =>
+        prev.map((row) =>
+          row.id === item.id
+            ? { ...row, status: nextStatus, failureReason: undefined }
+            : row
+        )
+      );
+    } catch (err) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Cập nhật trạng thái gia hạn thất bại. Vui lòng thử lại."
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   const filteredData = data.filter((item) => {
     if (selectedCohort === "ALL") return true;
@@ -111,9 +162,24 @@ export default function RenewalsPage() {
     {
       header: "Trạng thái",
       accessorKey: "status",
+      // Lưu ý: Task 8 sẽ thay <select> thuần này bằng component StatusSelect
+      // dùng chung cho cả 4 trang (debt/contract/renewal/staff).
       cell: (item) => (
         <div className="flex flex-col gap-1">
-          <StatusBadge status={item.status} />
+          <select
+            value={item.status}
+            disabled={updatingId === item.id}
+            onChange={(e) =>
+              handleStatusChange(item, e.target.value as RenewalStatus)
+            }
+            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 disabled:opacity-60"
+          >
+            {RENEWAL_STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
           {item.failureReason && (
             <span className="text-[10px] text-rose-500 font-medium">
               Lý do: {item.failureReason}
@@ -137,12 +203,28 @@ export default function RenewalsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleFileSelected(file);
+              }
+              e.target.value = "";
+            }}
+          />
           <button
-            onClick={() => alert("Chức năng Import file gia hạn sẽ kết nối Backend")}
-            className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark disabled:opacity-60"
           >
             <UploadCloud className="h-4 w-4" />
-            <span className="btn-label">Import file gia hạn</span>
+            <span className="btn-label">
+              {importing ? "Đang import..." : "Import file gia hạn"}
+            </span>
           </button>
         </div>
       </div>

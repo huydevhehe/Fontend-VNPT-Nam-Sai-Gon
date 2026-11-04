@@ -1,8 +1,51 @@
 "use client";
 
-import { UploadCloud, FileSpreadsheet, Download, AlertCircle, Database } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UploadCloud, FileSpreadsheet, Download, AlertCircle, Database, BarChart3 } from "lucide-react";
+import { getReportSummary, ReportSummary } from "@/lib/api/reports.api";
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
+}
 
 export default function DataTransferPage() {
+  const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSummary() {
+      setSummaryLoading(true);
+      setSummaryError(null);
+      try {
+        const data = await getReportSummary();
+        if (isMounted) {
+          setSummary(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setSummaryError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải số liệu báo cáo tổng hợp. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setSummaryLoading(false);
+        }
+      }
+    }
+
+    loadSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -137,6 +180,81 @@ export default function DataTransferPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Báo cáo tổng hợp số liệu */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-vnpt" />
+          <h3 className="text-sm font-bold text-slate-900">
+            Báo cáo tổng hợp số liệu
+          </h3>
+        </div>
+        <p className="text-xs text-slate-500">
+          Tổng hợp nhanh số liệu nợ, gia hạn và hợp đồng hiện có trong hệ thống
+        </p>
+
+        {summaryError ? (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-xs text-rose-700">
+            <AlertCircle className="h-4 w-4" />
+            {summaryError}
+          </div>
+        ) : summaryLoading ? (
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-6 text-center text-xs text-slate-500">
+            Đang tải số liệu báo cáo tổng hợp...
+          </div>
+        ) : summary ? (
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="text-[11px] font-semibold text-slate-500">
+                Tổng nợ thu ngay
+              </div>
+              <div className="mt-1 text-sm font-bold text-slate-900">
+                {formatCurrency(summary.totalImmediateDebt)}
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="text-[11px] font-semibold text-slate-500">
+                Tổng nợ lũy kế
+              </div>
+              <div className="mt-1 text-sm font-bold text-slate-900">
+                {formatCurrency(summary.totalCumulativeDebt)}
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="text-[11px] font-semibold text-slate-500">
+                Đã thu / Số bản ghi nợ
+              </div>
+              <div className="mt-1 text-sm font-bold text-slate-900">
+                {formatCurrency(summary.totalCollectedAmount)} ({summary.debtRecordCount})
+              </div>
+            </div>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-4">
+              <div className="text-[11px] font-semibold text-emerald-700">
+                Gia hạn hoàn thành / Tổng gia hạn
+              </div>
+              <div className="mt-1 text-sm font-bold text-emerald-950">
+                {summary.completedRenewals} / {summary.totalRenewals}
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="text-[11px] font-semibold text-slate-500">
+                Tổng số hợp đồng
+              </div>
+              <div className="mt-1 text-sm font-bold text-slate-900">
+                {summary.totalContracts}
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="text-[11px] font-semibold text-slate-500">
+                Tổng giá trị hợp đồng
+              </div>
+              <div className="mt-1 text-sm font-bold text-slate-900">
+                {formatCurrency(summary.totalContractValue)}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

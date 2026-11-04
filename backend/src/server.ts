@@ -14,6 +14,7 @@ import { contractRouter } from "./modules/contract/contract.controller.js";
 import { commissionRouter } from "./modules/commission/commission.controller.js";
 import { staffRouter } from "./modules/staff/staff.controller.js";
 import { taskRouter } from "./modules/task/task.controller.js";
+import { reportRouter } from "./modules/report/report.controller.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/contracts", contractRouter);
 app.use("/api/commissions", commissionRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api/tasks", taskRouter);
+app.use("/api/reports", reportRouter);
 
 // Initialize DB and Start Server
 async function start() {

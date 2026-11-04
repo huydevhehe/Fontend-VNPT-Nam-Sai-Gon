@@ -157,6 +157,24 @@ export async function initDatabase() {
     )
   `);
 
+  // 6d. Contracts table (Hợp đồng & Mã giao dịch)
+  await run(`
+    CREATE TABLE IF NOT EXISTS contracts (
+      id TEXT PRIMARY KEY,
+      transaction_code TEXT NOT NULL UNIQUE,
+      customer_name TEXT NOT NULL,
+      subscriber_codes TEXT NOT NULL,
+      total_value REAL DEFAULT 0,
+      channel TEXT NOT NULL,
+      deployment_status TEXT DEFAULT 'Chưa triển khai',
+      payment_status TEXT DEFAULT 'Chưa thanh toán',
+      document_status TEXT DEFAULT 'Soạn thảo',
+      has_revenue INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // 6. Audit Logs
   await run(`
     CREATE TABLE IF NOT EXISTS audit_logs (
@@ -204,6 +222,34 @@ export async function initDatabase() {
   if (leadCountRes[0]?.count === 0) {
     await seedLeads();
   }
+
+  // Seed contracts table independently (table may be newer than the rest of the schema)
+  const contractCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM contracts");
+  if (contractCountRes[0]?.count === 0) {
+    await seedContracts();
+  }
+}
+
+async function seedContracts() {
+  console.log("[Database] Seeding dữ liệu Hợp đồng & Mã giao dịch...");
+
+  const contracts: [string, string, string, string, number, string, string, string, string, number][] = [
+    ["CTR-01", "GD-26001", "Công ty TNHH Thương mại Minh Phát", JSON.stringify(["TB-100238"]), 28800000, "Online", "Hoàn tất", "Đã thanh toán", "Hoàn thiện bàn giao", 1],
+    ["CTR-02", "GD-26002", "Hộ kinh doanh An Bình", JSON.stringify(["TB-100451", "TB-100452"]), 14400000, "Khách hàng hiện hữu", "Đang triển khai", "Chưa thanh toán", "Khách trình ký", 0],
+    ["CTR-03", "GD-26003", "Công ty Cổ phần Xây dựng Đại Thành", JSON.stringify(["TB-100782"]), 22200000, "Đối tác", "Chưa triển khai", "Chưa thanh toán", "Soạn thảo", 0],
+    ["CTR-04", "GD-26004", "Nguyễn Văn An", JSON.stringify(["TB-101003"]), 38400000, "Chiến dịch", "Hoàn tất", "Đã thanh toán", "Hoàn thiện bàn giao", 1],
+  ];
+  for (const c of contracts) {
+    await run(
+      `INSERT OR REPLACE INTO contracts (
+        id, transaction_code, customer_name, subscriber_codes, total_value,
+        channel, deployment_status, payment_status, document_status, has_revenue
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      c
+    );
+  }
+
+  console.log("[Database] Đã seed dữ liệu Hợp đồng!");
 }
 
 async function seedLeads() {

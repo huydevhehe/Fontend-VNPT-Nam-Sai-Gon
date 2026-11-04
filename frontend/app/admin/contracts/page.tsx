@@ -1,15 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { FileText, Plus, CheckCircle, Clock, Banknote, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileText, Plus, CheckCircle, Clock, Banknote, ShieldCheck, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { initialContractData } from "@/lib/crm/mock-data/crm-data";
+import { getContracts } from "@/lib/api/contracts.api";
 import { ContractRecord } from "@/lib/crm/types/crm.types";
 
 export default function ContractsPage() {
-  const [data, setData] = useState<ContractRecord[]>(initialContractData);
+  const [data, setData] = useState<ContractRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadContracts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const contracts = await getContracts();
+        if (isMounted) {
+          setData(contracts);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu Hợp đồng. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadContracts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const columns: Column<ContractRecord>[] = [
     {
@@ -124,14 +159,28 @@ export default function ContractsPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        title="Danh sách hợp đồng & giao dịch"
-        subtitle="Theo dõi tiến độ triển khai kỹ thuật, tình trạng thanh toán và chứng từ bàn giao"
-        columns={columns}
-        data={data}
-        searchPlaceholder="Tìm theo mã giao dịch, khách hàng, mã thuê bao..."
-        exportFileName="vnpt_hop_dong"
-      />
+      {error ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+          <AlertTriangle className="h-6 w-6 text-rose-500" />
+          <p className="text-sm font-semibold text-rose-700">
+            Không thể tải dữ liệu Hợp đồng
+          </p>
+          <p className="text-xs text-rose-600">{error}</p>
+        </div>
+      ) : loading ? (
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+          Đang tải dữ liệu Hợp đồng...
+        </div>
+      ) : (
+        <DataTable
+          title="Danh sách hợp đồng & giao dịch"
+          subtitle="Theo dõi tiến độ triển khai kỹ thuật, tình trạng thanh toán và chứng từ bàn giao"
+          columns={columns}
+          data={data}
+          searchPlaceholder="Tìm theo mã giao dịch, khách hàng, mã thuê bao..."
+          exportFileName="vnpt_hop_dong"
+        />
+      )}
     </div>
   );
 }

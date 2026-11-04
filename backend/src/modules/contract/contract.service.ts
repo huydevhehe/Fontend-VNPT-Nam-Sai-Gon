@@ -33,6 +33,14 @@ export interface UpdateContractStatusInput {
   totalValue?: number;
 }
 
+export interface CreateContractInput {
+  transactionCode: string;
+  customerName: string;
+  subscriberCodes: string[];
+  totalValue: number;
+  channel: string;
+}
+
 function toContractRecord(row: ContractRow): ContractRecordDto {
   let subscriberCodes: string[] = [];
   try {
@@ -60,6 +68,49 @@ export class ContractService {
   async getAll(): Promise<ContractRecordDto[]> {
     const rows = await query<ContractRow>("SELECT * FROM contracts ORDER BY created_at DESC");
     return rows.map(toContractRecord);
+  }
+
+  async create(data: CreateContractInput): Promise<ContractRecordDto> {
+    if (
+      !data.transactionCode ||
+      !data.customerName ||
+      !Array.isArray(data.subscriberCodes) ||
+      !data.subscriberCodes.length ||
+      !data.channel
+    ) {
+      throw new Error("Thiếu thông tin bắt buộc để tạo Hợp đồng");
+    }
+
+    if (typeof data.totalValue !== "number" || Number.isNaN(data.totalValue)) {
+      throw new Error("Giá trị hợp đồng phải là một số hợp lệ");
+    }
+
+    if (data.totalValue < 0) {
+      throw new Error("Giá trị hợp đồng không được âm");
+    }
+
+    const id = `HD-${Date.now()}`;
+    await run(
+      `INSERT INTO contracts (
+        id, transaction_code, customer_name, subscriber_codes, total_value, channel,
+        deployment_status, payment_status, document_status, has_revenue
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        data.transactionCode,
+        data.customerName,
+        JSON.stringify(data.subscriberCodes),
+        data.totalValue,
+        data.channel,
+        "Chưa triển khai",
+        "Chưa thanh toán",
+        "Soạn thảo",
+        0,
+      ]
+    );
+
+    const created = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [id]);
+    return toContractRecord(created[0]);
   }
 
   async updateStatus(id: string, patch: UpdateContractStatusInput): Promise<ContractRecordDto> {

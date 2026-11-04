@@ -5,8 +5,20 @@ export type UpdateContractStatusInput = Partial<
   Pick<ContractRecord, "deploymentStatus" | "paymentStatus" | "documentStatus" | "totalValue">
 >;
 
+export type CreateContractInput = Pick<
+  ContractRecord,
+  "transactionCode" | "customerName" | "subscriberCodes" | "totalValue" | "channel"
+>;
+
 export function getContracts(): Promise<ContractRecord[]> {
   return apiFetch<ContractRecord[]>("/contracts");
+}
+
+export function createContract(data: CreateContractInput): Promise<ContractRecord> {
+  return apiFetch<ContractRecord>("/contracts", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export function updateContractStatus(

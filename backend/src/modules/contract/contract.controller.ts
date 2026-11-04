@@ -15,6 +15,25 @@ contractRouter.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// POST /api/contracts
+contractRouter.post("/", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { transactionCode, customerName, subscriberCodes, totalValue, channel } = req.body;
+
+    const contract = await contractService.create({
+      transactionCode,
+      customerName,
+      subscriberCodes,
+      totalValue: Number(totalValue),
+      channel,
+    });
+
+    res.status(201).json({ success: true, data: contract });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 // PATCH /api/contracts/:id/status
 contractRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {

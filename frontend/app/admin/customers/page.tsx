@@ -1,17 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Users, UserPlus, Building2, User, ShieldAlert, AlertTriangle } from "lucide-react";
+import { useEffect, useState, FormEvent } from "react";
+import { Users, UserPlus, Building2, User, ShieldAlert, AlertTriangle, X, ArrowRightLeft } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { CustomerRecord } from "@/lib/crm/types/crm.types";
-import { getCustomers } from "@/lib/api/customers.api";
+import { CustomerRecord, CustomerType, CustomerGroup } from "@/lib/crm/types/crm.types";
+import { getCustomers, createCustomer, transferCustomer } from "@/lib/api/customers.api";
+
+const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
+const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu"];
+
+interface CustomerFormState {
+  name: string;
+  identityCode: string;
+  type: CustomerType;
+  customerGroup: CustomerGroup;
+  phone: string;
+  address: string;
+  amStaff: string;
+}
+
+const EMPTY_FORM: CustomerFormState = {
+  name: "",
+  identityCode: "",
+  type: TYPE_OPTIONS[0],
+  customerGroup: GROUP_OPTIONS[0],
+  phone: "",
+  address: "",
+  amStaff: "",
+};
 
 export default function CustomersPage() {
   const [data, setData] = useState<CustomerRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState<CustomerFormState>(EMPTY_FORM);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [transferTarget, setTransferTarget] = useState<CustomerRecord | null>(null);
+  const [transferStaff, setTransferStaff] = useState("");
+  const [transferError, setTransferError] = useState<string | null>(null);
+  const [transferring, setTransferring] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,6 +78,66 @@ export default function CustomersPage() {
       isMounted = false;
     };
   }, []);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setFormError(null);
+    setSubmitting(true);
+
+    try {
+      const created = await createCustomer({
+        name: form.name,
+        identityCode: form.identityCode || undefined,
+        type: form.type,
+        customerGroup: form.customerGroup,
+        phone: form.phone || undefined,
+        address: form.address || undefined,
+        amStaff: form.amStaff || undefined,
+      });
+
+      setData((prev) => [created, ...prev]);
+      setShowForm(false);
+      setForm(EMPTY_FORM);
+    } catch (err) {
+      setFormError(
+        err instanceof Error ? err.message : "Không thể thêm khách hàng. Vui lòng thử lại."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function openTransfer(customer: CustomerRecord) {
+    setTransferTarget(customer);
+    setTransferStaff(customer.amStaff);
+    setTransferError(null);
+  }
+
+  async function handleTransfer(e: FormEvent) {
+    e.preventDefault();
+    if (!transferTarget) return;
+
+    setTransferError(null);
+    setTransferring(true);
+
+    try {
+      await transferCustomer(transferTarget.id, transferStaff);
+      setData((prev) =>
+        prev.map((c) =>
+          c.id === transferTarget.id
+            ? { ...c, amStaff: transferStaff, amCaringStaff: transferStaff }
+            : c
+        )
+      );
+      setTransferTarget(null);
+    } catch (err) {
+      setTransferError(
+        err instanceof Error ? err.message : "Không thể điều chuyển khách hàng. Vui lòng thử lại."
+      );
+    } finally {
+      setTransferring(false);
+    }
+  }
 
   const columns: Column<CustomerRecord>[] = [
     {
@@ -130,6 +223,19 @@ export default function CustomersPage() {
         </div>
       ),
     },
+    {
+      header: "Thao tác",
+      accessorKey: "id",
+      cell: (item) => (
+        <button
+          onClick={() => openTransfer(item)}
+          className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+        >
+          <ArrowRightLeft className="h-3 w-3" />
+          Điều chuyển
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -145,7 +251,11 @@ export default function CustomersPage() {
           </p>
         </div>
         <button
-          onClick={() => alert("Mở form thêm khách hàng")}
+          onClick={() => {
+            setFormError(null);
+            setForm(EMPTY_FORM);
+            setShowForm(true);
+          }}
           className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
         >
           <UserPlus className="h-4 w-4" />
@@ -203,6 +313,201 @@ export default function CustomersPage() {
           searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
           exportFileName="vnpt_khach_hang"
         />
+      )}
+
+      {/* Create Customer Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Thêm khách hàng</h3>
+              <button
+                onClick={() => setShowForm(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Tên khách hàng
+                </label>
+                <input
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Mã định danh (MST / CCCD)
+                </label>
+                <input
+                  value={form.identityCode}
+                  onChange={(e) => setForm({ ...form, identityCode: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Loại khách hàng
+                  </label>
+                  <select
+                    value={form.type}
+                    onChange={(e) => setForm({ ...form, type: e.target.value as CustomerType })}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  >
+                    {TYPE_OPTIONS.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Nhóm khách hàng
+                  </label>
+                  <select
+                    value={form.customerGroup}
+                    onChange={(e) =>
+                      setForm({ ...form, customerGroup: e.target.value as CustomerGroup })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  >
+                    {GROUP_OPTIONS.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Số điện thoại
+                  </label>
+                  <input
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    AM phụ trách
+                  </label>
+                  <input
+                    value={form.amStaff}
+                    onChange={(e) => setForm({ ...form, amStaff: e.target.value })}
+                    placeholder="Nguyễn Thị Tình"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Địa chỉ
+                </label>
+                <input
+                  value={form.address}
+                  onChange={(e) => setForm({ ...form, address: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              {formError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {formError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {submitting ? "Đang tạo..." : "Thêm khách hàng"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer AM Modal */}
+      {transferTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Điều chuyển AM phụ trách</h3>
+              <button
+                onClick={() => setTransferTarget(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="mb-3 text-xs text-slate-500">
+              Khách hàng: <span className="font-semibold text-slate-800">{transferTarget.name}</span>
+            </p>
+
+            <form onSubmit={handleTransfer} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  AM phụ trách mới
+                </label>
+                <input
+                  required
+                  value={transferStaff}
+                  onChange={(e) => setTransferStaff(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              {transferError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {transferError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setTransferTarget(null)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={transferring}
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {transferring ? "Đang điều chuyển..." : "Điều chuyển"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

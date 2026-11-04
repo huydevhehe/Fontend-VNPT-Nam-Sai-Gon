@@ -271,6 +271,34 @@ export async function initDatabase() {
   if (taskCountRes[0]?.count === 0) {
     await seedTasks();
   }
+
+  // Seed customers table independently (table may be newer than the rest of the schema)
+  const customerCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM customers");
+  if (customerCountRes[0]?.count === 0) {
+    await seedCustomers();
+  }
+}
+
+async function seedCustomers() {
+  console.log("[Database] Seeding dữ liệu Khách hàng...");
+
+  const customers: [string, string, string, string, string, string, string, string, string, string, string][] = [
+    ["CUS-01", "Công ty TNHH Thương mại Minh Phát", "0312345678", "Doanh nghiệp", "Tự phát triển", "0909123456", "123 Trần Xuân Soạn, P. Tân Hưng", "Internet Fiber", "2026-11-10", "Nguyễn Thị Tình", "Nguyễn Thị Tình"],
+    ["CUS-02", "Hộ kinh doanh An Bình", "0323456789", "Hộ kinh doanh", "Tập hiện hữu", "0918234567", "45 Huỳnh Tấn Phát, P. Tân Thuận", "Chữ ký số SmartCA", "2026-11-20", "Nguyễn Đức Tiến", "Nguyễn Đức Tiến"],
+    ["CUS-03", "Công ty Cổ phần Xây dựng Đại Thành", "0334567890", "Doanh nghiệp", "Tập hiện hữu", "0987345678", "78 Nguyễn Thị Thập, P. Tân Mỹ", "Hóa đơn điện tử VNPT Invoice", "2026-10-30", "Nguyễn Thị Huyền Trang", "Nguyễn Thị Huyền Trang"],
+    ["CUS-04", "Nguyễn Văn An", "079201012345", "Cá nhân", "Tự phát triển", "0932456789", "12 Đào Trí, P. Phú Thuận", "Internet Fiber, MyTV", "2026-09-05", "Phạm Thanh Hà", "Phạm Thanh Hà"],
+    ["CUS-05", "Hộ kinh doanh Phát Đạt", "0345678901", "Hộ kinh doanh", "Tập hiện hữu", "0977567890", "Khu phố 3, P. Xóm Chiếu", "Camera an ninh VNPT iAlert", "2026-12-01", "Nguyễn Lê Vi", "Nguyễn Lê Vi"],
+  ];
+  for (const c of customers) {
+    await run(
+      `INSERT OR REPLACE INTO customers (
+        id, name, identity_code, type, customer_group, phone, address, services, nearest_expiration, am_staff, am_caring_staff
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      c
+    );
+  }
+
+  console.log("[Database] Đã seed dữ liệu Khách hàng!");
 }
 
 async function seedTasks() {

@@ -18,7 +18,7 @@ customerRouter.get("/", async (req: Request, res: Response) => {
 customerRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   try {
     const result = await customerService.create(req.body);
-    res.status(201).json(result);
+    res.status(201).json({ success: true, data: { id: result.id }, message: result.message });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }

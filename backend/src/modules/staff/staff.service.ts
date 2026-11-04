@@ -40,6 +40,14 @@ export interface StaffUpdateInput {
   email?: string;
 }
 
+export interface StaffCreateInput {
+  code: string;
+  name: string;
+  role: string;
+  territory: string;
+  email: string;
+}
+
 function toStaffRecord(row: StaffRow): StaffRecordDto {
   return {
     id: row.id,
@@ -62,6 +70,22 @@ export class StaffService {
   async getAll(): Promise<StaffRecordDto[]> {
     const rows = await query<StaffRow>("SELECT * FROM staff ORDER BY code ASC");
     return rows.map(toStaffRecord);
+  }
+
+  async create(data: StaffCreateInput): Promise<StaffRecordDto> {
+    const existing = await query<StaffRow>("SELECT id FROM staff WHERE code = ?", [data.code]);
+    if (existing.length) {
+      throw new Error("Mã nhân viên đã tồn tại");
+    }
+
+    const id = `STAFF-${Date.now()}`;
+    await run(
+      "INSERT INTO staff (id, code, name, role, territory, assigned_customers, monthly_leads, monthly_contracts, revenue_executed, collection_rate, renewal_rate, status, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [id, data.code, data.name, data.role, data.territory, 0, 0, 0, 0, 0, 0, "Đang hoạt động", data.email]
+    );
+
+    const created = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
+    return toStaffRecord(created[0]);
   }
 
   async update(id: string, patch: StaffUpdateInput): Promise<StaffRecordDto> {

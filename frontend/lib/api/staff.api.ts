@@ -5,8 +5,20 @@ export type UpdateStaffInput = Partial<
   Pick<StaffRecord, "name" | "role" | "territory" | "status" | "email">
 >;
 
+export type CreateStaffInput = Pick<
+  StaffRecord,
+  "code" | "name" | "role" | "territory" | "email"
+>;
+
 export function getStaff(): Promise<StaffRecord[]> {
   return apiFetch<StaffRecord[]>("/staff");
+}
+
+export function createStaff(data: CreateStaffInput): Promise<StaffRecord> {
+  return apiFetch<StaffRecord>("/staff", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export function updateStaff(

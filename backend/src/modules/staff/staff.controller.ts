@@ -15,6 +15,22 @@ staffRouter.get("/", requireAuth, async (_req: Request, res: Response) => {
   }
 });
 
+// POST /api/staff — chỉ Admin được tạo mới
+staffRouter.post("/", requireAuth, async (req: Request, res: Response) => {
+  if (req.user?.role !== "Admin") {
+    res.status(403).json({ success: false, message: "Chỉ Admin được phép tạo Nhân viên" });
+    return;
+  }
+
+  try {
+    const { code, name, role, territory, email } = req.body;
+    const staff = await staffService.create({ code, name, role, territory, email });
+    res.status(201).json({ success: true, data: staff });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 // PATCH /api/staff/:id — chỉ Admin được cập nhật
 staffRouter.patch("/:id", requireAuth, async (req: Request, res: Response) => {
   if (req.user?.role !== "Admin") {

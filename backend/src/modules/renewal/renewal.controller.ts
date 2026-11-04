@@ -31,7 +31,7 @@ renewalRouter.post("/import", requireAuth, upload.single("file"), async (req: Re
     }
 
     const cohort = (req.body.cohort as string) || "THÁNG T";
-    const operator = (req.body.operator as string) || "Admin";
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
 
     const result = await renewalService.importExcel(req.file.buffer, cohort, operator);
     res.json({ success: true, ...result });
@@ -44,7 +44,8 @@ renewalRouter.post("/import", requireAuth, upload.single("file"), async (req: Re
 renewalRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { status, failureReason, operator } = req.body;
+    const { status, failureReason } = req.body;
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
     const result = await renewalService.updateStatus(id, status, failureReason, operator);
     res.json(result);
   } catch (error: any) {

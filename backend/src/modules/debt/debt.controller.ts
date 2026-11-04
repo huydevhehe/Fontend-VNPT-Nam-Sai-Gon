@@ -61,7 +61,7 @@ debtRouter.post("/import", requireAuth, handleUpload, async (req: Request, res: 
     }
 
     const month = (req.body.month as string) || "2026-10";
-    const operator = (req.body.operator as string) || "Admin";
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
 
     const result = await debtService.importExcel(req.file.buffer, month, operator);
     res.json({ success: true, ...result });
@@ -74,7 +74,8 @@ debtRouter.post("/import", requireAuth, handleUpload, async (req: Request, res: 
 debtRouter.patch("/:id/gach-no", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { amount, documentRef, operator } = req.body;
+    const { amount, documentRef } = req.body;
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
     const result = await debtService.gachNo(id, Number(amount), documentRef, operator);
     res.json(result);
   } catch (error: any) {

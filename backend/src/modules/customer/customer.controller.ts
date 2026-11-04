@@ -27,7 +27,8 @@ customerRouter.post("/", requireAuth, async (req: Request, res: Response) => {
 customerRouter.patch("/:id/transfer", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { newStaff, operator } = req.body;
+    const { newStaff } = req.body;
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
     const result = await customerService.transfer(id, newStaff, operator);
     res.json(result);
   } catch (error: any) {

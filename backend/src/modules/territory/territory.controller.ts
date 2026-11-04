@@ -17,7 +17,8 @@ territoryRouter.get("/", async (_req: Request, res: Response) => {
 territoryRouter.patch("/:id/households", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { householdCount, quarterCount, operator } = req.body;
+    const { householdCount, quarterCount } = req.body;
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
     const result = await territoryService.updateHouseholds(
       id,
       Number(householdCount),

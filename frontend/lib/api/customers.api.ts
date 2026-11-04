@@ -62,31 +62,19 @@ export interface CreateCustomerInput {
 }
 
 /**
- * Tạo khách hàng mới. Backend (`CustomerService.create`) chỉ trả `{id}`,
- * nên dựng lại `CustomerRecord` đầy đủ từ dữ liệu đã gửi + id trả về,
- * khớp đúng giá trị mặc định mà backend áp dụng (services/amStaff).
+ * Tạo khách hàng mới. Backend (`CustomerService.create`) trả về bản ghi
+ * đầy đủ vừa tạo (bao gồm giá trị mặc định do backend áp dụng), nên chỉ
+ * cần map qua `mapCustomerRow` như `getCustomers`, không tự chèn mặc định ở FE.
  */
 export async function createCustomer(
   data: CreateCustomerInput
 ): Promise<CustomerRecord> {
-  const result = await apiFetch<{ id: string }>("/customers", {
+  const row = await apiFetch<CustomerApiRow>("/customers", {
     method: "POST",
     body: JSON.stringify(data),
   });
 
-  return mapCustomerRow({
-    id: result.id,
-    name: data.name,
-    identity_code: data.identityCode || null,
-    type: data.type,
-    customer_group: data.customerGroup,
-    phone: data.phone || null,
-    address: data.address || null,
-    services: data.services || "Internet Fiber",
-    nearest_expiration: null,
-    am_staff: data.amStaff || "Nguyễn Thị Tình",
-    am_caring_staff: data.amStaff || "Nguyễn Thị Tình",
-  });
+  return mapCustomerRow(row);
 }
 
 export function transferCustomer(id: string, newStaff: string): Promise<void> {

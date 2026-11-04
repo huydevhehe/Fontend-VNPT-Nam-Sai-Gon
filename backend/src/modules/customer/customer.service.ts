@@ -44,7 +44,9 @@ export class CustomerService {
       ]
     );
 
-    return { success: true, id, message: "Thêm khách hàng thành công" };
+    const rows = await query("SELECT * FROM customers WHERE id = ?", [id]);
+
+    return { success: true, customer: rows[0], message: "Thêm khách hàng thành công" };
   }
 
   async transfer(id: string, newStaff: string, operator: string = "Admin") {

@@ -1,8 +1,38 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { DebtService } from "./debt.service.js";
 
-const upload = multer({ storage: multer.memoryStorage() });
+const ALLOWED_EXCEL_MIMES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+];
+const ALLOWED_EXCEL_EXT = /\.(xlsx|xls)$/i;
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (_req, file, cb) => {
+    const isAllowedMime = ALLOWED_EXCEL_MIMES.includes(file.mimetype);
+    const isAllowedExt = ALLOWED_EXCEL_EXT.test(file.originalname);
+    if (isAllowedMime || isAllowedExt) {
+      cb(null, true);
+    } else {
+      cb(new Error("Chỉ chấp nhận file Excel .xlsx/.xls"));
+    }
+  },
+});
+
+function handleUpload(req: Request, res: Response, next: NextFunction) {
+  upload.single("file")(req, res, (err: unknown) => {
+    if (err) {
+      const message = err instanceof Error ? err.message : "Lỗi upload file";
+      res.status(400).json({ success: false, message });
+      return;
+    }
+    next();
+  });
+}
+
 export const debtRouter = Router();
 const debtService = new DebtService();
 
@@ -22,7 +52,7 @@ debtRouter.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/debts/import
-debtRouter.post("/import", upload.single("file"), async (req: Request, res: Response): Promise<void> => {
+debtRouter.post("/import", handleUpload, async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
       res.status(400).json({ success: false, message: "Vui lòng đính kèm file Excel (.xlsx)" });

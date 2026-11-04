@@ -1,17 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { UploadCloud, FileSpreadsheet, Download, AlertCircle, Database, BarChart3 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { UploadCloud, FileSpreadsheet, Download, AlertCircle, CheckCircle2, Database, BarChart3 } from "lucide-react";
 import { getReportSummary, ReportSummary } from "@/lib/api/reports.api";
+import { importDebtsExcel } from "@/lib/api/debts.api";
+import { importRenewalsExcel } from "@/lib/api/renewals.api";
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("vi-VN").format(value) + " ₫";
 }
 
+type ImportModule = "debts" | "renewals";
+
 export default function DataTransferPage() {
   const [summary, setSummary] = useState<ReportSummary | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+
+  const [importModule, setImportModule] = useState<ImportModule>("debts");
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
+  const [importErrorMsg, setImportErrorMsg] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -46,6 +56,42 @@ export default function DataTransferPage() {
     };
   }, []);
 
+  async function handleFileSelected(file: File) {
+    setImporting(true);
+    setImportResult(null);
+    setImportErrorMsg(null);
+    try {
+      if (importModule === "debts") {
+        const month = new Date().toISOString().slice(0, 7);
+        const result = await importDebtsExcel(file, month);
+        setImportResult(
+          `Import "Nợ cước" thành công: ${result.importedCount}/${result.totalProcessed} dòng. Bỏ qua ${result.skippedCount} dòng lỗi.`
+        );
+      } else {
+        const result = await importRenewalsExcel(file, "THÁNG T");
+        setImportResult(
+          `Import "Gia hạn" thành công: ${result.importedCount}/${result.totalProcessed} dòng. Trùng ${result.duplicateCount} dòng, bỏ qua ${result.skippedCount} dòng lỗi.`
+        );
+      }
+      if (summaryError === null) {
+        try {
+          const data = await getReportSummary();
+          setSummary(data);
+        } catch {
+          // Không chặn luồng nếu reload số liệu tổng hợp thất bại
+        }
+      }
+    } catch (err) {
+      setImportErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Import file thất bại. Vui lòng thử lại."
+      );
+    } finally {
+      setImporting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -70,13 +116,53 @@ export default function DataTransferPage() {
           <p className="mt-1 text-xs text-slate-500 leading-relaxed">
             Nhập file nợ thu ngay, nợ lũy kế, gia hạn tháng T & T-1 theo đúng định dạng chuẩn.
           </p>
+          <label className="mt-4 block text-[11px] font-semibold text-slate-600">
+            Phân hệ nhập liệu
+          </label>
+          <select
+            value={importModule}
+            onChange={(e) => setImportModule(e.target.value as ImportModule)}
+            disabled={importing}
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 disabled:opacity-60"
+          >
+            <option value="debts">Nợ cước</option>
+            <option value="renewals">Gia hạn</option>
+          </select>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleFileSelected(file);
+              }
+              e.target.value = "";
+            }}
+          />
           <button
-            onClick={() => alert("Chọn file Excel để tải lên")}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-vnpt py-2.5 text-xs font-bold text-white hover:bg-vnpt-dark"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-vnpt py-2.5 text-xs font-bold text-white hover:bg-vnpt-dark disabled:opacity-60"
           >
             <UploadCloud className="h-4 w-4" />
-            <span className="btn-label">Tải lên file dữ liệu</span>
+            <span className="btn-label">
+              {importing ? "Đang tải lên..." : "Tải lên file dữ liệu"}
+            </span>
           </button>
+          {importResult ? (
+            <div className="mt-3 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-[11px] text-emerald-800">
+              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{importResult}</span>
+            </div>
+          ) : null}
+          {importErrorMsg ? (
+            <div className="mt-3 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50/70 px-3 py-2 text-[11px] text-rose-700">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{importErrorMsg}</span>
+            </div>
+          ) : null}
         </div>
 
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
@@ -89,13 +175,14 @@ export default function DataTransferPage() {
           <p className="mt-1 text-xs text-slate-500 leading-relaxed">
             Tải file mẫu Excel chuẩn `import+CSKH.xlsx` gồm 2 sheet: Thu ngay, Lũy kế và Gia hạn.
           </p>
-          <button
-            onClick={() => alert("Đang tải file mẫu import+CSKH.xlsx...")}
+          <a
+            href="/templates/import+CSKH.xlsx"
+            download
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
           >
             <Download className="h-4 w-4 text-slate-500" />
             <span>Tải mẫu import+CSKH.xlsx</span>
-          </button>
+          </a>
         </div>
 
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">

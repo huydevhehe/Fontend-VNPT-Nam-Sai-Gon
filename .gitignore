@@ -17,6 +17,7 @@ next-env.d.ts
 docs/
 *.zip
 *.xlsx
+!frontend/public/templates/*.xlsx
 *.docx
 *.docx.backup
 ~$*

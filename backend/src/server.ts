@@ -11,6 +11,7 @@ import { authRouter } from "./modules/auth/auth.controller.js";
 import { serviceRouter } from "./modules/service/service.controller.js";
 import { leadRouter } from "./modules/lead/lead.controller.js";
 import { contractRouter } from "./modules/contract/contract.controller.js";
+import { commissionRouter } from "./modules/commission/commission.controller.js";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/services", serviceRouter);
 app.use("/api/leads", leadRouter);
 app.use("/api/contracts", contractRouter);
+app.use("/api/commissions", commissionRouter);
 
 // Initialize DB and Start Server
 async function start() {

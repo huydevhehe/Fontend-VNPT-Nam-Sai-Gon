@@ -1,15 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { initialCommissionData } from "@/lib/crm/mock-data/crm-data";
+import { getCommissions } from "@/lib/api/commissions.api";
 import { CommissionRecord } from "@/lib/crm/types/crm.types";
 
 export default function CommissionsPage() {
-  const [data, setData] = useState<CommissionRecord[]>(initialCommissionData);
+  const [data, setData] = useState<CommissionRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCommissions() {
+      setLoading(true);
+      setError(null);
+      try {
+        const commissions = await getCommissions();
+        if (isMounted) {
+          setData(commissions);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu Hoa hồng. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadCommissions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const columns: Column<CommissionRecord>[] = [
     {
@@ -111,14 +146,28 @@ export default function CommissionsPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        title="Bảng đối soát hoa hồng"
-        subtitle="Chi tiết từng giao dịch nhận từ Sales và lệnh chi cho đối tác"
-        columns={columns}
-        data={data}
-        searchPlaceholder="Tìm theo đối tượng thụ hưởng, mã giao dịch..."
-        exportFileName="vnpt_hoa_hong"
-      />
+      {error ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+          <AlertTriangle className="h-6 w-6 text-rose-500" />
+          <p className="text-sm font-semibold text-rose-700">
+            Không thể tải dữ liệu Hoa hồng
+          </p>
+          <p className="text-xs text-rose-600">{error}</p>
+        </div>
+      ) : loading ? (
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+          Đang tải dữ liệu Hoa hồng...
+        </div>
+      ) : (
+        <DataTable
+          title="Bảng đối soát hoa hồng"
+          subtitle="Chi tiết từng giao dịch nhận từ Sales và lệnh chi cho đối tác"
+          columns={columns}
+          data={data}
+          searchPlaceholder="Tìm theo đối tượng thụ hưởng, mã giao dịch..."
+          exportFileName="vnpt_hoa_hong"
+        />
+      )}
     </div>
   );
 }

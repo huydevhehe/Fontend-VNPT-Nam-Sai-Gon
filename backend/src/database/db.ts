@@ -175,6 +175,21 @@ export async function initDatabase() {
     )
   `);
 
+  // 6e. Commissions table (Hoa hồng nội bộ & chi kênh)
+  await run(`
+    CREATE TABLE IF NOT EXISTS commissions (
+      id TEXT PRIMARY KEY,
+      recipient_name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      transaction_code TEXT NOT NULL,
+      amount REAL DEFAULT 0,
+      status TEXT DEFAULT 'Chờ nhận',
+      date TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // 6. Audit Logs
   await run(`
     CREATE TABLE IF NOT EXISTS audit_logs (
@@ -228,6 +243,33 @@ export async function initDatabase() {
   if (contractCountRes[0]?.count === 0) {
     await seedContracts();
   }
+
+  // Seed commissions table independently (table may be newer than the rest of the schema)
+  const commissionCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM commissions");
+  if (commissionCountRes[0]?.count === 0) {
+    await seedCommissions();
+  }
+}
+
+async function seedCommissions() {
+  console.log("[Database] Seeding dữ liệu Hoa hồng...");
+
+  const commissions: [string, string, string, string, number, string, string][] = [
+    ["COM-01", "Nguyễn Thị Tình", "Hoa hồng nội bộ", "GD-26001", 1440000, "Đã nhận", "2026-10-05"],
+    ["COM-02", "Đại lý Phú Mỹ", "Hoa hồng chi kênh", "GD-26002", 720000, "Chờ chi", "2026-10-08"],
+    ["COM-03", "Nguyễn Đức Tiến", "Hoa hồng nội bộ", "GD-26003", 1110000, "Chờ nhận", "2026-10-12"],
+    ["COM-04", "Đối tác Thành Lợi", "Hoa hồng chi kênh", "GD-26004", 1920000, "Đã chi", "2026-10-15"],
+  ];
+  for (const c of commissions) {
+    await run(
+      `INSERT OR REPLACE INTO commissions (
+        id, recipient_name, type, transaction_code, amount, status, date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      c
+    );
+  }
+
+  console.log("[Database] Đã seed dữ liệu Hoa hồng!");
 }
 
 async function seedContracts() {

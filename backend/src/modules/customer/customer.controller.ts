@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { requireAuth } from "../../middleware/require-auth.js";
 import { CustomerService } from "./customer.service.js";
 
 export const customerRouter = Router();
@@ -14,7 +15,7 @@ customerRouter.get("/", async (req: Request, res: Response) => {
   }
 });
 
-customerRouter.post("/", async (req: Request, res: Response) => {
+customerRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   try {
     const result = await customerService.create(req.body);
     res.status(201).json(result);
@@ -23,7 +24,7 @@ customerRouter.post("/", async (req: Request, res: Response) => {
   }
 });
 
-customerRouter.patch("/:id/transfer", async (req: Request, res: Response) => {
+customerRouter.patch("/:id/transfer", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { newStaff, operator } = req.body;

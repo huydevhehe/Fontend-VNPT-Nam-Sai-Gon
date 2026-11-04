@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
+import { requireAuth } from "../../middleware/require-auth.js";
 import { RenewalService } from "./renewal.service.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -22,7 +23,7 @@ renewalRouter.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/renewals/import
-renewalRouter.post("/import", upload.single("file"), async (req: Request, res: Response): Promise<void> => {
+renewalRouter.post("/import", requireAuth, upload.single("file"), async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
       res.status(400).json({ success: false, message: "Vui lòng đính kèm file Excel (.xlsx)" });
@@ -40,7 +41,7 @@ renewalRouter.post("/import", upload.single("file"), async (req: Request, res: R
 });
 
 // PATCH /api/renewals/:id/status
-renewalRouter.patch("/:id/status", async (req: Request, res: Response) => {
+renewalRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status, failureReason, operator } = req.body;

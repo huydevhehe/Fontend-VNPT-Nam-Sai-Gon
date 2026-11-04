@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { requireAuth } from "../../middleware/require-auth.js";
 import { TerritoryService } from "./territory.service.js";
 
 export const territoryRouter = Router();
@@ -13,7 +14,7 @@ territoryRouter.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-territoryRouter.patch("/:id/households", async (req: Request, res: Response) => {
+territoryRouter.patch("/:id/households", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { householdCount, quarterCount, operator } = req.body;

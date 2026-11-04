@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
+import { requireAuth } from "../../middleware/require-auth.js";
 import { DebtService } from "./debt.service.js";
 
 const ALLOWED_EXCEL_MIMES = [
@@ -52,7 +53,7 @@ debtRouter.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/debts/import
-debtRouter.post("/import", handleUpload, async (req: Request, res: Response): Promise<void> => {
+debtRouter.post("/import", requireAuth, handleUpload, async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
       res.status(400).json({ success: false, message: "Vui lòng đính kèm file Excel (.xlsx)" });
@@ -70,7 +71,7 @@ debtRouter.post("/import", handleUpload, async (req: Request, res: Response): Pr
 });
 
 // PATCH /api/debts/:id/gach-no
-debtRouter.patch("/:id/gach-no", async (req: Request, res: Response) => {
+debtRouter.patch("/:id/gach-no", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { amount, documentRef, operator } = req.body;

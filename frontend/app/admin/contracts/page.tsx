@@ -4,11 +4,30 @@ import { useEffect, useState, FormEvent } from "react";
 import { FileText, Plus, CheckCircle, Clock, Banknote, ShieldCheck, AlertTriangle, X } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { getContracts, createContract } from "@/lib/api/contracts.api";
+import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { getContracts, createContract, updateContractStatus } from "@/lib/api/contracts.api";
 import { ContractRecord } from "@/lib/crm/types/crm.types";
 
 const CHANNEL_OPTIONS = ["Online", "Đối tác", "Khách hàng hiện hữu", "Chiến dịch"];
+
+const DEPLOYMENT_STATUSES: ContractRecord["deploymentStatus"][] = [
+  "Chưa triển khai",
+  "Đang triển khai",
+  "Hoàn tất",
+  "Tạm dừng",
+  "Hủy",
+];
+
+const PAYMENT_STATUSES: ContractRecord["paymentStatus"][] = [
+  "Chưa thanh toán",
+  "Đã thanh toán",
+];
+
+const DOCUMENT_STATUSES: ContractRecord["documentStatus"][] = [
+  "Soạn thảo",
+  "Khách trình ký",
+  "Hoàn thiện bàn giao",
+];
 
 interface ContractFormState {
   transactionCode: string;
@@ -149,17 +168,56 @@ export default function ContractsPage() {
     {
       header: "Triển khai",
       accessorKey: "deploymentStatus",
-      cell: (item) => <StatusBadge status={item.deploymentStatus} />,
+      cell: (item) => (
+        <StatusSelect
+          value={item.deploymentStatus}
+          options={DEPLOYMENT_STATUSES}
+          onChange={async (next) => {
+            const updated = await updateContractStatus(item.id, {
+              deploymentStatus: next,
+            });
+            setData((prev) =>
+              prev.map((row) => (row.id === item.id ? updated : row))
+            );
+          }}
+        />
+      ),
     },
     {
       header: "Thanh toán",
       accessorKey: "paymentStatus",
-      cell: (item) => <StatusBadge status={item.paymentStatus} />,
+      cell: (item) => (
+        <StatusSelect
+          value={item.paymentStatus}
+          options={PAYMENT_STATUSES}
+          onChange={async (next) => {
+            const updated = await updateContractStatus(item.id, {
+              paymentStatus: next,
+            });
+            setData((prev) =>
+              prev.map((row) => (row.id === item.id ? updated : row))
+            );
+          }}
+        />
+      ),
     },
     {
       header: "Trạng thái hồ sơ",
       accessorKey: "documentStatus",
-      cell: (item) => <StatusBadge status={item.documentStatus} />,
+      cell: (item) => (
+        <StatusSelect
+          value={item.documentStatus}
+          options={DOCUMENT_STATUSES}
+          onChange={async (next) => {
+            const updated = await updateContractStatus(item.id, {
+              documentStatus: next,
+            });
+            setData((prev) =>
+              prev.map((row) => (row.id === item.id ? updated : row))
+            );
+          }}
+        />
+      ),
     },
   ];
 

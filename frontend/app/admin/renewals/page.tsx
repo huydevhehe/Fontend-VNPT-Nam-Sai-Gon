@@ -13,6 +13,7 @@ import {
   importRenewalsExcel,
   updateRenewalStatus,
 } from "@/lib/api/renewals.api";
+import StatusSelect from "@/components/admin/shared/StatusSelect";
 
 const RENEWAL_STATUS_OPTIONS: RenewalStatus[] = [
   "Chưa xử lý",
@@ -26,7 +27,6 @@ export default function RenewalsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedCohort, setSelectedCohort] = useState<"ALL" | "THÁNG T" | "THÁNG T-1">("ALL");
 
@@ -77,25 +77,14 @@ export default function RenewalsPage() {
   }
 
   async function handleStatusChange(item: RenewalRecord, nextStatus: RenewalStatus) {
-    setUpdatingId(item.id);
-    try {
-      await updateRenewalStatus(item.id, nextStatus);
-      setData((prev) =>
-        prev.map((row) =>
-          row.id === item.id
-            ? { ...row, status: nextStatus, failureReason: undefined }
-            : row
-        )
-      );
-    } catch (err) {
-      alert(
-        err instanceof Error
-          ? err.message
-          : "Cập nhật trạng thái gia hạn thất bại. Vui lòng thử lại."
-      );
-    } finally {
-      setUpdatingId(null);
-    }
+    await updateRenewalStatus(item.id, nextStatus);
+    setData((prev) =>
+      prev.map((row) =>
+        row.id === item.id
+          ? { ...row, status: nextStatus, failureReason: undefined }
+          : row
+      )
+    );
   }
 
   const filteredData = data.filter((item) => {
@@ -162,24 +151,13 @@ export default function RenewalsPage() {
     {
       header: "Trạng thái",
       accessorKey: "status",
-      // Lưu ý: Task 8 sẽ thay <select> thuần này bằng component StatusSelect
-      // dùng chung cho cả 4 trang (debt/contract/renewal/staff).
       cell: (item) => (
         <div className="flex flex-col gap-1">
-          <select
+          <StatusSelect
             value={item.status}
-            disabled={updatingId === item.id}
-            onChange={(e) =>
-              handleStatusChange(item, e.target.value as RenewalStatus)
-            }
-            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 disabled:opacity-60"
-          >
-            {RENEWAL_STATUS_OPTIONS.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
+            options={RENEWAL_STATUS_OPTIONS}
+            onChange={(next) => handleStatusChange(item, next)}
+          />
           {item.failureReason && (
             <span className="text-[10px] text-rose-500 font-medium">
               Lý do: {item.failureReason}

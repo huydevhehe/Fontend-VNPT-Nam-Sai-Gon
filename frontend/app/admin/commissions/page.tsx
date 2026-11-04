@@ -4,9 +4,16 @@ import { useEffect, useState } from "react";
 import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { getCommissions } from "@/lib/api/commissions.api";
+import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { getCommissions, updateCommissionStatus } from "@/lib/api/commissions.api";
 import { CommissionRecord } from "@/lib/crm/types/crm.types";
+
+const COMMISSION_STATUSES: CommissionRecord["status"][] = [
+  "Đã nhận",
+  "Chờ nhận",
+  "Đã chi",
+  "Chờ chi",
+];
 
 export default function CommissionsPage() {
   const [data, setData] = useState<CommissionRecord[]>([]);
@@ -94,7 +101,18 @@ export default function CommissionsPage() {
     {
       header: "Trạng thái",
       accessorKey: "status",
-      cell: (item) => <StatusBadge status={item.status} />,
+      cell: (item) => (
+        <StatusSelect
+          value={item.status}
+          options={COMMISSION_STATUSES}
+          onChange={async (next) => {
+            const updated = await updateCommissionStatus(item.id, next);
+            setData((prev) =>
+              prev.map((row) => (row.id === item.id ? updated : row))
+            );
+          }}
+        />
+      ),
     },
   ];
 

@@ -35,6 +35,8 @@ export interface CreateTaskInput {
 const DEFAULT_TASK_PRIORITY = "Vừa";
 const DEFAULT_TASK_STATUS = "Mới";
 
+const TASK_STATUSES = ["Mới", "Đang làm", "Hoàn tất", "Quá hạn"] as const;
+
 function toTaskRecord(row: TaskRow): TaskRecordDto {
   return {
     id: row.id,
@@ -83,6 +85,10 @@ export class TaskService {
   async updateStatus(id: string, status: string): Promise<TaskRecordDto> {
     if (!status) {
       throw new Error("Thiếu trạng thái cần cập nhật");
+    }
+
+    if (!TASK_STATUSES.includes(status as (typeof TASK_STATUSES)[number])) {
+      throw new Error("Trạng thái không hợp lệ");
     }
 
     const existing = await query<TaskRow>("SELECT * FROM tasks WHERE id = ?", [id]);

@@ -37,6 +37,14 @@ export interface CreateLeadInput {
 
 const DEFAULT_LEAD_STATUS = "Mới tiếp nhận";
 
+const LEAD_STATUSES = [
+  "Mới tiếp nhận",
+  "Đã liên hệ",
+  "Đang tư vấn",
+  "Chốt thành công",
+  "Thất bại",
+] as const;
+
 function toLeadRecord(row: LeadRow): LeadRecordDto {
   return {
     id: row.id,
@@ -96,6 +104,10 @@ export class LeadService {
   async updateStatus(id: string, status: string): Promise<LeadRecordDto> {
     if (!status) {
       throw new Error("Thiếu trạng thái cần cập nhật");
+    }
+
+    if (!LEAD_STATUSES.includes(status as (typeof LEAD_STATUSES)[number])) {
+      throw new Error("Trạng thái không hợp lệ");
     }
 
     const existing = await query<LeadRow>("SELECT * FROM leads WHERE id = ?", [id]);

@@ -4,11 +4,12 @@ import { useEffect, useState, FormEvent } from "react";
 import { CheckSquare, Plus, Clock, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { getTasks, createTask } from "@/lib/api/tasks.api";
-import { TaskRecord, TaskPriority } from "@/lib/crm/types/crm.types";
+import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { getTasks, createTask, updateTaskStatus } from "@/lib/api/tasks.api";
+import { TaskRecord, TaskPriority, TaskStatus } from "@/lib/crm/types/crm.types";
 
 const PRIORITY_OPTIONS: TaskPriority[] = ["Thấp", "Vừa", "Cao"];
+const TASK_STATUSES: TaskStatus[] = ["Mới", "Đang làm", "Hoàn tất", "Quá hạn"];
 
 interface TaskFormState {
   title: string;
@@ -150,7 +151,18 @@ export default function TasksPage() {
     {
       header: "Trạng thái",
       accessorKey: "status",
-      cell: (item) => <StatusBadge status={item.status} />,
+      cell: (item) => (
+        <StatusSelect
+          value={item.status}
+          options={TASK_STATUSES}
+          onChange={async (next) => {
+            const updated = await updateTaskStatus(item.id, next);
+            setData((prev) =>
+              prev.map((row) => (row.id === item.id ? updated : row))
+            );
+          }}
+        />
+      ),
     },
   ];
 

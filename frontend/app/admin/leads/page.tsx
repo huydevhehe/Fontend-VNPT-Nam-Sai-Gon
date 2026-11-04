@@ -4,9 +4,17 @@ import { useEffect, useState, FormEvent } from "react";
 import { Target, UserPlus, PhoneCall, CheckCircle2, TrendingUp, AlertTriangle, X } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { getLeads, createLead } from "@/lib/api/leads.api";
-import { LeadRecord } from "@/lib/crm/types/crm.types";
+import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { getLeads, createLead, updateLeadStatus } from "@/lib/api/leads.api";
+import { LeadRecord, LeadStatus } from "@/lib/crm/types/crm.types";
+
+const LEAD_STATUSES: LeadStatus[] = [
+  "Mới tiếp nhận",
+  "Đã liên hệ",
+  "Đang tư vấn",
+  "Chốt thành công",
+  "Thất bại",
+];
 
 const GROUP_OPTIONS: LeadRecord["group"][] = [
   "Khách hàng mới",
@@ -154,7 +162,18 @@ export default function LeadsPage() {
     {
       header: "Trạng thái",
       accessorKey: "status",
-      cell: (item) => <StatusBadge status={item.status} />,
+      cell: (item) => (
+        <StatusSelect
+          value={item.status}
+          options={LEAD_STATUSES}
+          onChange={async (next) => {
+            const updated = await updateLeadStatus(item.id, next);
+            setData((prev) =>
+              prev.map((row) => (row.id === item.id ? updated : row))
+            );
+          }}
+        />
+      ),
     },
     {
       header: "Giá trị dự kiến",

@@ -41,6 +41,16 @@ export interface CreateContractInput {
   channel: string;
 }
 
+const DEPLOYMENT_STATUSES = [
+  "Chưa triển khai",
+  "Đang triển khai",
+  "Hoàn tất",
+  "Tạm dừng",
+  "Hủy",
+] as const;
+const PAYMENT_STATUSES = ["Chưa thanh toán", "Đã thanh toán"] as const;
+const DOCUMENT_STATUSES = ["Soạn thảo", "Khách trình ký", "Hoàn thiện bàn giao"] as const;
+
 function toContractRecord(row: ContractRow): ContractRecordDto {
   let subscriberCodes: string[] = [];
   try {
@@ -135,6 +145,27 @@ export class ContractService {
       if (patch.totalValue < 0) {
         throw new Error("Giá trị hợp đồng không được âm");
       }
+    }
+
+    if (
+      patch.deploymentStatus !== undefined &&
+      !DEPLOYMENT_STATUSES.includes(patch.deploymentStatus as (typeof DEPLOYMENT_STATUSES)[number])
+    ) {
+      throw new Error("Trạng thái không hợp lệ");
+    }
+
+    if (
+      patch.paymentStatus !== undefined &&
+      !PAYMENT_STATUSES.includes(patch.paymentStatus as (typeof PAYMENT_STATUSES)[number])
+    ) {
+      throw new Error("Trạng thái không hợp lệ");
+    }
+
+    if (
+      patch.documentStatus !== undefined &&
+      !DOCUMENT_STATUSES.includes(patch.documentStatus as (typeof DOCUMENT_STATUSES)[number])
+    ) {
+      throw new Error("Trạng thái không hợp lệ");
     }
 
     const current = existing[0];

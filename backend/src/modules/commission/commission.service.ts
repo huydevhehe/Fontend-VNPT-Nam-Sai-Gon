@@ -20,6 +20,8 @@ export interface CommissionRecordDto {
   date: string;
 }
 
+const COMMISSION_STATUSES = ["Đã nhận", "Chờ nhận", "Đã chi", "Chờ chi"] as const;
+
 function toCommissionRecord(row: CommissionRow): CommissionRecordDto {
   return {
     id: row.id,
@@ -41,6 +43,10 @@ export class CommissionService {
   async updateStatus(id: string, status: string): Promise<CommissionRecordDto> {
     if (!status) {
       throw new Error("Thiếu trạng thái cần cập nhật");
+    }
+
+    if (!COMMISSION_STATUSES.includes(status as (typeof COMMISSION_STATUSES)[number])) {
+      throw new Error("Trạng thái không hợp lệ");
     }
 
     const existing = await query<CommissionRow>("SELECT * FROM commissions WHERE id = ?", [id]);

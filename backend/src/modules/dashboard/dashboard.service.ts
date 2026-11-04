@@ -1,7 +1,7 @@
 import { query } from "../../database/db.js";
 
 export class DashboardService {
-  async getLiveStats(month: string = "2026-10") {
+  async getLiveStats(month: string = new Date().toISOString().slice(0, 7)) {
     // 1. Debt Stats
     const debtRes = await query<{
       totalImmediate: number;

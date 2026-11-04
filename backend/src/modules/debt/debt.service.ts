@@ -117,6 +117,10 @@ export class DebtService {
   }
 
   async gachNo(id: string, amount: number, documentRef?: string, operator: string = "Admin") {
+    if (Number.isNaN(amount) || amount < 0) {
+      throw new Error("Số tiền thu được không được âm");
+    }
+
     const existing = await query<DebtRow>("SELECT * FROM debts WHERE id = ?", [id]);
     if (!existing.length) {
       throw new Error("Không tìm thấy bản ghi công nợ");

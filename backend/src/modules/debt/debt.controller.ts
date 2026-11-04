@@ -79,7 +79,7 @@ debtRouter.patch("/:id/gach-no", requireAuth, async (req: Request, res: Response
     const result = await debtService.gachNo(id, Number(amount), documentRef, operator);
     res.json(result);
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 

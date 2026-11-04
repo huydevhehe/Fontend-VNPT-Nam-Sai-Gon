@@ -6,6 +6,13 @@ export class TerritoryService {
   }
 
   async updateHouseholds(id: string, householdCount: number, quarterCount?: number, operator: string = "Admin") {
+    if (Number.isNaN(householdCount) || householdCount < 0) {
+      throw new Error("Số hộ dân không được âm");
+    }
+    if (quarterCount !== undefined && (Number.isNaN(quarterCount) || quarterCount < 0)) {
+      throw new Error("Số hộ đạt chuẩn khu phố văn hóa không được âm");
+    }
+
     let sql = "UPDATE territories SET household_count = ?";
     const params: any[] = [householdCount];
 

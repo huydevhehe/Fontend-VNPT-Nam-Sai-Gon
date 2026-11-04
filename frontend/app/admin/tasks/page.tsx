@@ -344,7 +344,7 @@ export default function TasksPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-xl bg-vnpt px-3.5 py-2 text-xs font-bold text-white hover:bg-vnpt-dark disabled:opacity-60"
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {submitting ? "Đang giao..." : "Giao việc"}
                 </button>

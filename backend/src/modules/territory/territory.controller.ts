@@ -27,7 +27,7 @@ territoryRouter.patch("/:id/households", requireAuth, async (req: Request, res: 
     );
     res.json(result);
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 });
 

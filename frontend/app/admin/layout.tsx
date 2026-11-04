@@ -52,7 +52,7 @@ export default function AdminLayout({
           <button
             type="button"
             onClick={handleLogout}
-            className="btn-label rounded-lg border border-slate-200 px-3 py-1 text-xs text-slate-600 hover:bg-slate-50"
+            className="btn-label rounded-lg border border-slate-200 px-3 py-1 text-slate-600 hover:bg-slate-50"
           >
             Đăng xuất
           </button>

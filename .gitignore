@@ -33,3 +33,5 @@ backend/data/
 /*.png
 /*.jpg
 /*.jpeg
+.worktrees/
+.superpowers/

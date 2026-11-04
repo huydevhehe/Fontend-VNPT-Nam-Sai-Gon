@@ -1,4 +1,4 @@
-const API_BASE_URL =
+export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8087/api";
 
 const TOKEN_STORAGE_KEY = "vnpt_token";
@@ -9,7 +9,19 @@ interface ApiEnvelope<T> {
   message?: string;
 }
 
-function getToken(): string | null {
+/**
+ * Lỗi từ `apiFetch` khi response không ok hoặc `success: false`, mang kèm
+ * `status` HTTP để nơi gọi (hoặc `apiFetch` chính nó) phân biệt với lỗi
+ * mất kết nối mạng (vẫn ném `Error` thường).
+ */
+export class ApiError extends Error {
+  constructor(message: string, public status: number) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export function getToken(): string | null {
   if (typeof window === "undefined") {
     return null;
   }
@@ -64,7 +76,10 @@ export async function apiFetch<T>(
   if (!response.ok || !payload || payload.success === false) {
     const message =
       payload?.message || `Yêu cầu thất bại với mã lỗi ${response.status}`;
-    throw new Error(message);
+    if (typeof window !== "undefined" && response.status === 401) {
+      window.dispatchEvent(new Event("vnpt:unauthorized"));
+    }
+    throw new ApiError(message, response.status);
   }
 
   return payload.data as T;

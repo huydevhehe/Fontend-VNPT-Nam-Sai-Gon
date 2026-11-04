@@ -1,19 +1,5 @@
 import { AuditLogRecord, StaffRecord } from "@/lib/crm/types/crm.types";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8087/api";
-const TOKEN_STORAGE_KEY = "vnpt_token";
-
-function getToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  try {
-    return window.localStorage.getItem(TOKEN_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
+import { getToken, API_BASE_URL } from "./client";
 
 /**
  * Field thô (snake_case) của bảng `staff`, được

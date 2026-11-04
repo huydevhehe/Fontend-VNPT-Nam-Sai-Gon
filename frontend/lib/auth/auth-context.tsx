@@ -83,6 +83,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  useEffect(() => {
+    window.addEventListener("vnpt:unauthorized", logout);
+    return () => {
+      window.removeEventListener("vnpt:unauthorized", logout);
+    };
+  }, [logout]);
+
   return (
     <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}

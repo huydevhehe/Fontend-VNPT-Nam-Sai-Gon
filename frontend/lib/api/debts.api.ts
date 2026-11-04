@@ -1,9 +1,5 @@
-import { apiFetch } from "./client";
+import { apiFetch, getToken, API_BASE_URL } from "./client";
 import { DebtRecord, DebtStatus } from "@/lib/crm/types/crm.types";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8087/api";
-const TOKEN_STORAGE_KEY = "vnpt_token";
 
 /**
  * Field thô (snake_case) trả về từ `backend/src/modules/debt/debt.service.ts`
@@ -69,17 +65,6 @@ export interface ImportDebtsResult {
   importedCount: number;
   skippedCount: number;
   errors: string[];
-}
-
-function getToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  try {
-    return window.localStorage.getItem(TOKEN_STORAGE_KEY);
-  } catch {
-    return null;
-  }
 }
 
 /**

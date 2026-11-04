@@ -1,16 +1,89 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MapPin, Building, Users, TrendingUp, Edit3, AlertTriangle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { MapPin, Building, Users, TrendingUp, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import { TerritoryRecord } from "@/lib/crm/types/crm.types";
-import { getTerritories } from "@/lib/api/territories.api";
+import { getTerritories, updateTerritoryHouseholds } from "@/lib/api/territories.api";
 
 export default function TerritoriesPage() {
   const [data, setData] = useState<TerritoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State cho pattern click-to-edit số hộ dân inline trên bảng.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null);
+  const rowErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (rowErrorTimerRef.current) {
+        clearTimeout(rowErrorTimerRef.current);
+      }
+    };
+  }, []);
+
+  function showRowError(id: string, message: string) {
+    if (rowErrorTimerRef.current) {
+      clearTimeout(rowErrorTimerRef.current);
+    }
+    setRowError({ id, message });
+    rowErrorTimerRef.current = setTimeout(() => {
+      setRowError(null);
+    }, 4000);
+  }
+
+  function startEditHousehold(item: TerritoryRecord) {
+    setEditingId(item.id);
+    setEditValue(String(item.householdCount));
+    setRowError(null);
+  }
+
+  function cancelEditHousehold() {
+    setEditingId(null);
+    setEditValue("");
+  }
+
+  async function saveEditHousehold(item: TerritoryRecord) {
+    // Tránh lưu 2 lần khi cả onBlur và Enter đều kích hoạt.
+    if (editingId !== item.id) {
+      return;
+    }
+
+    const raw = editValue.trim();
+    const parsed = Number(raw);
+    if (raw === "" || Number.isNaN(parsed)) {
+      showRowError(item.id, "Số hộ dân không hợp lệ");
+      cancelEditHousehold();
+      return;
+    }
+
+    if (parsed === item.householdCount) {
+      cancelEditHousehold();
+      return;
+    }
+
+    setSavingId(item.id);
+    try {
+      await updateTerritoryHouseholds(item.id, parsed);
+      setData((prev) =>
+        prev.map((t) => (t.id === item.id ? { ...t, householdCount: parsed } : t))
+      );
+      cancelEditHousehold();
+    } catch (err) {
+      showRowError(
+        item.id,
+        err instanceof Error ? err.message : "Cập nhật số hộ dân thất bại"
+      );
+      cancelEditHousehold();
+    } finally {
+      setSavingId(null);
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -64,11 +137,46 @@ export default function TerritoriesPage() {
     {
       header: "Số hộ dân (Cập nhật CRM)",
       accessorKey: "householdCount",
-      cell: (item) => (
-        <span className="font-bold text-slate-800">
-          {item.householdCount.toLocaleString("vi-VN")}
-        </span>
-      ),
+      cell: (item) => {
+        if (editingId === item.id) {
+          return (
+            <input
+              type="number"
+              min={0}
+              autoFocus
+              value={editValue}
+              disabled={savingId === item.id}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={() => saveEditHousehold(item)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                } else if (e.key === "Escape") {
+                  cancelEditHousehold();
+                }
+              }}
+              className="w-24 rounded-lg border border-blue-400 px-2 py-1 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          );
+        }
+        return (
+          <div className="flex flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={() => startEditHousehold(item)}
+              className="w-fit rounded-lg px-1.5 py-0.5 text-left font-bold text-slate-800 hover:bg-blue-50 hover:text-blue-700"
+              title="Nhấn để sửa số hộ dân"
+            >
+              {item.householdCount.toLocaleString("vi-VN")}
+            </button>
+            {rowError?.id === item.id && (
+              <span className="text-[10px] font-semibold text-rose-600">
+                {rowError.message}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: "Cơ hội kinh doanh / CĐS",
@@ -95,18 +203,6 @@ export default function TerritoriesPage() {
       accessorKey: "leadershipContact",
       cell: (item) => (
         <span className="text-slate-600">{item.leadershipContact}</span>
-      ),
-    },
-    {
-      header: "Thao tác",
-      cell: () => (
-        <button
-          onClick={() => alert("Chỉnh sửa số hộ dân / khu phố trực tiếp trên CRM")}
-          className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          <Edit3 className="h-3 w-3" />
-          <span>Sửa số hộ</span>
-        </button>
       ),
     },
   ];

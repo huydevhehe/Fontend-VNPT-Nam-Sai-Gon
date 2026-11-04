@@ -18,6 +18,11 @@ export default function TerritoriesPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null);
   const rowErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Ref luôn giữ giá trị editingId MỚI NHẤT (khác với biến trong closure của
+  // saveEditHousehold vốn bị "đứng" ở giá trị lúc gọi hàm) — dùng để kiểm tra
+  // lại sau khi await API xong, tránh đóng nhầm ô edit của dòng khác nếu
+  // người dùng đã click sang sửa dòng khác trong lúc đang chờ API trả về.
+  const editingIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -38,19 +43,21 @@ export default function TerritoriesPage() {
   }
 
   function startEditHousehold(item: TerritoryRecord) {
+    editingIdRef.current = item.id;
     setEditingId(item.id);
     setEditValue(String(item.householdCount));
     setRowError(null);
   }
 
   function cancelEditHousehold() {
+    editingIdRef.current = null;
     setEditingId(null);
     setEditValue("");
   }
 
   async function saveEditHousehold(item: TerritoryRecord) {
     // Tránh lưu 2 lần khi cả onBlur và Enter đều kích hoạt.
-    if (editingId !== item.id) {
+    if (editingIdRef.current !== item.id) {
       return;
     }
 
@@ -58,12 +65,16 @@ export default function TerritoriesPage() {
     const parsed = Number(raw);
     if (raw === "" || Number.isNaN(parsed)) {
       showRowError(item.id, "Số hộ dân không hợp lệ");
-      cancelEditHousehold();
+      if (editingIdRef.current === item.id) {
+        cancelEditHousehold();
+      }
       return;
     }
 
     if (parsed === item.householdCount) {
-      cancelEditHousehold();
+      if (editingIdRef.current === item.id) {
+        cancelEditHousehold();
+      }
       return;
     }
 
@@ -73,13 +84,20 @@ export default function TerritoriesPage() {
       setData((prev) =>
         prev.map((t) => (t.id === item.id ? { ...t, householdCount: parsed } : t))
       );
-      cancelEditHousehold();
+      // Chỉ đóng edit nếu nó vẫn đang thuộc đúng dòng này — trong lúc chờ
+      // API, người dùng có thể đã click sang sửa dòng khác (editingIdRef đã
+      // đổi); nếu vậy không được đóng/xóa nội dung đang gõ của dòng khác.
+      if (editingIdRef.current === item.id) {
+        cancelEditHousehold();
+      }
     } catch (err) {
       showRowError(
         item.id,
         err instanceof Error ? err.message : "Cập nhật số hộ dân thất bại"
       );
-      cancelEditHousehold();
+      if (editingIdRef.current === item.id) {
+        cancelEditHousehold();
+      }
     } finally {
       setSavingId(null);
     }

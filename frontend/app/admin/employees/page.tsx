@@ -1,15 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { initialStaffData } from "@/lib/crm/mock-data/crm-data";
+import { getStaff } from "@/lib/api/staff.api";
 import { StaffRecord } from "@/lib/crm/types/crm.types";
 
 export default function EmployeesPage() {
-  const [data, setData] = useState<StaffRecord[]>(initialStaffData);
+  const [data, setData] = useState<StaffRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadStaff() {
+      setLoading(true);
+      setError(null);
+      try {
+        const staff = await getStaff();
+        if (isMounted) {
+          setData(staff);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu Nhân viên. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadStaff();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const columns: Column<StaffRecord>[] = [
     {
@@ -125,14 +160,28 @@ export default function EmployeesPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        title="Danh sách nhân viên & Chỉ tiêu"
-        subtitle="Chi tiết tỷ lệ hoàn thành thu nợ, gia hạn và doanh thu từng nhân viên"
-        columns={columns}
-        data={data}
-        searchPlaceholder="Tìm theo tên nhân viên, mã NV, địa bàn..."
-        exportFileName="vnpt_nhan_vien"
-      />
+      {error ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+          <AlertTriangle className="h-6 w-6 text-rose-500" />
+          <p className="text-sm font-semibold text-rose-700">
+            Không thể tải dữ liệu Nhân viên
+          </p>
+          <p className="text-xs text-rose-600">{error}</p>
+        </div>
+      ) : loading ? (
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+          Đang tải dữ liệu Nhân viên...
+        </div>
+      ) : (
+        <DataTable
+          title="Danh sách nhân viên & Chỉ tiêu"
+          subtitle="Chi tiết tỷ lệ hoàn thành thu nợ, gia hạn và doanh thu từng nhân viên"
+          columns={columns}
+          data={data}
+          searchPlaceholder="Tìm theo tên nhân viên, mã NV, địa bàn..."
+          exportFileName="vnpt_nhan_vien"
+        />
+      )}
     </div>
   );
 }

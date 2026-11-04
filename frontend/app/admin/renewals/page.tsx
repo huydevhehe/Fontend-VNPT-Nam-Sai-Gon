@@ -22,7 +22,7 @@ export default function RenewalsPage() {
       header: "Mã giao dịch",
       accessorKey: "transactionCode",
       cell: (item) => (
-        <span className="font-mono font-bold text-blue-700">
+        <span className="font-mono font-bold text-vnpt">
           {item.transactionCode}
         </span>
       ),
@@ -104,10 +104,10 @@ export default function RenewalsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => alert("Chức năng Import file gia hạn sẽ kết nối Backend")}
-            className="flex h-9 items-center gap-1.5 rounded-xl bg-[#0072bc] px-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#0b5ca8]"
+            className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
           >
             <UploadCloud className="h-4 w-4" />
-            <span>Import file gia hạn</span>
+            <span className="btn-label">Import file gia hạn</span>
           </button>
         </div>
       </div>
@@ -148,7 +148,7 @@ export default function RenewalsPage() {
           onClick={() => setSelectedCohort("ALL")}
           className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
             selectedCohort === "ALL"
-              ? "bg-[#0072bc] text-white"
+              ? "bg-vnpt text-white"
               : "bg-white text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -158,7 +158,7 @@ export default function RenewalsPage() {
           onClick={() => setSelectedCohort("THÁNG T")}
           className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
             selectedCohort === "THÁNG T"
-              ? "bg-[#0072bc] text-white"
+              ? "bg-vnpt text-white"
               : "bg-white text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -168,7 +168,7 @@ export default function RenewalsPage() {
           onClick={() => setSelectedCohort("THÁNG T-1")}
           className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
             selectedCohort === "THÁNG T-1"
-              ? "bg-[#0072bc] text-white"
+              ? "bg-vnpt text-white"
               : "bg-white text-slate-600 hover:bg-slate-50"
           }`}
         >

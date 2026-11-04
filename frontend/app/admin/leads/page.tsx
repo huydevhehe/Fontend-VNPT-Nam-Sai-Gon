@@ -26,7 +26,7 @@ export default function LeadsPage() {
       header: "Số điện thoại",
       accessorKey: "phone",
       cell: (item) => (
-        <span className="font-mono font-semibold text-blue-700">{item.phone}</span>
+        <span className="font-mono font-semibold text-vnpt">{item.phone}</span>
       ),
     },
     {
@@ -79,10 +79,10 @@ export default function LeadsPage() {
         </div>
         <button
           onClick={() => alert("Mở form tạo Lead")}
-          className="flex h-9 items-center gap-1.5 rounded-xl bg-[#0072bc] px-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#0b5ca8]"
+          className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
         >
           <UserPlus className="h-4 w-4" />
-          <span>Tạo Lead mới</span>
+          <span className="btn-label">Tạo Lead mới</span>
         </button>
       </div>
 

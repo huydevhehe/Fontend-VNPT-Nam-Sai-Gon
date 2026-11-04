@@ -18,7 +18,7 @@ export default function DataTransferPage() {
       {/* 3 Overview Action Cards */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#0072bc]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-vnpt">
             <UploadCloud className="h-5 w-5" />
           </div>
           <h3 className="mt-4 text-sm font-bold text-slate-900">
@@ -29,10 +29,10 @@ export default function DataTransferPage() {
           </p>
           <button
             onClick={() => alert("Chọn file Excel để tải lên")}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0072bc] py-2.5 text-xs font-bold text-white hover:bg-[#0b5ca8]"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-vnpt py-2.5 text-xs font-bold text-white hover:bg-vnpt-dark"
           >
             <UploadCloud className="h-4 w-4" />
-            <span>Tải lên file dữ liệu</span>
+            <span className="btn-label">Tải lên file dữ liệu</span>
           </button>
         </div>
 

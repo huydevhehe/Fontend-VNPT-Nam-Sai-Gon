@@ -23,7 +23,7 @@ export default function DebtManagementPage() {
       header: "Mã thuê bao",
       accessorKey: "subscriberCode",
       cell: (item) => (
-        <span className="font-mono font-bold text-blue-700">
+        <span className="font-mono font-bold text-vnpt">
           {item.subscriberCode}
         </span>
       ),
@@ -98,10 +98,10 @@ export default function DebtManagementPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => alert("Chức năng Import file Excel nợ sẽ kết nối Backend")}
-            className="flex h-9 items-center gap-1.5 rounded-xl bg-[#0072bc] px-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#0b5ca8]"
+            className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
           >
             <UploadCloud className="h-4 w-4" />
-            <span>Import file nợ</span>
+            <span className="btn-label">Import file nợ</span>
           </button>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function DebtManagementPage() {
           onClick={() => setActiveTab("all")}
           className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
             activeTab === "all"
-              ? "bg-[#0072bc] text-white"
+              ? "bg-vnpt text-white"
               : "bg-white text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -151,7 +151,7 @@ export default function DebtManagementPage() {
           onClick={() => setActiveTab("immediate")}
           className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
             activeTab === "immediate"
-              ? "bg-[#0072bc] text-white"
+              ? "bg-vnpt text-white"
               : "bg-white text-slate-600 hover:bg-slate-50"
           }`}
         >
@@ -161,7 +161,7 @@ export default function DebtManagementPage() {
           onClick={() => setActiveTab("cumulative")}
           className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
             activeTab === "cumulative"
-              ? "bg-[#0072bc] text-white"
+              ? "bg-vnpt text-white"
               : "bg-white text-slate-600 hover:bg-slate-50"
           }`}
         >

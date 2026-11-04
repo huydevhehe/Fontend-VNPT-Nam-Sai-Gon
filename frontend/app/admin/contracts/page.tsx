@@ -16,7 +16,7 @@ export default function ContractsPage() {
       header: "Mã giao dịch",
       accessorKey: "transactionCode",
       cell: (item) => (
-        <span className="font-mono font-bold text-blue-700">
+        <span className="font-mono font-bold text-vnpt">
           {item.transactionCode}
         </span>
       ),
@@ -88,10 +88,10 @@ export default function ContractsPage() {
         </div>
         <button
           onClick={() => alert("Mở form thêm hợp đồng")}
-          className="flex h-9 items-center gap-1.5 rounded-xl bg-[#0072bc] px-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#0b5ca8]"
+          className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
         >
           <Plus className="h-4 w-4" />
-          <span>Thêm hợp đồng</span>
+          <span className="btn-label">Thêm hợp đồng</span>
         </button>
       </div>
 

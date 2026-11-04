@@ -29,7 +29,7 @@ export default function AdminTopbar({
         </button>
 
         <div>
-          <div className="text-[11px] font-bold tracking-wider text-[#0072bc] uppercase">
+          <div className="text-[11px] font-bold tracking-wider text-vnpt uppercase">
             VNPT NAM SÀI GÒN · V2
           </div>
           <h1 className="text-base font-bold text-slate-900 lg:text-lg">
@@ -75,7 +75,7 @@ export default function AdminTopbar({
 
         {/* User profile */}
         <div className="flex items-center gap-2.5 pl-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 font-bold text-[#0069a8]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 font-bold text-vnpt">
             AD
           </div>
           <div className="hidden text-left xl:block">

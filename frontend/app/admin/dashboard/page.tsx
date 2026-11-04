@@ -90,7 +90,7 @@ export default function AdminDashboardPage() {
                 So sánh tỷ lệ thực hiện thực tế so với mục tiêu tháng T
               </p>
             </div>
-            <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-[#0072bc]">
+            <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-vnpt">
               Kỳ 10/2026
             </span>
           </div>
@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
                 <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
                 <Bar
                   dataKey="Thực hiện (%)"
-                  fill="#0072bc"
+                  fill="var(--color-vnpt)"
                   radius={[5, 5, 0, 0]}
                 />
                 <Bar
@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
                 <span className="font-bold text-slate-900">320</span>
               </div>
               <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full w-full rounded-full bg-[#0072bc]" />
+                <div className="h-full w-full rounded-full bg-vnpt" />
               </div>
             </div>
 
@@ -208,7 +208,7 @@ export default function AdminDashboardPage() {
             <h3 className="text-sm font-bold text-slate-900">
               Hợp đồng & Doanh thu
             </h3>
-            <span className="text-xs font-bold text-blue-600">126 hợp đồng</span>
+            <span className="text-xs font-bold text-vnpt">126 hợp đồng</span>
           </div>
           <div className="mt-4 space-y-2 text-xs">
             <div className="flex justify-between py-1 border-b border-slate-50">
@@ -260,9 +260,9 @@ export default function AdminDashboardPage() {
             </h3>
             <Link
               href="/admin/territories"
-              className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
+              className="flex items-center gap-1 text-xs font-semibold text-vnpt hover:underline"
             >
-              Chi tiết <ArrowRight className="h-3.5 w-3.5" />
+              <span className="btn-label">Chi tiết</span> <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <div className="mt-4 space-y-2 text-xs">
@@ -322,7 +322,7 @@ export default function AdminDashboardPage() {
                   <td className="px-4 py-3 font-bold text-emerald-600">
                     {staff.collectionRate}%
                   </td>
-                  <td className="px-4 py-3 font-bold text-blue-600">
+                  <td className="px-4 py-3 font-bold text-vnpt">
                     {staff.renewalRate}%
                   </td>
                   <td className="px-4 py-3">{staff.monthlyLeads}</td>

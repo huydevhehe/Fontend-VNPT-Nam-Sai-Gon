@@ -133,7 +133,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               VN
             </div>
             <div>
-              <div className="text-sm font-bold tracking-tight text-[#006fb4]">
+              <div className="text-sm font-bold tracking-tight text-vnpt">
                 VNPT CRM
               </div>
               <div className="text-[11px] font-medium text-slate-400">
@@ -173,13 +173,13 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                       onClick={onClose}
                       className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all ${
                         isActive
-                          ? "bg-blue-50/80 font-bold text-[#006fb4]"
+                          ? "bg-blue-50/80 font-bold text-vnpt"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       }`}
                     >
                       <Icon
                         className={`h-4.5 w-4.5 shrink-0 ${
-                          isActive ? "text-[#006fb4]" : "text-slate-400"
+                          isActive ? "text-vnpt" : "text-slate-400"
                         }`}
                       />
                       <span className="truncate">{item.name}</span>

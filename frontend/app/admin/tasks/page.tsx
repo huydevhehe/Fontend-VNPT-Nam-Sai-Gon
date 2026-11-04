@@ -28,7 +28,7 @@ export default function TasksPage() {
       header: "Khách hàng / Đối tượng liên quan",
       accessorKey: "relatedTarget",
       cell: (item) => (
-        <span className="font-semibold text-blue-700">{item.relatedTarget}</span>
+        <span className="font-semibold text-vnpt">{item.relatedTarget}</span>
       ),
     },
     {
@@ -80,10 +80,10 @@ export default function TasksPage() {
         </div>
         <button
           onClick={() => alert("Giao việc mới")}
-          className="flex h-9 items-center gap-1.5 rounded-xl bg-[#0072bc] px-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#0b5ca8]"
+          className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
         >
           <Plus className="h-4 w-4" />
-          <span>Giao việc mới</span>
+          <span className="btn-label">Giao việc mới</span>
         </button>
       </div>
 

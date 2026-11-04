@@ -17,7 +17,7 @@ export default function CustomersPage() {
       accessorKey: "name",
       cell: (item) => (
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 font-bold text-blue-700">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 font-bold text-vnpt">
             {item.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
@@ -111,10 +111,10 @@ export default function CustomersPage() {
         </div>
         <button
           onClick={() => alert("Mở form thêm khách hàng")}
-          className="flex h-9 items-center gap-1.5 rounded-xl bg-[#0072bc] px-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#0b5ca8]"
+          className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
         >
           <UserPlus className="h-4 w-4" />
-          <span>Thêm khách hàng</span>
+          <span className="btn-label">Thêm khách hàng</span>
         </button>
       </div>
 

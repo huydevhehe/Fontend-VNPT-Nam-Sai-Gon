@@ -2,6 +2,7 @@ import sqlite3 from "sqlite3";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import bcrypt from "bcryptjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -137,11 +138,55 @@ export async function initDatabase() {
     )
   `);
 
+  // 7. Users (Auth)
+  await run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE,
+      password_hash TEXT,
+      name TEXT,
+      role TEXT,
+      email TEXT,
+      status TEXT DEFAULT 'Đang hoạt động'
+    )
+  `);
+
   // Seed default data if debts table is empty
   const countRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM debts");
   if (countRes[0]?.count === 0) {
     await seedInitialData();
   }
+
+  // Seed users table independently (table may be newer than the rest of the schema)
+  const userCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM users");
+  if (userCountRes[0]?.count === 0) {
+    await seedUsers();
+  }
+}
+
+async function seedUsers() {
+  console.log("[Database] Seeding tài khoản đăng nhập...");
+
+  const staffRows = await query<{ id: string; code: string; name: string; role: string; email: string }>(
+    "SELECT id, code, name, role, email FROM staff"
+  );
+
+  for (const staff of staffRows) {
+    const passwordHash = await bcrypt.hash(`${staff.code}@Vnpt2026`, 10);
+    await run(
+      "INSERT OR REPLACE INTO users (id, username, password_hash, name, role, email) VALUES (?, ?, ?, ?, ?, ?)",
+      [`USR-${staff.code}`, staff.code, passwordHash, staff.name, staff.role, staff.email]
+    );
+  }
+
+  // Tài khoản quản trị riêng, không gắn với nhân viên nào
+  const adminPasswordHash = await bcrypt.hash("admin@Vnpt2026", 10);
+  await run(
+    "INSERT OR REPLACE INTO users (id, username, password_hash, name, role, email) VALUES (?, ?, ?, ?, ?, ?)",
+    ["USR-ADMIN", "admin", adminPasswordHash, "Quản trị viên", "Admin", null]
+  );
+
+  console.log("[Database] Đã seed tài khoản đăng nhập!");
 }
 
 async function seedInitialData() {

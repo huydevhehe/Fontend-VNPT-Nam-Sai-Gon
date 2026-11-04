@@ -7,6 +7,7 @@ import { renewalRouter } from "./modules/renewal/renewal.controller.js";
 import { customerRouter } from "./modules/customer/customer.controller.js";
 import { territoryRouter } from "./modules/territory/territory.controller.js";
 import { dashboardRouter } from "./modules/dashboard/dashboard.controller.js";
+import { authRouter } from "./modules/auth/auth.controller.js";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Mount CRM API Modules
+app.use("/api/auth", authRouter);
 app.use("/api/debts", debtRouter);
 app.use("/api/renewals", renewalRouter);
 app.use("/api/customers", customerRouter);

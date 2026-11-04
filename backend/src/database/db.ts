@@ -190,6 +190,22 @@ export async function initDatabase() {
     )
   `);
 
+  // 6f. Tasks table (Công việc & Nhắc việc chăm sóc)
+  await run(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      related_target TEXT NOT NULL,
+      assignee TEXT NOT NULL,
+      due_date TEXT NOT NULL,
+      priority TEXT DEFAULT 'Vừa',
+      status TEXT DEFAULT 'Mới',
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // 6. Audit Logs
   await run(`
     CREATE TABLE IF NOT EXISTS audit_logs (
@@ -249,6 +265,33 @@ export async function initDatabase() {
   if (commissionCountRes[0]?.count === 0) {
     await seedCommissions();
   }
+
+  // Seed tasks table independently (table may be newer than the rest of the schema)
+  const taskCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM tasks");
+  if (taskCountRes[0]?.count === 0) {
+    await seedTasks();
+  }
+}
+
+async function seedTasks() {
+  console.log("[Database] Seeding dữ liệu Công việc...");
+
+  const tasks: [string, string, string, string, string, string, string, string][] = [
+    ["TASK-01", "Đôn đốc gạch nợ cước tháng 10", "Hộ kinh doanh An Bình", "Nguyễn Đức Tiến", "2026-11-08", "Cao", "Mới", "Khách hẹn thanh toán trước ngày 10"],
+    ["TASK-02", "Nhắc gia hạn trả trước gói Internet", "Công ty Cổ phần Xây dựng Đại Thành", "Phạm Thanh Hà", "2026-11-06", "Cao", "Đang làm", "Khách đang tạm ngưng dịch vụ"],
+    ["TASK-03", "Chăm sóc khách hàng mới sau lắp đặt", "Nguyễn Văn An", "Nguyễn Lê Vi", "2026-11-12", "Vừa", "Mới", ""],
+    ["TASK-04", "Theo dõi phản hồi tư vấn gói cước", "Hộ kinh doanh Phát Đạt", "Nguyễn Thị Tình", "2026-11-02", "Thấp", "Hoàn tất", "Khách đã xác nhận gia hạn"],
+  ];
+  for (const t of tasks) {
+    await run(
+      `INSERT OR REPLACE INTO tasks (
+        id, title, related_target, assignee, due_date, priority, status, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      t
+    );
+  }
+
+  console.log("[Database] Đã seed dữ liệu Công việc!");
 }
 
 async function seedCommissions() {

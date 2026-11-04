@@ -1,16 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RotateCw, UploadCloud, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { initialRenewalData } from "@/lib/crm/mock-data/crm-data";
 import { RenewalRecord } from "@/lib/crm/types/crm.types";
+import { getRenewals } from "@/lib/api/renewals.api";
 
 export default function RenewalsPage() {
-  const [data, setData] = useState<RenewalRecord[]>(initialRenewalData);
+  const [data, setData] = useState<RenewalRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCohort, setSelectedCohort] = useState<"ALL" | "THÁNG T" | "THÁNG T-1">("ALL");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadRenewals() {
+      setLoading(true);
+      setError(null);
+      try {
+        const renewals = await getRenewals();
+        if (isMounted) {
+          setData(renewals);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu gia hạn. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadRenewals();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredData = data.filter((item) => {
     if (selectedCohort === "ALL") return true;
@@ -177,14 +212,28 @@ export default function RenewalsPage() {
       </div>
 
       {/* Data Table */}
-      <DataTable
-        title="Danh sách giao dịch gia hạn trả trước"
-        subtitle="Quản lý chống trùng mã giao dịch theo từng thuê bao"
-        columns={columns}
-        data={filteredData}
-        searchPlaceholder="Tìm mã giao dịch, mã thuê bao, khách hàng..."
-        exportFileName="vnpt_gia_han"
-      />
+      {error ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+          <AlertTriangle className="h-6 w-6 text-rose-500" />
+          <p className="text-sm font-semibold text-rose-700">
+            Không thể tải dữ liệu gia hạn
+          </p>
+          <p className="text-xs text-rose-600">{error}</p>
+        </div>
+      ) : loading ? (
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+          Đang tải dữ liệu gia hạn...
+        </div>
+      ) : (
+        <DataTable
+          title="Danh sách giao dịch gia hạn trả trước"
+          subtitle="Quản lý chống trùng mã giao dịch theo từng thuê bao"
+          columns={columns}
+          data={filteredData}
+          searchPlaceholder="Tìm mã giao dịch, mã thuê bao, khách hàng..."
+          exportFileName="vnpt_gia_han"
+        />
+      )}
     </div>
   );
 }

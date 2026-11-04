@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Banknote,
   RotateCw,
@@ -12,7 +13,12 @@ import {
 import Link from "next/link";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { initialStaffData } from "@/lib/crm/mock-data/crm-data";
+import { StaffRecord } from "@/lib/crm/types/crm.types";
+import {
+  getDashboardSummary,
+  DashboardKpis,
+  DashboardTerritorySummary,
+} from "@/lib/api/dashboard.api";
 import {
   ResponsiveContainer,
   BarChart,
@@ -24,15 +30,60 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const KPI_CHART_DATA = [
-  { name: "Thu ngay", "Thực hiện (%)": 98, "Mục tiêu (%)": 90 },
-  { name: "Nợ lũy kế", "Thực hiện (%)": 78, "Mục tiêu (%)": 85 },
-  { name: "Gia hạn T", "Thực hiện (%)": 57, "Mục tiêu (%)": 70 },
-  { name: "Gia hạn T-1", "Thực hiện (%)": 65, "Mục tiêu (%)": 75 },
-  { name: "Lead chốt", "Thực hiện (%)": 72, "Mục tiêu (%)": 80 },
-];
+function buildKpiChartData(kpis: DashboardKpis | null) {
+  return [
+    { name: "Thu ngay", "Thực hiện (%)": kpis?.collectionRateImmediate ?? 0, "Mục tiêu (%)": 90 },
+    { name: "Nợ lũy kế", "Thực hiện (%)": kpis?.collectionRateCumulative ?? 0, "Mục tiêu (%)": 85 },
+    { name: "Gia hạn T", "Thực hiện (%)": kpis?.renewalRateT ?? 0, "Mục tiêu (%)": 70 },
+    { name: "Gia hạn T-1", "Thực hiện (%)": kpis?.renewalRateT1 ?? 0, "Mục tiêu (%)": 75 },
+  ];
+}
 
 export default function AdminDashboardPage() {
+  const [kpis, setKpis] = useState<DashboardKpis | null>(null);
+  const [territorySummary, setTerritorySummary] =
+    useState<DashboardTerritorySummary | null>(null);
+  const [staffList, setStaffList] = useState<StaffRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDashboard() {
+      setLoading(true);
+      setError(null);
+      try {
+        const summary = await getDashboardSummary();
+        if (isMounted) {
+          setKpis(summary.kpis);
+          setTerritorySummary(summary.territorySummary);
+          setStaffList(summary.staffList);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu Dashboard. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadDashboard();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const kpiChartData = buildKpiChartData(kpis);
+
   return (
     <div className="space-y-6">
       {/* Page Title & Subtitle */}
@@ -45,34 +96,51 @@ export default function AdminDashboardPage() {
         </p>
       </div>
 
+      {error && (
+        <div className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-xs">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-rose-500" />
+          <span className="font-semibold text-rose-700">
+            Không thể tải dữ liệu Dashboard:
+          </span>
+          <span className="text-rose-600">{error}</span>
+        </div>
+      )}
+
       {/* 4 Main KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="TỶ LỆ THU NGAY"
-          value="98.0%"
-          changeText="↑ 3.2%"
-          subtitle="so với tháng trước"
+          value={loading ? "..." : `${(kpis?.collectionRateImmediate ?? 0).toFixed(1)}%`}
+          subtitle="Tổng đã thu / Tổng phải thu thu ngay"
           icon={Banknote}
           badge="Tháng T"
         />
         <KpiCard
           title="TỶ LỆ NỢ LŨY KẾ"
-          value="78.0%"
+          value={loading ? "..." : `${(kpis?.collectionRateCumulative ?? 0).toFixed(1)}%`}
           changeText="Mục tiêu: 85%"
           isPositive={false}
-          subtitle="còn 482,3 tr nợ đọng"
+          subtitle={
+            loading
+              ? "Đang tải..."
+              : `còn ${(kpis?.totalCumulativeDebtRemaining ?? 0).toLocaleString("vi-VN")} ₫ nợ đọng`
+          }
           icon={TrendingUp}
         />
         <KpiCard
           title="GIA HẠN TRẢ TRƯỚC T"
-          value="57.0%"
-          subtitle="684 / 1.200 giao dịch hoàn thành"
+          value={loading ? "..." : `${(kpis?.renewalRateT ?? 0).toFixed(1)}%`}
+          subtitle={
+            loading
+              ? "Đang tải..."
+              : `${kpis?.renewalCompletedT ?? 0} / ${kpis?.renewalTotalT ?? 0} giao dịch hoàn thành`
+          }
           icon={RotateCw}
         />
         <KpiCard
           title="GIA HẠN TRẢ TRƯỚC T-1"
-          value="65.0%"
-          subtitle="780 / 1.200 giao dịch hoàn thành"
+          value={loading ? "..." : `${(kpis?.renewalRateT1 ?? 0).toFixed(1)}%`}
+          subtitle="Theo dữ liệu kỳ Tháng T-1"
           icon={FileCheck2}
         />
       </div>
@@ -98,7 +166,7 @@ export default function AdminDashboardPage() {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={KPI_CHART_DATA}
+                data={kpiChartData}
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -267,12 +335,20 @@ export default function AdminDashboardPage() {
           </div>
           <div className="mt-4 space-y-2 text-xs">
             <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">Cơ hội kinh doanh địa bàn</span>
-              <span className="font-bold text-slate-800">211</span>
+              <span className="text-slate-500">Tổng số hộ dân</span>
+              <span className="font-bold text-slate-800">
+                {loading
+                  ? "..."
+                  : (territorySummary?.totalHouseholds ?? 0).toLocaleString("vi-VN")}
+              </span>
             </div>
             <div className="flex justify-between py-1">
               <span className="text-slate-500">Đã triển khai & có doanh thu</span>
-              <span className="font-bold text-emerald-600">134 (63%)</span>
+              <span className="font-bold text-emerald-600">
+                {loading
+                  ? "..."
+                  : `${territorySummary?.totalDeployed ?? 0} / ${territorySummary?.totalWards ?? 0} phường`}
+              </span>
             </div>
           </div>
         </div>
@@ -311,7 +387,7 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {initialStaffData.map((staff) => (
+              {staffList.map((staff) => (
                 <tr key={staff.id} className="hover:bg-slate-50/50">
                   <td className="px-4 py-3 font-semibold text-slate-900">
                     {staff.name}

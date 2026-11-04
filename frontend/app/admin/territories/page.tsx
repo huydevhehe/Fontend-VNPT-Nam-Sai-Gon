@@ -1,14 +1,49 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, Building, Users, TrendingUp, Edit3 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MapPin, Building, Users, TrendingUp, Edit3, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import { initialTerritoryData } from "@/lib/crm/mock-data/crm-data";
 import { TerritoryRecord } from "@/lib/crm/types/crm.types";
+import { getTerritories } from "@/lib/api/territories.api";
 
 export default function TerritoriesPage() {
-  const [data, setData] = useState<TerritoryRecord[]>(initialTerritoryData);
+  const [data, setData] = useState<TerritoryRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadTerritories() {
+      setLoading(true);
+      setError(null);
+      try {
+        const territories = await getTerritories();
+        if (isMounted) {
+          setData(territories);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu địa bàn. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTerritories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const columns: Column<TerritoryRecord>[] = [
     {
@@ -119,14 +154,28 @@ export default function TerritoriesPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        title="Danh sách địa bàn & đầu mối"
-        subtitle="Cho phép cập nhật số hộ dân, thông tin lãnh đạo phường và trường học địa bàn"
-        columns={columns}
-        data={data}
-        searchPlaceholder="Tìm theo tên phường, nhân viên, lãnh đạo..."
-        exportFileName="vnpt_dia_ban"
-      />
+      {error ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+          <AlertTriangle className="h-6 w-6 text-rose-500" />
+          <p className="text-sm font-semibold text-rose-700">
+            Không thể tải dữ liệu địa bàn
+          </p>
+          <p className="text-xs text-rose-600">{error}</p>
+        </div>
+      ) : loading ? (
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+          Đang tải dữ liệu địa bàn...
+        </div>
+      ) : (
+        <DataTable
+          title="Danh sách địa bàn & đầu mối"
+          subtitle="Cho phép cập nhật số hộ dân, thông tin lãnh đạo phường và trường học địa bàn"
+          columns={columns}
+          data={data}
+          searchPlaceholder="Tìm theo tên phường, nhân viên, lãnh đạo..."
+          exportFileName="vnpt_dia_ban"
+        />
+      )}
     </div>
   );
 }

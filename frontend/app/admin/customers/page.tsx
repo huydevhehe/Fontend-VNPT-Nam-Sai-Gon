@@ -1,15 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { Users, UserPlus, Building2, User, ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Users, UserPlus, Building2, User, ShieldAlert, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { initialCustomerData } from "@/lib/crm/mock-data/crm-data";
 import { CustomerRecord } from "@/lib/crm/types/crm.types";
+import { getCustomers } from "@/lib/api/customers.api";
 
 export default function CustomersPage() {
-  const [data, setData] = useState<CustomerRecord[]>(initialCustomerData);
+  const [data, setData] = useState<CustomerRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCustomers() {
+      setLoading(true);
+      setError(null);
+      try {
+        const customers = await getCustomers();
+        if (isMounted) {
+          setData(customers);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải dữ liệu khách hàng. Vui lòng thử lại."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadCustomers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const columns: Column<CustomerRecord>[] = [
     {
@@ -147,14 +182,28 @@ export default function CustomersPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        title="Danh sách hồ sơ khách hàng"
-        subtitle="Hỗ trợ lọc theo loại doanh nghiệp, hộ kinh doanh hoặc cá nhân"
-        columns={columns}
-        data={data}
-        searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
-        exportFileName="vnpt_khach_hang"
-      />
+      {error ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+          <AlertTriangle className="h-6 w-6 text-rose-500" />
+          <p className="text-sm font-semibold text-rose-700">
+            Không thể tải dữ liệu khách hàng
+          </p>
+          <p className="text-xs text-rose-600">{error}</p>
+        </div>
+      ) : loading ? (
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+          Đang tải dữ liệu khách hàng...
+        </div>
+      ) : (
+        <DataTable
+          title="Danh sách hồ sơ khách hàng"
+          subtitle="Hỗ trợ lọc theo loại doanh nghiệp, hộ kinh doanh hoặc cá nhân"
+          columns={columns}
+          data={data}
+          searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
+          exportFileName="vnpt_khach_hang"
+        />
+      )}
     </div>
   );
 }

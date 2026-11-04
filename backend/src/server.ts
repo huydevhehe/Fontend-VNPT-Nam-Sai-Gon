@@ -1,6 +1,12 @@
 import express from "express";
 import cors from "cors";
 import { config } from "./config/index.js";
+import { initDatabase } from "./database/db.js";
+import { debtRouter } from "./modules/debt/debt.controller.js";
+import { renewalRouter } from "./modules/renewal/renewal.controller.js";
+import { customerRouter } from "./modules/customer/customer.controller.js";
+import { territoryRouter } from "./modules/territory/territory.controller.js";
+import { dashboardRouter } from "./modules/dashboard/dashboard.controller.js";
 
 const app = express();
 
@@ -14,25 +20,29 @@ app.get("/api/health", (_req, res) => {
     status: "ok",
     service: "VNPT CRM Nam Sài Gòn Backend API",
     version: "2.0.0",
+    database: "SQLite (crm.sqlite)",
     timestamp: new Date().toISOString(),
   });
 });
 
-// Mock Initial Modules
-app.get("/api/crm/stats", (_req, res) => {
-  res.json({
-    collectionRateImmediate: 98.0,
-    collectionRateCumulative: 78.0,
-    renewalRateCurrentMonth: 57.0,
-    renewalRatePreviousMonth: 65.0,
-    totalLeads: 320,
-    leadsConverted: 184,
-    contractsCreated: 126,
-    contractsDeployedWithRevenue: 89,
-  });
-});
+// Mount CRM API Modules
+app.use("/api/debts", debtRouter);
+app.use("/api/renewals", renewalRouter);
+app.use("/api/customers", customerRouter);
+app.use("/api/territories", territoryRouter);
+app.use("/api/dashboard", dashboardRouter);
 
-app.listen(config.port, () => {
-  console.log(`[VNPT CRM Backend] Server running on http://localhost:${config.port}`);
-});
+// Initialize DB and Start Server
+async function start() {
+  try {
+    await initDatabase();
+    app.listen(config.port, () => {
+      console.log(`[VNPT CRM Backend] Server is running on http://localhost:${config.port}`);
+    });
+  } catch (error) {
+    console.error("[VNPT CRM Backend] Failed to start server:", error);
+    process.exit(1);
+  }
+}
 
+start();

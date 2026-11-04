@@ -1,0 +1,220 @@
+import sqlite3 from "sqlite3";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const dbDir = path.resolve(__dirname, "../../data");
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+const dbPath = path.join(dbDir, "crm.sqlite");
+export const db = new sqlite3.Database(dbPath);
+
+// Helper for promise-based queries
+export const query = <T = any>(sql: string, params: any[] = []): Promise<T[]> => {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows as T[]);
+    });
+  });
+};
+
+export const run = (sql: string, params: any[] = []): Promise<{ id: number; changes: number }> => {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function (err) {
+      if (err) reject(err);
+      else resolve({ id: this.lastID, changes: this.changes });
+    });
+  });
+};
+
+export async function initDatabase() {
+  // 1. Debts table
+  await run(`
+    CREATE TABLE IF NOT EXISTS debts (
+      id TEXT PRIMARY KEY,
+      staff_name TEXT NOT NULL,
+      service_group TEXT NOT NULL,
+      payment_code TEXT NOT NULL,
+      subscriber_code TEXT NOT NULL,
+      customer_name TEXT NOT NULL,
+      installation_address TEXT,
+      immediate_debt REAL DEFAULT 0,
+      cumulative_debt REAL DEFAULT 0,
+      collected_amount REAL DEFAULT 0,
+      status TEXT DEFAULT 'Nợ cước',
+      document_ref TEXT,
+      month TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // 2. Renewals table
+  await run(`
+    CREATE TABLE IF NOT EXISTS renewals (
+      id TEXT PRIMARY KEY,
+      transaction_code TEXT NOT NULL UNIQUE,
+      subscriber_code TEXT NOT NULL,
+      customer_name TEXT NOT NULL,
+      payment_code TEXT,
+      installation_address TEXT,
+      staff_name TEXT NOT NULL,
+      term_amount REAL DEFAULT 0,
+      duration_months INTEGER DEFAULT 12,
+      cohort TEXT NOT NULL,
+      status TEXT DEFAULT 'Chưa xử lý',
+      failure_reason TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // 3. Customers table
+  await run(`
+    CREATE TABLE IF NOT EXISTS customers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      identity_code TEXT,
+      type TEXT NOT NULL,
+      customer_group TEXT NOT NULL,
+      phone TEXT,
+      address TEXT,
+      services TEXT,
+      nearest_expiration TEXT,
+      am_staff TEXT,
+      am_caring_staff TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // 4. Territories table (7 Phường)
+  await run(`
+    CREATE TABLE IF NOT EXISTS territories (
+      id TEXT PRIMARY KEY,
+      ward_name TEXT NOT NULL UNIQUE,
+      quarter_count INTEGER DEFAULT 0,
+      household_count INTEGER DEFAULT 0,
+      opportunity_count INTEGER DEFAULT 0,
+      deployed_count INTEGER DEFAULT 0,
+      staff_name TEXT,
+      leadership_contact TEXT
+    )
+  `);
+
+  // 5. Staff table
+  await run(`
+    CREATE TABLE IF NOT EXISTS staff (
+      id TEXT PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      role TEXT NOT NULL,
+      territory TEXT,
+      assigned_customers INTEGER DEFAULT 0,
+      monthly_leads INTEGER DEFAULT 0,
+      monthly_contracts INTEGER DEFAULT 0,
+      revenue_executed REAL DEFAULT 0,
+      collection_rate REAL DEFAULT 0,
+      renewal_rate REAL DEFAULT 0,
+      status TEXT DEFAULT 'Đang hoạt động',
+      email TEXT
+    )
+  `);
+
+  // 6. Audit Logs
+  await run(`
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id TEXT PRIMARY KEY,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      user TEXT NOT NULL,
+      action TEXT NOT NULL,
+      details TEXT
+    )
+  `);
+
+  // Seed default data if debts table is empty
+  const countRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM debts");
+  if (countRes[0]?.count === 0) {
+    await seedInitialData();
+  }
+}
+
+async function seedInitialData() {
+  console.log("[Database] Seeding initial data for VNPT Nam Sài Gòn...");
+
+  // Seed 7 Wards
+  const wards = [
+    ["TB-01", "Tân Hưng", 18, 12450, 36, 21, "Nguyễn Thị Tình", "Đ/c Trần Minh - Chủ tịch UBND Phường"],
+    ["TB-02", "Tân Mỹ", 15, 10820, 29, 17, "Nguyễn Thị Huyền Trang", "Đ/c Lê Văn - Phó Chủ tịch UBND Phường"],
+    ["TB-03", "Tân Thuận", 21, 15700, 42, 31, "Nguyễn Đức Tiến", "Đ/c Hoàng Phúc - Chủ tịch UBND Phường"],
+    ["TB-04", "Phú Thuận", 16, 11960, 31, 20, "Phạm Thanh Hà", "Đ/c Nguyễn Nam - Cán bộ Văn phòng"],
+    ["TB-05", "Xóm Chiếu", 14, 9860, 24, 14, "Nguyễn Lê Vi", "Đ/c Đặng Thảo - Bí thư Đảng ủy"],
+    ["TB-06", "Vĩnh Hội", 15, 11120, 27, 18, "Nguyễn Ngọc Hải Bằng", "Đ/c Bùi Hữu - Cán bộ CNTT"],
+    ["TB-07", "Khánh Hội", 13, 10340, 22, 13, "Hồ Thị Ngọc Trâm", "Đ/c Vũ Hải - Phó Chủ tịch UBND Phường"],
+  ];
+  for (const w of wards) {
+    await run(
+      "INSERT OR REPLACE INTO territories (id, ward_name, quarter_count, household_count, opportunity_count, deployed_count, staff_name, leadership_contact) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      w
+    );
+  }
+
+  // Seed Staff
+  const staffMembers = [
+    ["NV-01", "VNPT-AM-01", "Nguyễn Thị Tình", "AM Bán chăm", "Tân Hưng", 184, 48, 19, 186500000, 98, 72, "Đang hoạt động", "tinhnt@vnpt.vn"],
+    ["NV-02", "VNPT-AM-02", "Nguyễn Thị Huyền Trang", "AM", "Tân Mỹ", 156, 42, 17, 164200000, 94, 69, "Đang hoạt động", "trangnth@vnpt.vn"],
+    ["NV-03", "VNPT-AM-03", "Nguyễn Đức Tiến", "AM Bán chăm", "Tân Thuận", 201, 56, 23, 208600000, 96, 74, "Đang hoạt động", "tiennd@vnpt.vn"],
+    ["NV-04", "VNPT-AM-04", "Phạm Thanh Hà", "AM", "Phú Thuận", 142, 39, 16, 148300000, 97, 61, "Đang hoạt động", "hapt@vnpt.vn"],
+    ["NV-05", "VNPT-AM-05", "Nguyễn Lê Vi", "AM Bán chăm", "Xóm Chiếu", 121, 35, 14, 132800000, 92, 65, "Đang hoạt động", "vinl@vnpt.vn"],
+    ["NV-06", "VNPT-AM-06", "Nguyễn Ngọc Hải Bằng", "AM", "Vĩnh Hội", 138, 31, 13, 124500000, 93, 68, "Đang hoạt động", "bangnnh@vnpt.vn"],
+    ["NV-07", "VNPT-AM-07", "Hồ Thị Ngọc Trâm", "AM Bán chăm", "Khánh Hội", 115, 29, 11, 108200000, 91, 60, "Đang hoạt động", "tramhtn@vnpt.vn"],
+  ];
+  for (const s of staffMembers) {
+    await run(
+      "INSERT OR REPLACE INTO staff (id, code, name, role, territory, assigned_customers, monthly_leads, monthly_contracts, revenue_executed, collection_rate, renewal_rate, status, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      s
+    );
+  }
+
+  // Seed Debts (8 columns matching Sheet 1)
+  const debts = [
+    ["DEBT-01", "Nguyễn Thị Tình", "Internet Fiber", "TT-77001", "TB-100238", "Công ty TNHH Thương mại Minh Phát", "123 Trần Xuân Soạn, P. Tân Hưng", 3200000, 0, 3200000, "Đã gạch nợ", "UNC-99231", "2026-10"],
+    ["DEBT-02", "Nguyễn Đức Tiến", "Chữ ký số SmartCA", "TT-77002", "TB-100451", "Hộ kinh doanh An Bình", "45 Huỳnh Tấn Phát, P. Tân Thuận", 2000000, 4500000, 2000000, "Nợ cước", null, "2026-10"],
+    ["DEBT-03", "Nguyễn Thị Huyền Trang", "Hóa đơn điện tử VNPT Invoice", "TT-77003", "TB-100782", "Công ty Cổ phần Xây dựng Đại Thành", "78 Nguyễn Thị Thập, P. Tân Mỹ", 1850000, 0, 1850000, "Đã gạch nợ", "UNC-99245", "2026-10"],
+    ["DEBT-04", "Phạm Thanh Hà", "Internet Fiber & MyTV", "TT-77004", "TB-101003", "Nguyễn Văn An", "12 Đào Trí, P. Phú Thuận", 1200000, 3000000, 0, "Nợ cước", null, "2026-10"],
+  ];
+  for (const d of debts) {
+    await run(
+      "INSERT OR REPLACE INTO debts (id, staff_name, service_group, payment_code, subscriber_code, customer_name, installation_address, immediate_debt, cumulative_debt, collected_amount, status, document_ref, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      d
+    );
+  }
+
+  // Seed Renewals (8 columns matching Sheet 2)
+  const renewals = [
+    ["RN-01", "GH-26001", "TB-100238", "Công ty TNHH Thương mại Minh Phát", "TT-77001", "123 Trần Xuân Soạn, P. Tân Hưng", "Nguyễn Thị Tình", 2400000, 12, "THÁNG T", "Hoàn thành", null],
+    ["RN-02", "GH-26002", "TB-100451", "Hộ kinh doanh An Bình", "TT-77002", "45 Huỳnh Tấn Phát, P. Tân Thuận", "Nguyễn Đức Tiến", 1200000, 6, "THÁNG T", "Khách hẹn thanh toán", null],
+    ["RN-03", "GH-26003", "TB-100782", "Công ty Cổ phần Xây dựng Đại Thành", "TT-77003", "78 Nguyễn Thị Thập, P. Tân Mỹ", "Phạm Thanh Hà", 2400000, 12, "THÁNG T", "Thất bại", "Tạm ngưng"],
+    ["RN-04", "GH-26004", "TB-101003", "Nguyễn Văn An", "TT-77004", "12 Đào Trí, P. Phú Thuận", "Nguyễn Lê Vi", 1800000, 6, "THÁNG T-1", "Hoàn thành", null],
+  ];
+  for (const r of renewals) {
+    await run(
+      "INSERT OR REPLACE INTO renewals (id, transaction_code, subscriber_code, customer_name, payment_code, installation_address, staff_name, term_amount, duration_months, cohort, status, failure_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      r
+    );
+  }
+
+  // Seed initial audit log
+  await run(
+    "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+    ["LOG-INIT", "System", "Khởi tạo CSDL", "Hệ thống VNPT CRM Nam Sài Gòn V2 được khởi tạo thành công"]
+  );
+
+  console.log("[Database] Initial data seeded successfully!");
+}
+

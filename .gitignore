@@ -21,6 +21,12 @@ docs/
 ~$*
 *.bak
 
+# Database files
+backend/data/
+*.sqlite
+*.sqlite3
+*.db
+
 # Temporary and design assets
 1-trang-chinh/
 2-trang-lam-them/

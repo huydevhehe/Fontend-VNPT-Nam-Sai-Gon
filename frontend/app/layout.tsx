@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 import Shell from "@/components/layout/Shell";
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 // Montserrat: menu + heading (nét hình học, vuông vắn — hợp ngành viễn thông/CNTT).
 const montserrat = Montserrat({
@@ -29,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${montserrat.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans bg-white text-slate-800">
-        <Shell>{children}</Shell>
+        <AuthProvider>
+          <Shell>{children}</Shell>
+        </AuthProvider>
       </body>
     </html>
   );

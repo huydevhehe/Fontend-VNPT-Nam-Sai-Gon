@@ -48,10 +48,6 @@ export class CommissionService {
       throw new Error("Không tìm thấy Hoa hồng");
     }
 
-    if (existing[0].amount < 0) {
-      throw new Error("Số tiền hoa hồng không được âm");
-    }
-
     await run(
       "UPDATE commissions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
       [status, id]

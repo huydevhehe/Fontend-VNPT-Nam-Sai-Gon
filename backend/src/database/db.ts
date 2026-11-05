@@ -53,50 +53,52 @@ export async function initDatabase() {
   }
 
   // Seed default data if debts table is empty
+  // Dùng Number(...) vì driver Postgres trả COUNT(*) dạng chuỗi ("0"), so
+  // sánh thẳng với số 0 sẽ luôn sai trên Postgres (driver sqlite3 trả number nên không ảnh hưởng).
   const countRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM debts");
-  if (countRes[0]?.count === 0) {
+  if (Number(countRes[0]?.count) === 0) {
     await seedInitialData();
   }
 
   // Seed users table independently (table may be newer than the rest of the schema)
   const userCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM users");
-  if (userCountRes[0]?.count === 0) {
+  if (Number(userCountRes[0]?.count) === 0) {
     await seedUsers();
   }
 
   // Seed services table independently (table may be newer than the rest of the schema)
   const serviceCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM services");
-  if (serviceCountRes[0]?.count === 0) {
+  if (Number(serviceCountRes[0]?.count) === 0) {
     await seedServices();
   }
 
   // Seed leads table independently (table may be newer than the rest of the schema)
   const leadCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM leads");
-  if (leadCountRes[0]?.count === 0) {
+  if (Number(leadCountRes[0]?.count) === 0) {
     await seedLeads();
   }
 
   // Seed contracts table independently (table may be newer than the rest of the schema)
   const contractCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM contracts");
-  if (contractCountRes[0]?.count === 0) {
+  if (Number(contractCountRes[0]?.count) === 0) {
     await seedContracts();
   }
 
   // Seed commissions table independently (table may be newer than the rest of the schema)
   const commissionCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM commissions");
-  if (commissionCountRes[0]?.count === 0) {
+  if (Number(commissionCountRes[0]?.count) === 0) {
     await seedCommissions();
   }
 
   // Seed tasks table independently (table may be newer than the rest of the schema)
   const taskCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM tasks");
-  if (taskCountRes[0]?.count === 0) {
+  if (Number(taskCountRes[0]?.count) === 0) {
     await seedTasks();
   }
 
   // Seed customers table independently (table may be newer than the rest of the schema)
   const customerCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM customers");
-  if (customerCountRes[0]?.count === 0) {
+  if (Number(customerCountRes[0]?.count) === 0) {
     await seedCustomers();
   }
 }

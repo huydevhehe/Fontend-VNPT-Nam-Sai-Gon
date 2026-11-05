@@ -5,6 +5,8 @@ export const config = {
   port: process.env.PORT || 8087,
   corsOrigin: process.env.CORS_ORIGIN || "*",
   jwtSecret: process.env.JWT_SECRET || "vnpt-crm-nam-sai-gon-dev-secret-key",
+  dbDriver: (process.env.DB_DRIVER === "postgres" ? "postgres" : "sqlite") as "sqlite" | "postgres",
+  databaseUrl: process.env.DATABASE_URL || "",
   smtp: {
     host: process.env.SMTP_HOST || "",
     port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,

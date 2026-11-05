@@ -12,6 +12,8 @@ next-env.d.ts
 !.env.local.example
 *.tsbuildinfo
 *.log
+frontend/test-results/
+frontend/playwright-report/
 
 # Ignore docs folder and all reference docs/archives completely
 docs/

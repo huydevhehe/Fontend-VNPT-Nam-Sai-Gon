@@ -300,6 +300,19 @@ async function createTablesSqlite() {
     )
   `);
 
+  // 8. System settings (SMTP / Zalo OA cấu hình qua CMS thay vì .env)
+  await run(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      id TEXT PRIMARY KEY,
+      smtp_host TEXT DEFAULT '',
+      smtp_port INTEGER,
+      smtp_user TEXT DEFAULT '',
+      smtp_pass TEXT DEFAULT '',
+      zalo_oa_id TEXT DEFAULT '',
+      zalo_oa_token TEXT DEFAULT '',
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
 
 // DDL cho driver postgres (dùng khi DB_DRIVER=postgres + DATABASE_URL hợp lệ).
@@ -498,6 +511,20 @@ async function createTablesPostgres() {
       role TEXT,
       email TEXT,
       status TEXT DEFAULT 'Đang hoạt động'
+    )
+  `);
+
+  // 8. System settings (SMTP / Zalo OA cấu hình qua CMS thay vì .env)
+  await run(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      id TEXT PRIMARY KEY,
+      smtp_host TEXT DEFAULT '',
+      smtp_port INTEGER,
+      smtp_user TEXT DEFAULT '',
+      smtp_pass TEXT DEFAULT '',
+      zalo_oa_id TEXT DEFAULT '',
+      zalo_oa_token TEXT DEFAULT '',
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 }

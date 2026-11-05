@@ -15,6 +15,7 @@ import { commissionRouter } from "./modules/commission/commission.controller.js"
 import { staffRouter } from "./modules/staff/staff.controller.js";
 import { taskRouter } from "./modules/task/task.controller.js";
 import { reportRouter } from "./modules/report/report.controller.js";
+import { settingsRouter } from "./modules/settings/settings.controller.js";
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.get("/api/health", (_req, res) => {
     status: "ok",
     service: "VNPT CRM Nam Sài Gòn Backend API",
     version: "2.0.0",
-    database: "SQLite (crm.sqlite)",
+    database: config.dbDriver === "postgres" ? "Postgres" : "SQLite (crm.sqlite)",
     timestamp: new Date().toISOString(),
   });
 });
@@ -47,6 +48,7 @@ app.use("/api/commissions", commissionRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/reports", reportRouter);
+app.use("/api/settings", settingsRouter);
 
 // Initialize DB and Start Server
 async function start() {

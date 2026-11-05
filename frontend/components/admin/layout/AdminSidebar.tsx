@@ -16,6 +16,7 @@ import {
   CheckSquare,
   UploadCloud,
   ShieldCheck,
+  Settings,
   X,
 } from "lucide-react";
 
@@ -103,6 +104,12 @@ const NAV_SECTIONS = [
         name: "Tài khoản & Phân quyền",
         href: "/admin/settings",
         icon: ShieldCheck,
+      },
+      {
+        name: "Cài đặt hệ thống",
+        href: "/admin/system-settings",
+        icon: Settings,
+        badge: "Admin",
       },
     ],
   },

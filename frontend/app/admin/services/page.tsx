@@ -6,12 +6,37 @@ import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
 import { getServices } from "@/lib/api/services.api";
+import { createTask } from "@/lib/api/tasks.api";
 import { ServiceRecord } from "@/lib/crm/types/crm.types";
 
 export default function ServicesPage() {
   const [data, setData] = useState<ServiceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creatingCode, setCreatingCode] = useState<string | null>(null);
+
+  async function handleCreateTask(item: ServiceRecord) {
+    setCreatingCode(item.serviceCode);
+    try {
+      await createTask({
+        title: `Chăm sóc dịch vụ sắp hết hạn - ${item.customerName}`,
+        relatedTarget: item.serviceCode,
+        assignee: item.staffName,
+        dueDate: item.expirationDate,
+        priority: "Cao",
+        status: "Mới",
+      });
+      alert(`Đã tạo nhiệm vụ chăm sóc tự động cho ${item.customerName}`);
+    } catch (err) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Không thể tạo nhiệm vụ chăm sóc. Vui lòng thử lại."
+      );
+    } finally {
+      setCreatingCode(null);
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -110,13 +135,12 @@ export default function ServicesPage() {
       header: "Hành động",
       cell: (item) => (
         <button
-          onClick={() =>
-            alert(`Đã tạo nhiệm vụ chăm sóc tự động cho ${item.customerName}`)
-          }
-          className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/70 px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:bg-blue-100"
+          onClick={() => handleCreateTask(item)}
+          disabled={creatingCode === item.serviceCode}
+          className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/70 px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:bg-blue-100 disabled:opacity-60"
         >
           <CheckSquare className="h-3 w-3" />
-          <span>Tạo việc</span>
+          <span>{creatingCode === item.serviceCode ? "Đang tạo..." : "Tạo việc"}</span>
         </button>
       ),
     },

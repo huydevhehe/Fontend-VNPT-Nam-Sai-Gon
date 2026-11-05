@@ -78,6 +78,10 @@ export class LeadService {
       throw new Error("Giá trị dự kiến không được âm");
     }
 
+    if (data.status !== undefined && !LEAD_STATUSES.includes(data.status as (typeof LEAD_STATUSES)[number])) {
+      throw new Error("Trạng thái không hợp lệ");
+    }
+
     const id = `LEAD-${Date.now()}`;
     await run(
       `INSERT INTO leads (

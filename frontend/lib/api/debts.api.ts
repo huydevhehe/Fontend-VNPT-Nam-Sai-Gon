@@ -1,4 +1,4 @@
-import { apiFetch, getToken, API_BASE_URL } from "./client";
+import { apiFetch, apiFetchRaw } from "./client";
 import { DebtRecord, DebtStatus } from "@/lib/crm/types/crm.types";
 
 /**
@@ -71,10 +71,11 @@ export interface ImportDebtsResult {
  * Gọi `POST /api/debts/import` (multipart/form-data qua multer).
  *
  * Lưu ý: endpoint này trả thẳng `{success, sheetName, importedCount, ...}`
- * (không bọc trong `data` như các API khác), nên KHÔNG dùng `apiFetch` để
- * tránh bị unwrap nhầm thành `undefined`. Việc gửi `FormData` vẫn đi qua
- * `fetch` trực tiếp để browser tự set `Content-Type: multipart/form-data;
- * boundary=...` (không set tay).
+ * (không bọc trong `data` như các API khác), nên dùng `apiFetchRaw` (thay vì
+ * `apiFetch`) để tránh bị unwrap nhầm thành `undefined` nhưng vẫn được gắn
+ * token + bắn event `vnpt:unauthorized` khi gặp 401. Việc gửi `FormData` vẫn
+ * để browser tự set `Content-Type: multipart/form-data; boundary=...`
+ * (không set tay).
  */
 export async function importDebtsExcel(
   file: File,
@@ -88,36 +89,17 @@ export async function importDebtsExcel(
     formData.append("operator", operator);
   }
 
-  const token = getToken();
-  const headers = new Headers();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
+  const payload = await apiFetchRaw<
+    ImportDebtsResult | { success: false; message: string } | undefined
+  >("/debts/import", {
+    method: "POST",
+    body: formData,
+  });
 
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE_URL}/debts/import`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
-  } catch {
-    throw new Error(
-      "Không thể kết nối đến server. Vui lòng kiểm tra lại kết nối mạng."
-    );
-  }
-
-  let payload: ImportDebtsResult | { success: false; message: string } | undefined;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = undefined;
-  }
-
-  if (!response.ok || !payload || payload.success === false) {
+  if (!payload || payload.success === false) {
     const message =
       (payload as { message?: string } | undefined)?.message ||
-      `Import thất bại với mã lỗi ${response.status}`;
+      "Import thất bại";
     throw new Error(message);
   }
 

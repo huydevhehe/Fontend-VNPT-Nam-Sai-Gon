@@ -1,5 +1,5 @@
 import { AuditLogRecord, StaffRecord } from "@/lib/crm/types/crm.types";
-import { getToken, API_BASE_URL } from "./client";
+import { apiFetchRaw } from "./client";
 
 /**
  * Field thô (snake_case) của bảng `staff`, được
@@ -79,40 +79,21 @@ interface DashboardStatsApiResponse {
  * Gọi `GET /api/dashboard/stats`.
  *
  * Lưu ý: endpoint này trả thẳng `{success, month, kpis, ...}` (không bọc
- * trong `data` như các API khác ở `apiFetch`), nên gọi `fetch` trực tiếp ở
- * đây thay vì dùng `apiFetch` để tránh bị unwrap nhầm thành `undefined`.
+ * trong `data` như các API khác ở `apiFetch`), nên dùng `apiFetchRaw` (thay
+ * vì `apiFetch`) để tránh bị unwrap nhầm thành `undefined` nhưng vẫn được
+ * gắn token + bắn event `vnpt:unauthorized` khi gặp 401.
  */
 export async function getDashboardSummary(
   month?: string
 ): Promise<DashboardSummary> {
   const qs = month ? `?month=${encodeURIComponent(month)}` : "";
-  const token = getToken();
-  const headers = new Headers();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
 
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE_URL}/dashboard/stats${qs}`, {
-      headers,
-    });
-  } catch {
-    throw new Error(
-      "Không thể kết nối đến server. Vui lòng kiểm tra lại kết nối mạng."
-    );
-  }
+  const payload = await apiFetchRaw<DashboardStatsApiResponse | undefined>(
+    `/dashboard/stats${qs}`
+  );
 
-  let payload: DashboardStatsApiResponse | undefined;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = undefined;
-  }
-
-  if (!response.ok || !payload || payload.success === false) {
-    const message =
-      payload?.message || `Yêu cầu thất bại với mã lỗi ${response.status}`;
+  if (!payload || payload.success === false) {
+    const message = payload?.message || "Yêu cầu thất bại";
     throw new Error(message);
   }
 

@@ -66,6 +66,8 @@ function toStaffRecord(row: StaffRow): StaffRecordDto {
   };
 }
 
+const STAFF_ROLES = ["AM", "AM Bán chăm", "Admin"] as const;
+
 export class StaffService {
   async getAll(): Promise<StaffRecordDto[]> {
     const rows = await query<StaffRow>("SELECT * FROM staff ORDER BY code ASC");
@@ -73,6 +75,14 @@ export class StaffService {
   }
 
   async create(data: StaffCreateInput): Promise<StaffRecordDto> {
+    if (!data.code || !data.name || !data.role) {
+      throw new Error("Thiếu thông tin bắt buộc để tạo Nhân viên");
+    }
+
+    if (!STAFF_ROLES.includes(data.role as (typeof STAFF_ROLES)[number])) {
+      throw new Error("Vai trò không hợp lệ");
+    }
+
     const existing = await query<StaffRow>("SELECT id FROM staff WHERE code = ?", [data.code]);
     if (existing.length) {
       throw new Error("Mã nhân viên đã tồn tại");

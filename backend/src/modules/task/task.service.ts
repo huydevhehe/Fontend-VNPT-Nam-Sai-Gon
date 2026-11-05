@@ -61,6 +61,10 @@ export class TaskService {
       throw new Error("Thiếu thông tin bắt buộc để tạo công việc");
     }
 
+    if (data.status !== undefined && !TASK_STATUSES.includes(data.status as (typeof TASK_STATUSES)[number])) {
+      throw new Error("Trạng thái không hợp lệ");
+    }
+
     const id = `TASK-${Date.now()}`;
     await run(
       `INSERT INTO tasks (

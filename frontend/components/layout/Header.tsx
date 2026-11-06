@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 // Lưu ý: bật lại nút tìm kiếm thì import thêm icon Search.
-import { ChevronDown, LayoutDashboard, Menu, Phone, X } from "lucide-react";
+import { ChevronDown, LogIn, Menu, Phone, X } from "lucide-react";
 import { INTERNET_GROUPS } from "@/content/internet-groups";
 
 const HOTLINE = "0838 999 333";
@@ -135,12 +135,10 @@ export default function Header() {
 
             <div className="hidden items-center gap-3 lg:flex">
               <Link
-                href="/cong-tac-vien/dashboard"
-                title="Dashboard CTV (demo)"
-                aria-label="Dashboard CTV (demo)"
-                className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-vnpt-light hover:text-vnpt"
+                href="/login"
+                className="flex items-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-vnpt hover:text-vnpt"
               >
-                <LayoutDashboard size={18} />
+                <LogIn size={16} /> Đăng nhập
               </Link>
               <a
                 href={`tel:${HOTLINE.replace(/\s/g, "")}`}
@@ -200,6 +198,13 @@ export default function Header() {
           >
             <Phone size={16} /> {HOTLINE}
           </a>
+          <Link
+            href="/login"
+            onClick={() => setMobileOpen(false)}
+            className="mt-2 flex items-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"
+          >
+            <LogIn size={16} /> Đăng nhập
+          </Link>
         </nav>
       )}
     </header>

@@ -8,10 +8,10 @@ export class DashboardService {
       totalCumulative: number;
       totalCollected: number;
     }>(
-      `SELECT 
-        COALESCE(SUM(immediate_debt), 0) as totalImmediate,
-        COALESCE(SUM(cumulative_debt), 0) as totalCumulative,
-        COALESCE(SUM(collected_amount), 0) as totalCollected
+      `SELECT
+        COALESCE(SUM(immediate_debt), 0) as "totalImmediate",
+        COALESCE(SUM(cumulative_debt), 0) as "totalCumulative",
+        COALESCE(SUM(collected_amount), 0) as "totalCollected"
       FROM debts WHERE month = ?`,
       [month]
     );
@@ -55,7 +55,7 @@ export class DashboardService {
 
     // 4. Territory totals
     const territoryRes = await query<{ totalWards: number; totalHouseholds: number; totalDeployed: number }>(
-      "SELECT COUNT(*) as totalWards, SUM(household_count) as totalHouseholds, SUM(deployed_count) as totalDeployed FROM territories"
+      'SELECT COUNT(*) as "totalWards", SUM(household_count) as "totalHouseholds", SUM(deployed_count) as "totalDeployed" FROM territories'
     );
 
     // 5. Recent audit logs

@@ -1,6 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./fixtures/auth";
 import { uniquePhone } from "./api/helpers";
+
+function fieldByLabel(page: Page, labelText: string) {
+  return page
+    .locator(`div:has(> label:text-is("${labelText}")) :is(input, select, textarea)`)
+    .first();
+}
 
 test.describe("CTV đăng ký, Admin duyệt, đăng nhập chung (UI)", () => {
   test("đăng ký → chờ duyệt → Admin duyệt → CTV vào dashboard riêng", async ({ page, browser }) => {
@@ -104,5 +110,35 @@ test.describe("CTV đăng ký, Admin duyệt, đăng nhập chung (UI)", () => {
     await page.getByLabel("Số điện thoại").fill("12345");
     await page.getByRole("button", { name: "Gửi đăng ký" }).click();
     await expect(page.getByText(/Số điện thoại phải gồm 10 chữ số/)).toBeVisible();
+  });
+
+  test("Admin tạo nhân viên → hiện mật khẩu mặc định một lần, nhân viên đăng nhập được", async ({
+    page,
+  }) => {
+    const suffix = Date.now();
+    const code = `NV-UI-${suffix}`;
+
+    await loginAs(page, "admin");
+    await page.goto("/admin/employees");
+    await page.getByRole("button", { name: "Thêm nhân viên" }).click();
+    await fieldByLabel(page, "Mã nhân viên").fill(code);
+    await fieldByLabel(page, "Họ tên").fill(`NV UI ${suffix}`);
+    await fieldByLabel(page, "Địa bàn phụ trách").fill("Khu vực UI");
+    await fieldByLabel(page, "Email").fill(`nv-ui-${suffix}@example.com`);
+    await page.getByRole("button", { name: "Tạo nhân viên" }).click();
+
+    await expect(page.getByText(`${code}@Vnpt2026`)).toBeVisible({ timeout: 10_000 });
+    await page.getByRole("button", { name: "Đã lưu mật khẩu" }).click();
+    await expect(page.getByText(`${code}@Vnpt2026`)).toHaveCount(0);
+
+    // Nhân viên mới đăng nhập được bằng mật khẩu mặc định
+    const fresh = await page.context().browser()!.newContext();
+    const freshPage = await fresh.newPage();
+    await freshPage.goto("/login");
+    await freshPage.getByLabel("Tên đăng nhập").fill(code);
+    await freshPage.getByLabel("Mật khẩu").fill(`${code}@Vnpt2026`);
+    await freshPage.getByRole("button", { name: "Đăng nhập" }).click();
+    await freshPage.waitForURL("**/admin/dashboard", { timeout: 15_000 });
+    await fresh.close();
   });
 });

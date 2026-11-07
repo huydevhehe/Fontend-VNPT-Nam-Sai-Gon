@@ -36,7 +36,28 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "KINH DOANH & CSKH",
+    label: "KINH DOANH",
+    items: [
+      {
+        name: "Lead / Cơ hội",
+        href: "/admin/leads",
+        icon: Target,
+      },
+      {
+        name: "Hợp đồng & Giao dịch",
+        href: "/admin/contracts",
+        icon: FileText,
+      },
+      {
+        name: "Hoa hồng",
+        href: "/admin/commissions",
+        icon: Percent,
+        badge: "Admin",
+      },
+    ],
+  },
+  {
+    label: "CSKH",
     items: [
       {
         name: "Quản lý nợ",
@@ -58,32 +79,21 @@ const NAV_SECTIONS = [
         href: "/admin/services",
         icon: BellRing,
       },
-      {
-        name: "Lead / Cơ hội",
-        href: "/admin/leads",
-        icon: Target,
-      },
-      {
-        name: "Hợp đồng & Giao dịch",
-        href: "/admin/contracts",
-        icon: FileText,
-      },
-      {
-        name: "Hoa hồng",
-        href: "/admin/commissions",
-        icon: Percent,
-        badge: "Admin",
-      },
     ],
   },
   {
-    label: "ĐỊA BÀN & VẬN HÀNH",
+    label: "ĐỊA BÀN",
     items: [
       {
         name: "Phường / Khu phố",
         href: "/admin/territories",
         icon: MapPin,
       },
+    ],
+  },
+  {
+    label: "VẬN HÀNH",
+    items: [
       {
         name: "Nhân viên",
         href: "/admin/employees",

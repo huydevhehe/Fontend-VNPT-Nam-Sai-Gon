@@ -8,7 +8,7 @@ import FloatingContact from "./FloatingContact";
 
 // Các khu vực app (admin CRM, dashboard CTV) có layout/sidebar riêng —
 // không dùng header/footer của trang marketing công khai.
-const APP_PREFIXES = ["/admin", "/cong-tac-vien"];
+const APP_PREFIXES = ["/admin", "/cong-tac-vien/dashboard"];
 
 export default function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();

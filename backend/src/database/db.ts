@@ -1,55 +1,18 @@
-import sqlite3 from "sqlite3";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
 import bcrypt from "bcryptjs";
-import { config } from "../config/index.js";
 import { pgQuery, pgRun } from "./pg-adapter.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const dbDir = path.resolve(__dirname, "../../data");
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
-
-const dbPath = path.join(dbDir, "crm.sqlite");
-export const db = new sqlite3.Database(dbPath);
-
-// Helper for promise-based queries.
-// Điều hướng theo config.dbDriver: "postgres" dùng pg-adapter, còn lại (mặc định
-// "sqlite") giữ nguyên hành vi sqlite3 cũ — các module khác (debt/renewal/...)
-// không cần biết đang chạy driver nào.
 export const query = <T = any>(sql: string, params: any[] = []): Promise<T[]> => {
-  if (config.dbDriver === "postgres") {
-    return pgQuery<T>(sql, params);
-  }
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows as T[]);
-    });
-  });
+  return pgQuery<T>(sql, params);
 };
 
 export const run = (sql: string, params: any[] = []): Promise<{ id: number; changes: number }> => {
-  if (config.dbDriver === "postgres") {
-    return pgRun(sql, params);
-  }
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) reject(err);
-      else resolve({ id: this.lastID, changes: this.changes });
-    });
-  });
+  return pgRun(sql, params);
 };
 
 // Các cột thống kê mở rộng của bảng territories (dân số, số trường theo cấp,
 // doanh thu) được thêm sau khi bảng đã tồn tại trên môi trường cũ — CREATE
 // TABLE IF NOT EXISTS ở trên không tự thêm cột cho DB đã có sẵn, nên phải
-// ALTER TABLE riêng. Postgres hỗ trợ ADD COLUMN IF NOT EXISTS; sqlite3 thì
-// không, nên phải thử và bỏ qua lỗi "duplicate column name" nếu cột đã có.
+// ALTER TABLE riêng (Postgres hỗ trợ ADD COLUMN IF NOT EXISTS).
 const TERRITORY_EXTRA_COLUMNS: Array<{ name: string; sqlType: string }> = [
   { name: "population", sqlType: "INTEGER DEFAULT 0" },
   { name: "school_mamnon", sqlType: "INTEGER DEFAULT 0" },
@@ -61,26 +24,12 @@ const TERRITORY_EXTRA_COLUMNS: Array<{ name: string; sqlType: string }> = [
 
 async function ensureTerritoryColumns() {
   for (const column of TERRITORY_EXTRA_COLUMNS) {
-    if (config.dbDriver === "postgres") {
-      await run(`ALTER TABLE territories ADD COLUMN IF NOT EXISTS ${column.name} ${column.sqlType}`);
-    } else {
-      try {
-        await run(`ALTER TABLE territories ADD COLUMN ${column.name} ${column.sqlType}`);
-      } catch (err: any) {
-        if (!String(err?.message || "").includes("duplicate column name")) {
-          throw err;
-        }
-      }
-    }
+    await run(`ALTER TABLE territories ADD COLUMN IF NOT EXISTS ${column.name} ${column.sqlType}`);
   }
 }
 
 export async function initDatabase() {
-  if (config.dbDriver === "postgres") {
-    await createTablesPostgres();
-  } else {
-    await createTablesSqlite();
-  }
+  await createTables();
 
   await ensureTerritoryColumns();
 
@@ -133,224 +82,9 @@ export async function initDatabase() {
   }
 }
 
-// DDL cho driver sqlite (mặc định, hành vi giữ nguyên như trước Task 12).
-async function createTablesSqlite() {
-  // 1. Debts table
-  await run(`
-    CREATE TABLE IF NOT EXISTS debts (
-      id TEXT PRIMARY KEY,
-      staff_name TEXT NOT NULL,
-      service_group TEXT NOT NULL,
-      payment_code TEXT NOT NULL,
-      subscriber_code TEXT NOT NULL,
-      customer_name TEXT NOT NULL,
-      installation_address TEXT,
-      immediate_debt REAL DEFAULT 0,
-      cumulative_debt REAL DEFAULT 0,
-      collected_amount REAL DEFAULT 0,
-      status TEXT DEFAULT 'Nợ cước',
-      document_ref TEXT,
-      month TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 2. Renewals table
-  await run(`
-    CREATE TABLE IF NOT EXISTS renewals (
-      id TEXT PRIMARY KEY,
-      transaction_code TEXT NOT NULL UNIQUE,
-      subscriber_code TEXT NOT NULL,
-      customer_name TEXT NOT NULL,
-      payment_code TEXT,
-      installation_address TEXT,
-      staff_name TEXT NOT NULL,
-      term_amount REAL DEFAULT 0,
-      duration_months INTEGER DEFAULT 12,
-      cohort TEXT NOT NULL,
-      status TEXT DEFAULT 'Chưa xử lý',
-      failure_reason TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 3. Customers table
-  await run(`
-    CREATE TABLE IF NOT EXISTS customers (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      identity_code TEXT,
-      type TEXT NOT NULL,
-      customer_group TEXT NOT NULL,
-      phone TEXT,
-      address TEXT,
-      services TEXT,
-      nearest_expiration TEXT,
-      am_staff TEXT,
-      am_caring_staff TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 4. Territories table (7 Phường)
-  await run(`
-    CREATE TABLE IF NOT EXISTS territories (
-      id TEXT PRIMARY KEY,
-      ward_name TEXT NOT NULL UNIQUE,
-      quarter_count INTEGER DEFAULT 0,
-      household_count INTEGER DEFAULT 0,
-      opportunity_count INTEGER DEFAULT 0,
-      deployed_count INTEGER DEFAULT 0,
-      staff_name TEXT,
-      leadership_contact TEXT
-    )
-  `);
-
-  // 4b. Ward contacts table (đầu mối nhân sự theo Đơn vị/Phòng ban trong từng phường)
-  await run(`
-    CREATE TABLE IF NOT EXISTS ward_contacts (
-      id TEXT PRIMARY KEY,
-      territory_id TEXT NOT NULL,
-      unit TEXT NOT NULL,
-      department TEXT NOT NULL,
-      full_name TEXT NOT NULL,
-      position TEXT NOT NULL,
-      phone TEXT,
-      am_in_charge TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 5. Staff table
-  await run(`
-    CREATE TABLE IF NOT EXISTS staff (
-      id TEXT PRIMARY KEY,
-      code TEXT NOT NULL UNIQUE,
-      name TEXT NOT NULL,
-      role TEXT NOT NULL,
-      territory TEXT,
-      assigned_customers INTEGER DEFAULT 0,
-      monthly_leads INTEGER DEFAULT 0,
-      monthly_contracts INTEGER DEFAULT 0,
-      revenue_executed REAL DEFAULT 0,
-      collection_rate REAL DEFAULT 0,
-      renewal_rate REAL DEFAULT 0,
-      status TEXT DEFAULT 'Đang hoạt động',
-      email TEXT
-    )
-  `);
-
-  // 6b. Services table (Dịch vụ & Cảnh báo hết hạn)
-  await run(`
-    CREATE TABLE IF NOT EXISTS services (
-      id TEXT PRIMARY KEY,
-      customer_name TEXT NOT NULL,
-      service_name TEXT NOT NULL,
-      service_code TEXT NOT NULL,
-      start_date TEXT NOT NULL,
-      expiration_date TEXT NOT NULL,
-      staff_name TEXT NOT NULL
-    )
-  `);
-
-  // 6c. Leads table (Quản lý Lead & Cơ hội)
-  await run(`
-    CREATE TABLE IF NOT EXISTS leads (
-      id TEXT PRIMARY KEY,
-      customer_name TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      group_name TEXT NOT NULL,
-      channel TEXT NOT NULL,
-      staff_name TEXT NOT NULL,
-      status TEXT DEFAULT 'Mới tiếp nhận',
-      expected_value REAL DEFAULT 0,
-      demand_description TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 6d. Contracts table (Hợp đồng & Mã giao dịch)
-  await run(`
-    CREATE TABLE IF NOT EXISTS contracts (
-      id TEXT PRIMARY KEY,
-      transaction_code TEXT NOT NULL UNIQUE,
-      customer_name TEXT NOT NULL,
-      subscriber_codes TEXT NOT NULL,
-      total_value REAL DEFAULT 0,
-      channel TEXT NOT NULL,
-      deployment_status TEXT DEFAULT 'Chưa triển khai',
-      payment_status TEXT DEFAULT 'Chưa thanh toán',
-      document_status TEXT DEFAULT 'Soạn thảo',
-      has_revenue INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 6e. Commissions table (Hoa hồng nội bộ & chi kênh)
-  await run(`
-    CREATE TABLE IF NOT EXISTS commissions (
-      id TEXT PRIMARY KEY,
-      recipient_name TEXT NOT NULL,
-      type TEXT NOT NULL,
-      transaction_code TEXT NOT NULL,
-      amount REAL DEFAULT 0,
-      status TEXT DEFAULT 'Chờ nhận',
-      date TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 6f. Tasks table (Công việc & Nhắc việc chăm sóc)
-  await run(`
-    CREATE TABLE IF NOT EXISTS tasks (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      related_target TEXT NOT NULL,
-      assignee TEXT NOT NULL,
-      due_date TEXT NOT NULL,
-      priority TEXT DEFAULT 'Vừa',
-      status TEXT DEFAULT 'Mới',
-      notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 6. Audit Logs
-  await run(`
-    CREATE TABLE IF NOT EXISTS audit_logs (
-      id TEXT PRIMARY KEY,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      user TEXT NOT NULL,
-      action TEXT NOT NULL,
-      details TEXT
-    )
-  `);
-
-  // 7. Users (Auth)
-  await run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      username TEXT UNIQUE,
-      password_hash TEXT,
-      name TEXT,
-      role TEXT,
-      email TEXT,
-      status TEXT DEFAULT 'Đang hoạt động'
-    )
-  `);
-
-}
-
-// DDL cho driver postgres (dùng khi DB_DRIVER=postgres + DATABASE_URL hợp lệ).
-// Khác biệt chính so với bản sqlite: DATETIME -> TIMESTAMP, và cột "user"
-// (từ khóa dành riêng trong Postgres) phải đặt trong dấu ngoặc kép.
-async function createTablesPostgres() {
+// DDL schema (Postgres). Cột "user" (từ khóa dành riêng trong Postgres) phải
+// đặt trong dấu ngoặc kép.
+async function createTables() {
   // 1. Debts table
   await run(`
     CREATE TABLE IF NOT EXISTS debts (
@@ -779,8 +513,7 @@ async function seedInitialData() {
   }
 
   // Seed initial audit log
-  // Cột "user" đặt trong dấu ngoặc kép vì là từ khóa dành riêng trong Postgres;
-  // sqlite chấp nhận cú pháp quote này tương đương, nên không đổi hành vi cũ.
+  // Cột "user" đặt trong dấu ngoặc kép vì là từ khóa dành riêng trong Postgres.
   await run(
     'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
     ["LOG-INIT", "System", "Khởi tạo CSDL", "Hệ thống VNPT CRM Nam Sài Gòn V2 được khởi tạo thành công"]

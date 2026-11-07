@@ -1,8 +1,7 @@
 import { Pool } from "pg";
 import { config } from "../config/index.js";
 
-// Pool được tạo lazy để không kết nối tới Postgres khi driver vẫn là sqlite
-// (DATABASE_URL có thể để trống trong môi trường chưa cắm Postgres thật).
+// Pool được tạo lazy để tránh mở kết nối ngay khi module được import.
 let pool: Pool | null = null;
 
 function getPool(): Pool {

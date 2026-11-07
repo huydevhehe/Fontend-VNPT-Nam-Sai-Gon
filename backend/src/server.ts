@@ -28,7 +28,7 @@ app.get("/api/health", (_req, res) => {
     status: "ok",
     service: "VNPT CRM Nam Sài Gòn Backend API",
     version: "2.0.0",
-    database: "SQLite (crm.sqlite)",
+    database: "PostgreSQL",
     timestamp: new Date().toISOString(),
   });
 });

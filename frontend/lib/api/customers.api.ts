@@ -59,6 +59,7 @@ export interface CreateCustomerInput {
   address?: string;
   services?: string;
   amStaff?: string;
+  amCaringStaff?: string;
 }
 
 /**
@@ -81,5 +82,12 @@ export function transferCustomer(id: string, newStaff: string): Promise<void> {
   return apiFetch<void>(`/customers/${encodeURIComponent(id)}/transfer`, {
     method: "PATCH",
     body: JSON.stringify({ newStaff }),
+  });
+}
+
+export function transferCaringStaff(id: string, newCaringStaff: string): Promise<void> {
+  return apiFetch<void>(`/customers/${encodeURIComponent(id)}/transfer-caring`, {
+    method: "PATCH",
+    body: JSON.stringify({ newCaringStaff }),
   });
 }

@@ -6,7 +6,12 @@ import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
 import { CustomerRecord, CustomerType, CustomerGroup } from "@/lib/crm/types/crm.types";
-import { getCustomers, createCustomer, transferCustomer } from "@/lib/api/customers.api";
+import {
+  getCustomers,
+  createCustomer,
+  transferCustomer,
+  transferCaringStaff,
+} from "@/lib/api/customers.api";
 
 const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
 const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu"];
@@ -19,6 +24,7 @@ interface CustomerFormState {
   phone: string;
   address: string;
   amStaff: string;
+  amCaringStaff: string;
 }
 
 const EMPTY_FORM: CustomerFormState = {
@@ -29,6 +35,7 @@ const EMPTY_FORM: CustomerFormState = {
   phone: "",
   address: "",
   amStaff: "",
+  amCaringStaff: "",
 };
 
 export default function CustomersPage() {
@@ -45,6 +52,11 @@ export default function CustomersPage() {
   const [transferStaff, setTransferStaff] = useState("");
   const [transferError, setTransferError] = useState<string | null>(null);
   const [transferring, setTransferring] = useState(false);
+
+  const [caringTransferTarget, setCaringTransferTarget] = useState<CustomerRecord | null>(null);
+  const [caringTransferStaff, setCaringTransferStaff] = useState("");
+  const [caringTransferError, setCaringTransferError] = useState<string | null>(null);
+  const [caringTransferring, setCaringTransferring] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,6 +105,7 @@ export default function CustomersPage() {
         phone: form.phone || undefined,
         address: form.address || undefined,
         amStaff: form.amStaff || undefined,
+        amCaringStaff: form.amCaringStaff || undefined,
       });
 
       setData((prev) => [created, ...prev]);
@@ -123,11 +136,7 @@ export default function CustomersPage() {
     try {
       await transferCustomer(transferTarget.id, transferStaff);
       setData((prev) =>
-        prev.map((c) =>
-          c.id === transferTarget.id
-            ? { ...c, amStaff: transferStaff, amCaringStaff: transferStaff }
-            : c
-        )
+        prev.map((c) => (c.id === transferTarget.id ? { ...c, amStaff: transferStaff } : c))
       );
       setTransferTarget(null);
     } catch (err) {
@@ -136,6 +145,36 @@ export default function CustomersPage() {
       );
     } finally {
       setTransferring(false);
+    }
+  }
+
+  function openCaringTransfer(customer: CustomerRecord) {
+    setCaringTransferTarget(customer);
+    setCaringTransferStaff(customer.amCaringStaff);
+    setCaringTransferError(null);
+  }
+
+  async function handleCaringTransfer(e: FormEvent) {
+    e.preventDefault();
+    if (!caringTransferTarget) return;
+
+    setCaringTransferError(null);
+    setCaringTransferring(true);
+
+    try {
+      await transferCaringStaff(caringTransferTarget.id, caringTransferStaff);
+      setData((prev) =>
+        prev.map((c) =>
+          c.id === caringTransferTarget.id ? { ...c, amCaringStaff: caringTransferStaff } : c
+        )
+      );
+      setCaringTransferTarget(null);
+    } catch (err) {
+      setCaringTransferError(
+        err instanceof Error ? err.message : "Không thể điều chuyển AM chăm sóc. Vui lòng thử lại."
+      );
+    } finally {
+      setCaringTransferring(false);
     }
   }
 
@@ -219,7 +258,17 @@ export default function CustomersPage() {
       cell: (item) => (
         <div className="text-xs">
           <div className="font-medium text-slate-800">{item.amStaff}</div>
-          <div className="text-[10px] text-slate-400">AM Bán chăm</div>
+          <div className="text-[10px] text-slate-400">AM bán hàng</div>
+        </div>
+      ),
+    },
+    {
+      header: "AM chăm sóc (CSKH)",
+      accessorKey: "amCaringStaff",
+      cell: (item) => (
+        <div className="text-xs">
+          <div className="font-medium text-slate-800">{item.amCaringStaff || "—"}</div>
+          <div className="text-[10px] text-slate-400">AM chăm sóc</div>
         </div>
       ),
     },
@@ -227,13 +276,22 @@ export default function CustomersPage() {
       header: "Thao tác",
       accessorKey: "id",
       cell: (item) => (
-        <button
-          onClick={() => openTransfer(item)}
-          className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
-        >
-          <ArrowRightLeft className="h-3 w-3" />
-          Điều chuyển
-        </button>
+        <div className="flex flex-col items-start gap-1">
+          <button
+            onClick={() => openTransfer(item)}
+            className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            <ArrowRightLeft className="h-3 w-3" />
+            Điều chuyển AM
+          </button>
+          <button
+            onClick={() => openCaringTransfer(item)}
+            className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            <ArrowRightLeft className="h-3 w-3" />
+            Điều chuyển CSKH
+          </button>
+        </div>
       ),
     },
   ];
@@ -403,7 +461,7 @@ export default function CustomersPage() {
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    AM phụ trách
+                    AM phụ trách (bán hàng)
                   </label>
                   <input
                     value={form.amStaff}
@@ -412,6 +470,18 @@ export default function CustomersPage() {
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  AM chăm sóc (CSKH)
+                </label>
+                <input
+                  value={form.amCaringStaff}
+                  onChange={(e) => setForm({ ...form, amCaringStaff: e.target.value })}
+                  placeholder="Để trống = giống AM phụ trách"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
               </div>
 
               <div>
@@ -452,12 +522,12 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Transfer AM Modal */}
+      {/* Transfer AM bán hàng Modal */}
       {transferTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900">Điều chuyển AM phụ trách</h3>
+              <h3 className="text-base font-bold text-slate-900">Điều chuyển AM phụ trách (bán hàng)</h3>
               <button
                 onClick={() => setTransferTarget(null)}
                 className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
@@ -468,6 +538,8 @@ export default function CustomersPage() {
 
             <p className="mb-3 text-xs text-slate-500">
               Khách hàng: <span className="font-semibold text-slate-800">{transferTarget.name}</span>
+              <br />
+              Chỉ đổi AM bán hàng, không ảnh hưởng AM chăm sóc (CSKH).
             </p>
 
             <form onSubmit={handleTransfer} className="space-y-3">
@@ -503,6 +575,67 @@ export default function CustomersPage() {
                   className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {transferring ? "Đang điều chuyển..." : "Điều chuyển"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer AM chăm sóc (CSKH) Modal */}
+      {caringTransferTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Điều chuyển AM chăm sóc (CSKH)</h3>
+              <button
+                onClick={() => setCaringTransferTarget(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="mb-3 text-xs text-slate-500">
+              Khách hàng:{" "}
+              <span className="font-semibold text-slate-800">{caringTransferTarget.name}</span>
+              <br />
+              Chỉ đổi AM chăm sóc (CSKH), không ảnh hưởng AM bán hàng.
+            </p>
+
+            <form onSubmit={handleCaringTransfer} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  AM chăm sóc mới
+                </label>
+                <input
+                  required
+                  value={caringTransferStaff}
+                  onChange={(e) => setCaringTransferStaff(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              {caringTransferError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {caringTransferError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCaringTransferTarget(null)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={caringTransferring}
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {caringTransferring ? "Đang điều chuyển..." : "Điều chuyển"}
                 </button>
               </div>
             </form>

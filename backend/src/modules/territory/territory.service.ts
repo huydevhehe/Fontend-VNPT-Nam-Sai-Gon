@@ -127,7 +127,7 @@ export class TerritoryService {
     await run(sql, params);
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [
         `LOG-${Date.now()}`,
         operator,

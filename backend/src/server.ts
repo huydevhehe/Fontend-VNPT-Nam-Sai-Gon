@@ -16,8 +16,15 @@ import { staffRouter } from "./modules/staff/staff.controller.js";
 import { taskRouter } from "./modules/task/task.controller.js";
 import { reportRouter } from "./modules/report/report.controller.js";
 import { settingsRouter } from "./modules/settings/settings.controller.js";
+import { ctvRouter } from "./modules/ctv/ctv.controller.js";
+import { ctvAccountsRouter } from "./modules/ctv/ctv-accounts.controller.js";
+import { publicRouter } from "./modules/public/public.controller.js";
+import { requireAuth } from "./middleware/require-auth.js";
+import { requireAdmin, requireCtv, requireStaff } from "./middleware/require-role.js";
 
 const app = express();
+
+app.set("trust proxy", 1);
 
 app.use(cors({ origin: config.corsOrigin }));
 app.use(express.json());
@@ -35,20 +42,28 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Mount CRM API Modules
+// Mở công khai: đăng nhập và các endpoint public (form, đăng ký CTV).
 app.use("/api/auth", authRouter);
-app.use("/api/debts", debtRouter);
-app.use("/api/renewals", renewalRouter);
-app.use("/api/customers", customerRouter);
-app.use("/api/territories", territoryRouter);
-app.use("/api/dashboard", dashboardRouter);
-app.use("/api/services", serviceRouter);
-app.use("/api/leads", leadRouter);
-app.use("/api/contracts", contractRouter);
-app.use("/api/commissions", commissionRouter);
-app.use("/api/staff", staffRouter);
-app.use("/api/tasks", taskRouter);
-app.use("/api/reports", reportRouter);
-app.use("/api/settings", settingsRouter);
+app.use("/api/public", publicRouter);
+
+// Khu vực nhân viên: phải đăng nhập và không phải CTV.
+app.use("/api/debts", requireAuth, requireStaff, debtRouter);
+app.use("/api/renewals", requireAuth, requireStaff, renewalRouter);
+app.use("/api/customers", requireAuth, requireStaff, customerRouter);
+app.use("/api/territories", requireAuth, requireStaff, territoryRouter);
+app.use("/api/dashboard", requireAuth, requireStaff, dashboardRouter);
+app.use("/api/services", requireAuth, requireStaff, serviceRouter);
+app.use("/api/leads", requireAuth, requireStaff, leadRouter);
+app.use("/api/contracts", requireAuth, requireStaff, contractRouter);
+app.use("/api/commissions", requireAuth, requireStaff, commissionRouter);
+app.use("/api/staff", requireAuth, requireStaff, staffRouter);
+app.use("/api/tasks", requireAuth, requireStaff, taskRouter);
+app.use("/api/reports", requireAuth, requireStaff, reportRouter);
+app.use("/api/settings", requireAuth, requireStaff, settingsRouter);
+
+// Khu vực CTV và quản lý tài khoản CTV.
+app.use("/api/ctv", requireAuth, requireCtv, ctvRouter);
+app.use("/api/ctv-accounts", requireAuth, requireAdmin, ctvAccountsRouter);
 
 // Initialize DB and Start Server
 async function start() {

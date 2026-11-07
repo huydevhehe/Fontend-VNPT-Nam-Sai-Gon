@@ -21,6 +21,8 @@ interface CustomerApiRow {
   nearest_expiration?: string | null;
   am_staff?: string | null;
   am_caring_staff?: string | null;
+  handover_batch?: string | null;
+  handover_date?: string | null;
 }
 
 function mapCustomerRow(row: CustomerApiRow): CustomerRecord {
@@ -41,11 +43,20 @@ function mapCustomerRow(row: CustomerApiRow): CustomerRecord {
     nearestExpiration: row.nearest_expiration || "",
     amStaff: row.am_staff || "",
     amCaringStaff: row.am_caring_staff || "",
+    handoverBatch: row.handover_batch || "",
+    handoverDate: row.handover_date || "",
   };
 }
 
-export async function getCustomers(search?: string): Promise<CustomerRecord[]> {
-  const qs = search ? `?search=${encodeURIComponent(search)}` : "";
+export async function getCustomers(
+  search?: string,
+  group?: CustomerGroup
+): Promise<CustomerRecord[]> {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (group) params.set("group", group);
+  const queryString = params.toString();
+  const qs = queryString ? `?${queryString}` : "";
   const rows = await apiFetch<CustomerApiRow[]>(`/customers${qs}`);
   return rows.map(mapCustomerRow);
 }
@@ -59,6 +70,7 @@ export interface CreateCustomerInput {
   address?: string;
   services?: string;
   amStaff?: string;
+  handoverBatch?: string;
 }
 
 /**
@@ -77,9 +89,13 @@ export async function createCustomer(
   return mapCustomerRow(row);
 }
 
-export function transferCustomer(id: string, newStaff: string): Promise<void> {
+export function transferCustomer(
+  id: string,
+  newStaff: string,
+  handoverBatch?: string
+): Promise<void> {
   return apiFetch<void>(`/customers/${encodeURIComponent(id)}/transfer`, {
     method: "PATCH",
-    body: JSON.stringify({ newStaff }),
+    body: JSON.stringify({ newStaff, handoverBatch: handoverBatch || undefined }),
   });
 }

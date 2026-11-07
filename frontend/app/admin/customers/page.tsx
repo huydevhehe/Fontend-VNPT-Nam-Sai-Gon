@@ -7,6 +7,8 @@ import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
 import { CustomerRecord, CustomerType, CustomerGroup } from "@/lib/crm/types/crm.types";
 import { getCustomers, createCustomer, transferCustomer } from "@/lib/api/customers.api";
+import { getStaff } from "@/lib/api/staff.api";
+import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 
 const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
 const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu"];
@@ -19,6 +21,7 @@ interface CustomerFormState {
   phone: string;
   address: string;
   amStaff: string;
+  handoverBatch: string;
 }
 
 const EMPTY_FORM: CustomerFormState = {
@@ -29,6 +32,7 @@ const EMPTY_FORM: CustomerFormState = {
   phone: "",
   address: "",
   amStaff: "",
+  handoverBatch: "",
 };
 
 export default function CustomersPage() {
@@ -43,6 +47,9 @@ export default function CustomersPage() {
 
   const [transferTarget, setTransferTarget] = useState<CustomerRecord | null>(null);
   const [transferStaff, setTransferStaff] = useState("");
+  const [transferBatch, setTransferBatch] = useState("");
+  const [groupFilter, setGroupFilter] = useState<CustomerGroup | "">("");
+  const [staffNames, setStaffNames] = useState<string[]>([]);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [transferring, setTransferring] = useState(false);
 
@@ -79,6 +86,20 @@ export default function CustomersPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    getStaff()
+      .then((staff) => {
+        if (isMounted) setStaffNames(staff.map((s) => s.name));
+      })
+      .catch(() => {
+        // Gợi ý tên nhân viên là tuỳ chọn; backend vẫn kiểm tra khi điều chuyển.
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
@@ -93,6 +114,7 @@ export default function CustomersPage() {
         phone: form.phone || undefined,
         address: form.address || undefined,
         amStaff: form.amStaff || undefined,
+        handoverBatch: form.handoverBatch.trim() || undefined,
       });
 
       setData((prev) => [created, ...prev]);
@@ -109,7 +131,8 @@ export default function CustomersPage() {
 
   function openTransfer(customer: CustomerRecord) {
     setTransferTarget(customer);
-    setTransferStaff(customer.amStaff);
+    setTransferStaff(customer.amCaringStaff || customer.amStaff);
+    setTransferBatch("");
     setTransferError(null);
   }
 
@@ -121,13 +144,22 @@ export default function CustomersPage() {
     setTransferring(true);
 
     try {
-      await transferCustomer(transferTarget.id, transferStaff);
+      const staffName = transferStaff.trim();
+      const batch = transferBatch.trim();
+      await transferCustomer(transferTarget.id, staffName, batch || undefined);
+      const today = new Date().toISOString().slice(0, 10);
       setData((prev) =>
-        prev.map((c) =>
-          c.id === transferTarget.id
-            ? { ...c, amStaff: transferStaff, amCaringStaff: transferStaff }
-            : c
-        )
+        prev.map((c) => {
+          if (c.id !== transferTarget.id) return c;
+          return {
+            ...c,
+            // KH PTM giữ người phát triển, chỉ KHDN chăm đổi cả hai
+            amStaff: c.group === "Tập hiện hữu" ? staffName : c.amStaff,
+            amCaringStaff: staffName,
+            handoverBatch: batch || c.handoverBatch,
+            handoverDate: batch ? today : c.handoverDate,
+          };
+        })
       );
       setTransferTarget(null);
     } catch (err) {
@@ -183,7 +215,7 @@ export default function CustomersPage() {
       accessorKey: "group",
       cell: (item) => (
         <StatusBadge
-          status={item.group}
+          status={CUSTOMER_GROUP_LABEL[item.group] ?? item.group}
           variant={item.group === "Tự phát triển" ? "green" : "blue"}
         />
       ),
@@ -218,10 +250,30 @@ export default function CustomersPage() {
       accessorKey: "amStaff",
       cell: (item) => (
         <div className="text-xs">
-          <div className="font-medium text-slate-800">{item.amStaff}</div>
-          <div className="text-[10px] text-slate-400">AM Bán chăm</div>
+          <div className="font-medium text-slate-800">{item.amCaringStaff || item.amStaff}</div>
+          <div className="text-[10px] text-slate-400">
+            Chăm
+            {item.amStaff && item.amStaff !== item.amCaringStaff
+              ? ` · Phát triển: ${item.amStaff}`
+              : ""}
+          </div>
         </div>
       ),
+    },
+    {
+      header: "Đợt giao",
+      accessorKey: "handoverBatch",
+      cell: (item) =>
+        item.handoverBatch ? (
+          <div className="text-xs">
+            <div className="font-semibold text-slate-800">{item.handoverBatch}</div>
+            {item.handoverDate && (
+              <div className="text-[10px] text-slate-400">{item.handoverDate}</div>
+            )}
+          </div>
+        ) : (
+          <span className="text-slate-400">—</span>
+        ),
     },
     {
       header: "Thao tác",
@@ -247,7 +299,7 @@ export default function CustomersPage() {
             Hồ sơ khách hàng VNPT Nam Sài Gòn
           </h2>
           <p className="text-xs text-slate-500">
-            Quản lý khách hàng Tự phát triển (bán mới) và Tập hiện hữu được giao phụ trách
+            Quản lý {CUSTOMER_GROUP_LABEL["Tự phát triển"]} và {CUSTOMER_GROUP_LABEL["Tập hiện hữu"]} được giao phụ trách
           </p>
         </div>
         <button
@@ -272,13 +324,13 @@ export default function CustomersPage() {
           icon={Users}
         />
         <KpiCard
-          title="TỰ PHÁT TRIỂN (PTM)"
+          title="KH PTM"
           value="386"
           subtitle="Bán mới trong các kỳ"
           icon={UserPlus}
         />
         <KpiCard
-          title="TẬP HIỆN HỮU ĐƯỢC GIAO"
+          title="KHDN CHĂM ĐƯỢC GIAO"
           value="898"
           subtitle="Giao cho AM & AM Bán chăm"
           icon={Building2}
@@ -306,10 +358,25 @@ export default function CustomersPage() {
         </div>
       ) : (
         <DataTable
+          actionButton={
+            <select
+              aria-label="Lọc theo nhóm khách hàng"
+              value={groupFilter}
+              onChange={(e) => setGroupFilter(e.target.value as CustomerGroup | "")}
+              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 focus:border-vnpt focus:outline-none"
+            >
+              <option value="">Tất cả nhóm</option>
+              {GROUP_OPTIONS.map((g) => (
+                <option key={g} value={g}>
+                  {CUSTOMER_GROUP_LABEL[g]}
+                </option>
+              ))}
+            </select>
+          }
           title="Danh sách hồ sơ khách hàng"
           subtitle="Hỗ trợ lọc theo loại doanh nghiệp, hộ kinh doanh hoặc cá nhân"
           columns={columns}
-          data={data}
+          data={groupFilter ? data.filter((c) => c.group === groupFilter) : data}
           searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
           exportFileName="vnpt_khach_hang"
         />
@@ -383,7 +450,7 @@ export default function CustomersPage() {
                   >
                     {GROUP_OPTIONS.map((g) => (
                       <option key={g} value={g}>
-                        {g}
+                        {CUSTOMER_GROUP_LABEL[g]}
                       </option>
                     ))}
                   </select>
@@ -406,12 +473,28 @@ export default function CustomersPage() {
                     AM phụ trách
                   </label>
                   <input
+                    list="customer-staff-names"
                     value={form.amStaff}
                     onChange={(e) => setForm({ ...form, amStaff: e.target.value })}
                     placeholder="Nguyễn Thị Tình"
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="create-handover-batch"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
+                  Mã đợt giao (tuỳ chọn)
+                </label>
+                <input
+                  id="create-handover-batch"
+                  value={form.handoverBatch}
+                  onChange={(e) => setForm({ ...form, handoverBatch: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
               </div>
 
               <div>
@@ -472,15 +555,41 @@ export default function CustomersPage() {
 
             <form onSubmit={handleTransfer} className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                <label
+                  htmlFor="transfer-staff"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
                   AM phụ trách mới
                 </label>
                 <input
+                  id="transfer-staff"
                   required
+                  list="customer-staff-names"
                   value={transferStaff}
                   onChange={(e) => setTransferStaff(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="transfer-batch"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
+                  Mã đợt giao
+                </label>
+                <input
+                  id="transfer-batch"
+                  value={transferBatch}
+                  onChange={(e) => setTransferBatch(e.target.value)}
+                  placeholder="Tuỳ chọn, ví dụ DOT-2026-01"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  {transferTarget.group === "Tự phát triển"
+                    ? "KH PTM: chỉ đổi người chăm, giữ nguyên người phát triển."
+                    : "KHDN chăm: đổi cả người phát triển và người chăm."}
+                </p>
               </div>
 
               {transferError && (
@@ -509,6 +618,11 @@ export default function CustomersPage() {
           </div>
         </div>
       )}
+      <datalist id="customer-staff-names">
+        {staffNames.map((n) => (
+          <option key={n} value={n} />
+        ))}
+      </datalist>
     </div>
   );
 }

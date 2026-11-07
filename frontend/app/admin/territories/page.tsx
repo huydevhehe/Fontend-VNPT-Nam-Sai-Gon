@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { MapPin, Building, Users, TrendingUp, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
@@ -142,10 +143,14 @@ export default function TerritoriesPage() {
       header: "Phường / Địa bàn",
       accessorKey: "wardName",
       cell: (item) => (
-        <div className="flex items-center gap-2">
+        <Link
+          href={`/admin/territories/${item.id}`}
+          className="flex items-center gap-2 hover:underline"
+          title="Xem chi tiết phường"
+        >
           <MapPin className="h-4 w-4 text-blue-600" />
           <span className="font-bold text-slate-900">{item.wardName}</span>
-        </div>
+        </Link>
       ),
     },
     {

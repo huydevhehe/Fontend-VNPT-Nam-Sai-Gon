@@ -15,7 +15,7 @@ const TOKEN_STORAGE_KEY = "vnpt_token";
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<AuthUser>;
   logout: () => void;
 }
 
@@ -76,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await loginApi(username, password);
     setStoredToken(result.token);
     setUser(result.user);
+    return result.user;
   }, []);
 
   const logout = useCallback(() => {

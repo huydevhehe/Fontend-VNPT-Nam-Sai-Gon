@@ -13,6 +13,7 @@ import {
   Percent,
   MapPin,
   UserCheck,
+  UserRoundCheck,
   CheckSquare,
   UploadCloud,
   ShieldCheck,
@@ -89,6 +90,12 @@ const NAV_SECTIONS = [
         name: "Nhân viên",
         href: "/admin/employees",
         icon: UserCheck,
+      },
+      {
+        name: "Duyệt CTV",
+        href: "/admin/ctv-accounts",
+        icon: UserRoundCheck,
+        badge: "Admin",
       },
       {
         name: "Công việc / Nhắc việc",

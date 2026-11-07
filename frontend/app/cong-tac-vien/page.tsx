@@ -125,13 +125,13 @@ export default function CongTacVienPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href="#dang-ky"
+                href="/cong-tac-vien/dang-ky"
                 className="rounded-md bg-white text-vnpt-dark px-5 py-2.5 text-sm font-semibold hover:bg-slate-100"
               >
                 ĐĂNG KÝ NGAY
               </Link>
               <Link
-                href="/lien-he"
+                href="/login"
                 className="rounded-md border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10"
               >
                 ĐĂNG NHẬP
@@ -243,7 +243,7 @@ export default function CongTacVienPage() {
             </div>
           </div>
           <Link
-            href="/lien-he"
+            href="/cong-tac-vien/dang-ky"
             className="shrink-0 rounded-md bg-white text-vnpt-dark px-6 py-3 text-sm font-semibold hover:bg-slate-100"
           >
             ĐĂNG KÝ NGAY →

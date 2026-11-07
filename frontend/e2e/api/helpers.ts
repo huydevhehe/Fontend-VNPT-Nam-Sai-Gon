@@ -26,3 +26,73 @@ export async function apiLogin(
 export function bearer(token: string): { Authorization: string } {
   return { Authorization: `Bearer ${token}` };
 }
+
+export interface RegisterCtvPayload {
+  username: string;
+  password: string;
+  name: string;
+  phone: string;
+  email?: string;
+}
+
+function randomSuffix(): string {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+/** Số điện thoại 10 số hợp lệ (0 + 9 chữ số), đủ ngẫu nhiên để không trùng giữa các lần chạy. */
+export function uniquePhone(): string {
+  const digits = `${Date.now()}${Math.floor(Math.random() * 1000)}`.slice(-9).padStart(9, "0");
+  return `0${digits}`;
+}
+
+/** Đăng ký CTV qua API thật với dữ liệu mặc định duy nhất; trả response thô để test tự kiểm tra status. */
+export async function registerCtv(
+  request: APIRequestContext,
+  overrides: Partial<RegisterCtvPayload> = {}
+) {
+  const payload: RegisterCtvPayload = {
+    username: `ctv_${Date.now()}_${randomSuffix()}`,
+    password: "Ctv@12345",
+    name: "CTV E2E Test",
+    phone: uniquePhone(),
+    ...overrides,
+  };
+  const res = await request.post(`${API_URL}/auth/register-ctv`, { data: payload });
+  return { res, payload };
+}
+
+/** Đăng ký CTV mới, Admin duyệt, đăng nhập và trả về thông tin + token. */
+export async function createApprovedCtv(
+  request: APIRequestContext,
+  adminToken: string
+): Promise<{ id: string; username: string; password: string; token: string; referralCode: string }> {
+  const { res, payload } = await registerCtv(request);
+  expect(res.status(), "Đăng ký CTV phải trả 201").toBe(201);
+
+  const listRes = await request.get(
+    `${API_URL}/ctv-accounts?status=${encodeURIComponent("Chờ duyệt")}`,
+    { headers: bearer(adminToken) }
+  );
+  expect(listRes.status()).toBe(200);
+  const accounts: Array<{ id: string; username: string; referralCode: string }> = (
+    await listRes.json()
+  ).data;
+  const account = accounts.find((a) => a.username === payload.username);
+  if (!account) {
+    throw new Error(`Không tìm thấy CTV ${payload.username} trong danh sách chờ duyệt`);
+  }
+
+  const approveRes = await request.patch(`${API_URL}/ctv-accounts/${account.id}/approve`, {
+    headers: bearer(adminToken),
+  });
+  expect(approveRes.status(), "Admin duyệt CTV phải trả 200").toBe(200);
+
+  const token = await apiLogin(request, payload.username, payload.password);
+  return {
+    id: account.id,
+    username: payload.username,
+    password: payload.password,
+    token,
+    referralCode: account.referralCode,
+  };
+}

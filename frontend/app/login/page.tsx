@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock, User } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { ApiError } from "@/lib/api/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,14 +26,19 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await login(username.trim(), password);
-      router.push("/admin/dashboard");
+      const loggedIn = await login(username.trim(), password);
+      router.push(
+        loggedIn.role === "CTV" ? "/cong-tac-vien/dashboard" : "/admin/dashboard"
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       // Không phân biệt loại lỗi đăng nhập (sai username hay sai mật khẩu)
-      // để tránh dò tài khoản hợp lệ; chỉ giữ nguyên thông báo khi lỗi do
-      // mất kết nối tới server.
+      // để tránh dò tài khoản hợp lệ. Giữ nguyên thông báo của server khi
+      // mất kết nối hoặc khi tài khoản (đã xác thực đúng mật khẩu) bị chặn
+      // theo trạng thái (403: chờ duyệt / chưa được duyệt / ngừng hoạt động).
       if (message.includes("kết nối")) {
+        setError(message);
+      } else if (err instanceof ApiError && err.status === 403) {
         setError(message);
       } else {
         setError("Sai tài khoản hoặc mật khẩu");
@@ -110,6 +117,16 @@ export default function LoginPage() {
             {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </form>
+
+        <p className="text-caption mt-6 text-center text-slate-500">
+          Chưa có tài khoản?{" "}
+          <Link
+            href="/cong-tac-vien/dang-ky"
+            className="font-semibold text-vnpt hover:text-vnpt-dark"
+          >
+            Đăng ký làm CTV
+          </Link>
+        </p>
       </div>
     </div>
   );

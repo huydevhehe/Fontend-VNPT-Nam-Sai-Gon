@@ -18,6 +18,9 @@ export default function AdminLayout({
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
+    } else if (!loading && user?.role === "CTV") {
+      // CTV có dashboard riêng, không dùng khu vực quản trị.
+      router.replace("/cong-tac-vien/dashboard");
     }
   }, [loading, user, router]);
 
@@ -26,7 +29,7 @@ export default function AdminLayout({
     router.replace("/login");
   }
 
-  if (loading || !user) {
+  if (loading || !user || user.role === "CTV") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f4f7fb] text-slate-500">
         Đang kiểm tra đăng nhập...

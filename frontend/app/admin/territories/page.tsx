@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { MapPin, Building, Users, TrendingUp, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
@@ -143,7 +144,12 @@ export default function TerritoriesPage() {
       cell: (item) => (
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-blue-600" />
-          <span className="font-bold text-slate-900">{item.wardName}</span>
+          <Link
+            href={`/admin/territories/${item.id}`}
+            className="font-bold text-vnpt hover:text-vnpt-dark hover:underline"
+          >
+            {item.wardName}
+          </Link>
         </div>
       ),
     },

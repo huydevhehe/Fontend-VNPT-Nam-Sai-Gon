@@ -1,5 +1,10 @@
 import { apiFetch } from "./client";
-import { TerritoryRecord } from "@/lib/crm/types/crm.types";
+import {
+  QuarterRecord,
+  TerritoryDetail,
+  TerritoryRecord,
+  WardOfficialRecord,
+} from "@/lib/crm/types/crm.types";
 
 /**
  * Field thô (snake_case) trả về từ
@@ -53,5 +58,68 @@ export async function updateTerritoryHouseholds(
   await apiFetch<{ message: string }>(`/territories/${id}/households`, {
     method: "PATCH",
     body: JSON.stringify(body),
+  });
+}
+
+export interface OfficialInput {
+  unit: string;
+  position: string;
+  fullName: string;
+  phone?: string;
+}
+
+export interface QuarterInput {
+  name: string;
+  headName?: string;
+  secretaryName?: string;
+  mttqName?: string;
+  householdCount?: number;
+  population?: number;
+}
+
+export function getTerritoryDetail(id: string): Promise<TerritoryDetail> {
+  return apiFetch<TerritoryDetail>(`/territories/${encodeURIComponent(id)}/detail`);
+}
+
+export function createWardOfficial(territoryId: string, input: OfficialInput): Promise<WardOfficialRecord> {
+  return apiFetch<WardOfficialRecord>(`/territories/${encodeURIComponent(territoryId)}/officials`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateWardOfficial(
+  officialId: string,
+  input: { fullName?: string; phone?: string }
+): Promise<WardOfficialRecord> {
+  return apiFetch<WardOfficialRecord>(`/territories/officials/${encodeURIComponent(officialId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteWardOfficial(officialId: string): Promise<void> {
+  await apiFetch<{ id: string }>(`/territories/officials/${encodeURIComponent(officialId)}`, {
+    method: "DELETE",
+  });
+}
+
+export function createQuarter(territoryId: string, input: QuarterInput): Promise<QuarterRecord> {
+  return apiFetch<QuarterRecord>(`/territories/${encodeURIComponent(territoryId)}/quarters`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateQuarter(quarterId: string, input: Partial<QuarterInput>): Promise<QuarterRecord> {
+  return apiFetch<QuarterRecord>(`/territories/quarters/${encodeURIComponent(quarterId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteQuarter(quarterId: string): Promise<void> {
+  await apiFetch<{ id: string }>(`/territories/quarters/${encodeURIComponent(quarterId)}`, {
+    method: "DELETE",
   });
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MapPin, Building, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { MapPin, Building, Users, TrendingUp, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import { TerritoryRecord } from "@/lib/crm/types/crm.types";
@@ -11,6 +11,7 @@ export default function TerritoriesPage() {
   const [data, setData] = useState<TerritoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showList, setShowList] = useState(false);
 
   // State cho pattern click-to-edit số hộ dân inline trên bảng.
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -237,6 +238,21 @@ export default function TerritoriesPage() {
             Quản lý 7 phường Nam Sài Gòn, số hộ dân cập nhật trực tiếp; *Đã triển khai = Đã ký HĐ và có doanh thu
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowList((v) => !v)}
+          className="flex items-center gap-2 self-start rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100 sm:self-auto"
+        >
+          {showList ? (
+            <>
+              Ẩn danh sách phường <ChevronUp className="h-4 w-4" />
+            </>
+          ) : (
+            <>
+              Xem danh sách phường <ChevronDown className="h-4 w-4" />
+            </>
+          )}
+        </button>
       </div>
 
       {/* KPI Cards */}
@@ -268,28 +284,29 @@ export default function TerritoriesPage() {
       </div>
 
       {/* Table */}
-      {error ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
-          <AlertTriangle className="h-6 w-6 text-rose-500" />
-          <p className="text-sm font-semibold text-rose-700">
-            Không thể tải dữ liệu địa bàn
-          </p>
-          <p className="text-xs text-rose-600">{error}</p>
-        </div>
-      ) : loading ? (
-        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
-          Đang tải dữ liệu địa bàn...
-        </div>
-      ) : (
-        <DataTable
-          title="Danh sách địa bàn & đầu mối"
-          subtitle="Cho phép cập nhật số hộ dân, thông tin lãnh đạo phường và trường học địa bàn"
-          columns={columns}
-          data={data}
-          searchPlaceholder="Tìm theo tên phường, nhân viên, lãnh đạo..."
-          exportFileName="vnpt_dia_ban"
-        />
-      )}
+      {showList &&
+        (error ? (
+          <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+            <AlertTriangle className="h-6 w-6 text-rose-500" />
+            <p className="text-sm font-semibold text-rose-700">
+              Không thể tải dữ liệu địa bàn
+            </p>
+            <p className="text-xs text-rose-600">{error}</p>
+          </div>
+        ) : loading ? (
+          <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+            Đang tải dữ liệu địa bàn...
+          </div>
+        ) : (
+          <DataTable
+            title="Danh sách địa bàn & đầu mối"
+            subtitle="Cho phép cập nhật số hộ dân, thông tin lãnh đạo phường và trường học địa bàn"
+            columns={columns}
+            data={data}
+            searchPlaceholder="Tìm theo tên phường, nhân viên, lãnh đạo..."
+            exportFileName="vnpt_dia_ban"
+          />
+        ))}
     </div>
   );
 }

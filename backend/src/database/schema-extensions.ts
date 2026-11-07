@@ -78,10 +78,45 @@ export async function applySchemaExtensions(): Promise<void> {
       created_at TEXT
     )
   `);
+
+  // Bảng đánh dấu migration một-lần, do file này sở hữu. Dùng để tránh
+  // backfillRelations() chạy lại mỗi lần khởi động server và điền lại giá trị
+  // territory_id mà admin đã chủ động gỡ (PATCH /leads/:id/assignment với
+  // territoryId: null).
+  await run(`
+    CREATE TABLE IF NOT EXISTS schema_migrations_state (
+      key TEXT PRIMARY KEY,
+      applied_at TEXT
+    )
+  `);
+}
+
+const TERRITORY_BACKFILL_KEY = "territory_backfill_v1";
+
+async function isMigrationApplied(key: string): Promise<boolean> {
+  const rows = await query<{ key: string }>(
+    "SELECT key FROM schema_migrations_state WHERE key = ?",
+    [key]
+  );
+  return rows.length > 0;
+}
+
+async function markMigrationApplied(key: string): Promise<void> {
+  await run("INSERT INTO schema_migrations_state (key, applied_at) VALUES (?, ?)", [
+    key,
+    new Date().toISOString(),
+  ]);
 }
 
 // Chạy sau seed: chỉ điền các giá trị còn NULL, không ghi đè dữ liệu đã gán tay.
+// Chỉ chạy MỘT LẦN (đánh dấu bằng schema_migrations_state) để một giá trị
+// NULL mà admin chủ động gán (gỡ phường) không bị điền lại ở lần khởi động
+// server sau.
 export async function backfillRelations(): Promise<void> {
+  if (await isMigrationApplied(TERRITORY_BACKFILL_KEY)) {
+    return;
+  }
+
   await run(`
     UPDATE leads
     SET territory_id = (
@@ -106,4 +141,6 @@ export async function backfillRelations(): Promise<void> {
     )
     WHERE territory_id IS NULL
   `);
+
+  await markMigrationApplied(TERRITORY_BACKFILL_KEY);
 }

@@ -105,3 +105,20 @@ test("backfill does not overwrite a manually assigned territory_id", async () =>
   assert.equal(await leadTerritory("LEAD-01"), "TB-02");
   await run("UPDATE leads SET territory_id = 'TB-01' WHERE id = 'LEAD-01'");
 });
+
+test("backfill runs only once: a deliberately cleared territory_id stays NULL across restarts", async () => {
+  await initDatabase();
+  assert.equal(await leadTerritory("LEAD-01"), "TB-01");
+
+  // Giả lập PATCH /leads/:id/assignment với territoryId: null (admin chủ động
+  // bỏ gán phường).
+  await run("UPDATE leads SET territory_id = NULL WHERE id = 'LEAD-01'");
+  assert.equal(await leadTerritory("LEAD-01"), null);
+
+  // Khởi động lại server (initDatabase chạy lại backfillRelations): giá trị
+  // NULL chủ động phải giữ nguyên, không bị điền lại.
+  await initDatabase();
+  assert.equal(await leadTerritory("LEAD-01"), null);
+
+  await run("UPDATE leads SET territory_id = 'TB-01' WHERE id = 'LEAD-01'");
+});

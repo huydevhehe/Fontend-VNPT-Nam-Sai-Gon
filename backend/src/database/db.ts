@@ -45,12 +45,44 @@ export const run = (sql: string, params: any[] = []): Promise<{ id: number; chan
   });
 };
 
+// Các cột thống kê mở rộng của bảng territories (dân số, số trường theo cấp,
+// doanh thu) được thêm sau khi bảng đã tồn tại trên môi trường cũ — CREATE
+// TABLE IF NOT EXISTS ở trên không tự thêm cột cho DB đã có sẵn, nên phải
+// ALTER TABLE riêng. Postgres hỗ trợ ADD COLUMN IF NOT EXISTS; sqlite3 thì
+// không, nên phải thử và bỏ qua lỗi "duplicate column name" nếu cột đã có.
+const TERRITORY_EXTRA_COLUMNS: Array<{ name: string; sqlType: string }> = [
+  { name: "population", sqlType: "INTEGER DEFAULT 0" },
+  { name: "school_mamnon", sqlType: "INTEGER DEFAULT 0" },
+  { name: "school_tieuhoc", sqlType: "INTEGER DEFAULT 0" },
+  { name: "school_thcs", sqlType: "INTEGER DEFAULT 0" },
+  { name: "school_thpt", sqlType: "INTEGER DEFAULT 0" },
+  { name: "revenue", sqlType: "REAL DEFAULT 0" },
+];
+
+async function ensureTerritoryColumns() {
+  for (const column of TERRITORY_EXTRA_COLUMNS) {
+    if (config.dbDriver === "postgres") {
+      await run(`ALTER TABLE territories ADD COLUMN IF NOT EXISTS ${column.name} ${column.sqlType}`);
+    } else {
+      try {
+        await run(`ALTER TABLE territories ADD COLUMN ${column.name} ${column.sqlType}`);
+      } catch (err: any) {
+        if (!String(err?.message || "").includes("duplicate column name")) {
+          throw err;
+        }
+      }
+    }
+  }
+}
+
 export async function initDatabase() {
   if (config.dbDriver === "postgres") {
     await createTablesPostgres();
   } else {
     await createTablesSqlite();
   }
+
+  await ensureTerritoryColumns();
 
   // Seed default data if debts table is empty
   const countRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM debts");
@@ -173,6 +205,21 @@ async function createTablesSqlite() {
       deployed_count INTEGER DEFAULT 0,
       staff_name TEXT,
       leadership_contact TEXT
+    )
+  `);
+
+  // 4b. Ward contacts table (đầu mối nhân sự theo Đơn vị/Phòng ban trong từng phường)
+  await run(`
+    CREATE TABLE IF NOT EXISTS ward_contacts (
+      id TEXT PRIMARY KEY,
+      territory_id TEXT NOT NULL,
+      unit TEXT NOT NULL,
+      department TEXT NOT NULL,
+      full_name TEXT NOT NULL,
+      position TEXT NOT NULL,
+      phone TEXT,
+      am_in_charge TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
@@ -374,6 +421,21 @@ async function createTablesPostgres() {
       deployed_count INTEGER DEFAULT 0,
       staff_name TEXT,
       leadership_contact TEXT
+    )
+  `);
+
+  // 4b. Ward contacts table (đầu mối nhân sự theo Đơn vị/Phòng ban trong từng phường)
+  await run(`
+    CREATE TABLE IF NOT EXISTS ward_contacts (
+      id TEXT PRIMARY KEY,
+      territory_id TEXT NOT NULL,
+      unit TEXT NOT NULL,
+      department TEXT NOT NULL,
+      full_name TEXT NOT NULL,
+      position TEXT NOT NULL,
+      phone TEXT,
+      am_in_charge TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

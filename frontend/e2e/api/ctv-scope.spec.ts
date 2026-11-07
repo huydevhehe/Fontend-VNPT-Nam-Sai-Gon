@@ -197,6 +197,81 @@ test.describe("API /api/ctv — dữ liệu theo từng CTV", () => {
     }
   });
 
+  test("summary tính đúng successfulLeads, failedLeads, paidCommission, pendingCommission, totalCommission", async ({
+    request,
+  }) => {
+    const ctv = await createApprovedCtv(request, adminToken);
+    const nameOk = `Khách chốt thành công ${uniq()}`;
+    const nameFail = `Khách thất bại ${uniq()}`;
+    await submitLead(request, ctv.referralCode, nameOk, phoneOf(21));
+    await submitLead(request, ctv.referralCode, nameFail, phoneOf(22));
+
+    const listRes = await request.get(`${API_URL}/leads`, { headers: bearer(adminToken) });
+    const leads: Array<{ id: string; customerName: string }> = (await listRes.json()).data;
+    const leadOk = leads.find((l) => l.customerName === nameOk)!;
+    const leadFail = leads.find((l) => l.customerName === nameFail)!;
+
+    for (const { lead, status } of [
+      { lead: leadOk, status: "Chốt thành công" },
+      { lead: leadFail, status: "Thất bại" },
+    ]) {
+      const assign = await request.patch(`${API_URL}/leads/${lead.id}/assignment`, {
+        headers: bearer(adminToken),
+        data: { staffName: STAFF },
+      });
+      expect(assign.status()).toBe(200);
+      const patchStatus = await request.patch(`${API_URL}/leads/${lead.id}/status`, {
+        headers: bearer(adminToken),
+        data: { status },
+      });
+      expect(patchStatus.status()).toBe(200);
+    }
+
+    const value = 8000000;
+    const transactionCode = `GD-CTV-SUM-${uniq()}`;
+    const contractRes = await request.post(`${API_URL}/contracts`, {
+      headers: bearer(adminToken),
+      data: {
+        transactionCode,
+        customerName: nameOk,
+        subscriberCodes: ["0901234567"],
+        totalValue: value,
+        channel: "CTV giới thiệu",
+        leadId: leadOk.id,
+      },
+    });
+    expect(contractRes.status()).toBe(201);
+    const contract = (await contractRes.json()).data;
+    const done = await request.patch(`${API_URL}/contracts/${contract.id}/status`, {
+      headers: bearer(adminToken),
+      data: { deploymentStatus: "Hoàn tất" },
+    });
+    expect(done.status()).toBe(200);
+    const expectedAmount = Math.round(value * 0.1);
+
+    const commissionsRes = await request.get(`${API_URL}/commissions`, { headers: bearer(adminToken) });
+    const commissions: Array<{ id: string; transactionCode: string }> = (await commissionsRes.json()).data;
+    const commission = commissions.find((c) => c.transactionCode === transactionCode)!;
+    const payRes = await request.patch(`${API_URL}/commissions/${commission.id}/status`, {
+      headers: bearer(adminToken),
+      data: { status: "Đã chi" },
+    });
+    expect(payRes.status()).toBe(200);
+
+    const summary = await getJson(request, "/ctv/summary", ctv.token);
+    expect(summary.status).toBe(200);
+    expect(summary.body.data).toEqual({
+      totalLeads: 2,
+      successfulLeads: 1,
+      failedLeads: 1,
+      totalContracts: 1,
+      completedContracts: 1,
+      totalCommission: expectedAmount,
+      pendingCommission: 0,
+      paidCommission: expectedAmount,
+    });
+  });
+
   test("token CTV gọi API nhân viên → 403", async ({ request }) => {
     for (const path of ["/customers", "/leads", "/commissions", "/staff", "/ctv-accounts"]) {
       const res = await request.get(`${API_URL}${path}`, { headers: bearer(ctvA.token) });

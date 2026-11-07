@@ -52,4 +52,34 @@ test.describe("requireAuth kiểm tra lại trạng thái tài khoản", () => {
     expect(after.status()).toBe(401);
     expect((await after.json()).message).toBe("Tài khoản không còn hiệu lực");
   });
+
+  test("nhân viên bị đổi role sang Admin thì token cũ (vẫn mang role cũ) được xử lý theo role mới trong DB", async ({
+    request,
+  }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+    const code = `NV-ROLE-${Date.now()}`;
+    const create = await request.post(`${API_URL}/staff`, {
+      headers: bearer(adminToken),
+      data: { code, name: "NV Đổi Role", role: "AM", territory: "Khu vực H1", email: `${code.toLowerCase()}@example.com` },
+    });
+    expect(create.status()).toBe(201);
+    const staff = (await create.json()).data;
+
+    // Lấy token khi còn là AM: chưa có quyền Admin.
+    const token = await apiLogin(request, code, `${code}@Vnpt2026`);
+    const beforeSettings = await request.get(`${API_URL}/settings`, { headers: bearer(token) });
+    expect(beforeSettings.status()).toBe(403);
+
+    // Admin thăng role trong DB lên Admin.
+    const patch = await request.patch(`${API_URL}/staff/${staff.id}`, {
+      headers: bearer(adminToken),
+      data: { role: "Admin" },
+    });
+    expect(patch.status()).toBe(200);
+
+    // Token CŨ (payload JWT vẫn ghi role AM) phải được middleware tra lại DB và
+    // cho qua endpoint chỉ Admin mới được vào — chứng minh DB thắng JWT claim.
+    const afterSettings = await request.get(`${API_URL}/settings`, { headers: bearer(token) });
+    expect(afterSettings.status()).toBe(200);
+  });
 });

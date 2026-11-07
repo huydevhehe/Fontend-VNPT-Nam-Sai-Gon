@@ -20,14 +20,23 @@ declare global {
 
 const ACCOUNT_INVALID_MESSAGE = "Tài khoản không còn hiệu lực";
 
-/** Tài khoản còn hiệu lực khi tồn tại và trạng thái trống (dữ liệu cũ) hoặc "Đang hoạt động". */
-async function isAccountActive(userId: string): Promise<boolean> {
-  const rows = await query<{ status: string | null }>("SELECT status FROM users WHERE id = ?", [userId]);
+/**
+ * Tra lại trạng thái VÀ role hiện tại trong DB (không tin role ghi trong JWT):
+ * StaffService.update có thể đổi role (ví dụ demote/thăng chức) mà không bắt
+ * đăng nhập lại, nên token cũ phải được đánh giá theo quyền MỚI NHẤT.
+ */
+async function loadAccountState(
+  userId: string
+): Promise<{ active: boolean; role: string | null }> {
+  const rows = await query<{ status: string | null; role: string | null }>(
+    "SELECT status, role FROM users WHERE id = ?",
+    [userId]
+  );
   if (!rows.length) {
-    return false;
+    return { active: false, role: null };
   }
   const status = rows[0].status;
-  return !status || status === USER_STATUS.ACTIVE;
+  return { active: !status || status === USER_STATUS.ACTIVE, role: rows[0].role };
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -55,17 +64,23 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     return;
   }
 
+  let state: { active: boolean; role: string | null };
   try {
-    if (!(await isAccountActive(decoded.sub))) {
-      res.status(401).json({ success: false, message: ACCOUNT_INVALID_MESSAGE });
-      return;
-    }
+    state = await loadAccountState(decoded.sub);
   } catch (error) {
     console.error("Account status check failed:", error);
     res.status(500).json({ success: false, message: "Lỗi hệ thống, vui lòng thử lại" });
     return;
   }
 
-  req.user = { id: decoded.sub, role: decoded.role, name: decoded.name };
+  if (!state.active || !state.role) {
+    res.status(401).json({ success: false, message: ACCOUNT_INVALID_MESSAGE });
+    return;
+  }
+
+  // role lấy từ DB, không phải từ claim trong JWT: tài khoản bị đổi role sau
+  // khi token đã phát hành phải được xử lý theo quyền hiện tại, không phải
+  // quyền lúc đăng nhập.
+  req.user = { id: decoded.sub, role: state.role, name: decoded.name };
   next();
 }

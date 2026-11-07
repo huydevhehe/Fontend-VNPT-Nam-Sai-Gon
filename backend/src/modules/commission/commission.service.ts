@@ -57,6 +57,12 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** Lỗi vi phạm unique constraint: SQLite_CONSTRAINT hoặc Postgres 23505. */
+function isUniqueViolation(error: unknown): boolean {
+  const code = (error as { code?: string } | undefined)?.code;
+  return code === "SQLITE_CONSTRAINT" || code === "23505";
+}
+
 export class CommissionService {
   async getAll(): Promise<CommissionRecordDto[]> {
     const rows = await query<CommissionRow>("SELECT * FROM commissions ORDER BY created_at DESC");
@@ -88,22 +94,34 @@ export class CommissionService {
     }
 
     const id = `HH-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    await run(
-      `INSERT INTO commissions (
-        id, recipient_name, type, transaction_code, amount, status, date, contract_id, ctv_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        ctv[0].name,
-        CTV_COMMISSION_TYPE,
-        contract.transaction_code,
-        calcCtvCommission(Number(contract.total_value)),
-        CTV_COMMISSION_INITIAL_STATUS,
-        today(),
-        contract.id,
-        ctvId,
-      ]
-    );
+    try {
+      await run(
+        `INSERT INTO commissions (
+          id, recipient_name, type, transaction_code, amount, status, date, contract_id, ctv_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          ctv[0].name,
+          CTV_COMMISSION_TYPE,
+          contract.transaction_code,
+          calcCtvCommission(Number(contract.total_value)),
+          CTV_COMMISSION_INITIAL_STATUS,
+          today(),
+          contract.id,
+          ctvId,
+        ]
+      );
+    } catch (error) {
+      if (!isUniqueViolation(error)) {
+        throw error;
+      }
+      // Một request khác đã tạo trước (race trên (contract_id, ctv_id)): coi như đã thành công.
+      const existingAfterRace = await query<CommissionRow>(
+        "SELECT * FROM commissions WHERE contract_id = ? AND ctv_id = ?",
+        [contract.id, ctvId]
+      );
+      return existingAfterRace.length ? toCommissionRecord(existingAfterRace[0]) : null;
+    }
 
     const created = await query<CommissionRow>("SELECT * FROM commissions WHERE id = ?", [id]);
     return toCommissionRecord(created[0]);

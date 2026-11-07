@@ -320,6 +320,17 @@ test.describe("API Lead / Hợp đồng / Hoa hồng gắn CTV và Phường", (
       expect(await commissionsOf(request, contract.id)).toHaveLength(1);
     });
 
+    test("2 PATCH Hoàn tất song song chỉ sinh đúng 1 dòng hoa hồng", async ({ request }) => {
+      const contract = await contractFromCtvLead(request, 5000000);
+      const [r1, r2] = await Promise.all([
+        setDeployment(request, contract.id, "Hoàn tất"),
+        setDeployment(request, contract.id, "Hoàn tất"),
+      ]);
+      expect(r1.status()).toBe(200);
+      expect(r2.status()).toBe(200);
+      expect(await commissionsOf(request, contract.id)).toHaveLength(1);
+    });
+
     test("HĐ không có CTV thì không sinh hoa hồng", async ({ request }) => {
       const contract = (await (await postContract(request, {})).json()).data;
       expect((await setDeployment(request, contract.id, "Hoàn tất")).status()).toBe(200);

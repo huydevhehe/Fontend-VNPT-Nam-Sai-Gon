@@ -11,6 +11,7 @@ if (!isPostgres) {
 }
 
 const { initDatabase, query, run } = await import("./db.js");
+const { ensureColumn } = await import("./schema-extensions.js");
 
 async function columnExists(table: string, column: string): Promise<boolean> {
   if (isPostgres) {
@@ -77,6 +78,17 @@ test("initDatabase adds all new columns and tables, and is idempotent", async ()
     ? await query("SELECT 1 AS ok FROM pg_indexes WHERE indexname = ?", ["ux_users_referral_code"])
     : await query("SELECT 1 AS ok FROM sqlite_master WHERE type = 'index' AND name = ?", ["ux_users_referral_code"]);
   assert.equal(idx.length, 1, "unique index ux_users_referral_code should exist");
+
+  const commissionsIdx = isPostgres
+    ? await query("SELECT 1 AS ok FROM pg_indexes WHERE indexname = ?", ["ux_commissions_contract_ctv"])
+    : await query("SELECT 1 AS ok FROM sqlite_master WHERE type = 'index' AND name = ?", [
+        "ux_commissions_contract_ctv",
+      ]);
+  assert.equal(commissionsIdx.length, 1, "unique index ux_commissions_contract_ctv should exist");
+});
+
+test("ensureColumn rejects an invalid table identifier", async () => {
+  await assert.rejects(() => ensureColumn("Users;", "x", "TEXT"));
 });
 
 test("backfill derives territory_id for leads and contracts", async () => {

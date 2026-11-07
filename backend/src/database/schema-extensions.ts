@@ -48,6 +48,10 @@ export async function applySchemaExtensions(): Promise<void> {
 
   await ensureColumn("commissions", "contract_id", "TEXT");
   await ensureColumn("commissions", "ctv_id", "TEXT");
+  await run(
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_commissions_contract_ctv ON commissions(contract_id, ctv_id)
+     WHERE contract_id IS NOT NULL AND ctv_id IS NOT NULL`
+  );
 
   await run(`
     CREATE TABLE IF NOT EXISTS ward_officials (
@@ -97,6 +101,7 @@ export async function backfillRelations(): Promise<void> {
       FROM leads l
       WHERE l.customer_name = contracts.customer_name
         AND l.territory_id IS NOT NULL
+      ORDER BY l.id
       LIMIT 1
     )
     WHERE territory_id IS NULL

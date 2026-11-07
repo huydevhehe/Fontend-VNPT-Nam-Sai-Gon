@@ -123,6 +123,24 @@ export interface TerritoryRecord {
   deployedCount: number; // Đã ký HĐ và có doanh thu
   staffName: string;
   leadershipContact: string;
+  population: number; // Dân số
+  schoolMamnon: number; // Số trường Mầm non
+  schoolTieuhoc: number; // Số trường Tiểu học
+  schoolThcs: number; // Số trường THCS
+  schoolThpt: number; // Số trường THPT
+  revenue: number; // Doanh thu đã triển khai
+}
+
+// 8b. Ward contact (đầu mối nhân sự theo Đơn vị/Phòng ban trong 1 phường)
+export interface WardContactRecord {
+  id: string;
+  territoryId: string;
+  unit: string; // Đơn vị: Trạm Y tế, UBND, Đảng ủy, Trường học...
+  department: string; // Phòng ban: Hành chính nhân sự, Mầm non, THCS...
+  fullName: string; // Họ tên
+  position: string; // Chức: Trưởng phòng, Hiệu trưởng...
+  phone: string;
+  amInCharge: string; // AM phụ trách
 }
 
 // 9. Staff

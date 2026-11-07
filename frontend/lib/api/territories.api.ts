@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import { TerritoryRecord } from "@/lib/crm/types/crm.types";
+import { TerritoryRecord, WardContactRecord } from "@/lib/crm/types/crm.types";
 
 /**
  * Field thô (snake_case) trả về từ
@@ -14,6 +14,23 @@ interface TerritoryApiRow {
   deployed_count: number;
   staff_name?: string | null;
   leadership_contact?: string | null;
+  population?: number | null;
+  school_mamnon?: number | null;
+  school_tieuhoc?: number | null;
+  school_thcs?: number | null;
+  school_thpt?: number | null;
+  revenue?: number | null;
+}
+
+interface WardContactApiRow {
+  id: string;
+  territory_id: string;
+  unit: string;
+  department: string;
+  full_name: string;
+  position: string;
+  phone?: string | null;
+  am_in_charge?: string | null;
 }
 
 function mapTerritoryRow(row: TerritoryApiRow): TerritoryRecord {
@@ -26,6 +43,25 @@ function mapTerritoryRow(row: TerritoryApiRow): TerritoryRecord {
     deployedCount: Number(row.deployed_count) || 0,
     staffName: row.staff_name || "",
     leadershipContact: row.leadership_contact || "",
+    population: Number(row.population) || 0,
+    schoolMamnon: Number(row.school_mamnon) || 0,
+    schoolTieuhoc: Number(row.school_tieuhoc) || 0,
+    schoolThcs: Number(row.school_thcs) || 0,
+    schoolThpt: Number(row.school_thpt) || 0,
+    revenue: Number(row.revenue) || 0,
+  };
+}
+
+function mapWardContactRow(row: WardContactApiRow): WardContactRecord {
+  return {
+    id: row.id,
+    territoryId: row.territory_id,
+    unit: row.unit,
+    department: row.department,
+    fullName: row.full_name,
+    position: row.position,
+    phone: row.phone || "",
+    amInCharge: row.am_in_charge || "",
   };
 }
 
@@ -53,5 +89,63 @@ export async function updateTerritoryHouseholds(
   await apiFetch<{ message: string }>(`/territories/${id}/households`, {
     method: "PATCH",
     body: JSON.stringify(body),
+  });
+}
+
+export type UpdateTerritoryStatsInput = Partial<
+  Pick<
+    TerritoryRecord,
+    "population" | "schoolMamnon" | "schoolTieuhoc" | "schoolThcs" | "schoolThpt" | "revenue"
+  >
+>;
+
+export async function updateTerritoryStats(
+  id: string,
+  stats: UpdateTerritoryStatsInput
+): Promise<TerritoryRecord> {
+  const row = await apiFetch<TerritoryApiRow>(`/territories/${id}/stats`, {
+    method: "PATCH",
+    body: JSON.stringify(stats),
+  });
+  return mapTerritoryRow(row);
+}
+
+export async function getWardContacts(territoryId: string): Promise<WardContactRecord[]> {
+  const rows = await apiFetch<WardContactApiRow[]>(`/territories/${territoryId}/contacts`);
+  return rows.map(mapWardContactRow);
+}
+
+export type CreateWardContactInput = Pick<
+  WardContactRecord,
+  "unit" | "department" | "fullName" | "position" | "phone" | "amInCharge"
+>;
+
+export async function createWardContact(
+  territoryId: string,
+  data: CreateWardContactInput
+): Promise<WardContactRecord> {
+  const row = await apiFetch<WardContactApiRow>(`/territories/${territoryId}/contacts`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return mapWardContactRow(row);
+}
+
+export type UpdateWardContactInput = Partial<CreateWardContactInput>;
+
+export async function updateWardContact(
+  contactId: string,
+  patch: UpdateWardContactInput
+): Promise<WardContactRecord> {
+  const row = await apiFetch<WardContactApiRow>(`/territories/contacts/${contactId}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+  return mapWardContactRow(row);
+}
+
+export async function deleteWardContact(contactId: string): Promise<void> {
+  await apiFetch<{ message: string }>(`/territories/contacts/${contactId}`, {
+    method: "DELETE",
   });
 }

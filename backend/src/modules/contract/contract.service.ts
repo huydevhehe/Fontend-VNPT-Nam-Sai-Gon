@@ -1,4 +1,5 @@
 import { query, run } from "../../database/db.js";
+import { CommissionService } from "../commission/commission.service.js";
 
 export interface ContractRow {
   id: string;
@@ -11,6 +12,9 @@ export interface ContractRow {
   payment_status: string;
   document_status: string;
   has_revenue: number;
+  lead_id: string | null;
+  territory_id: string | null;
+  referred_by_ctv_id: string | null;
 }
 
 export interface ContractRecordDto {
@@ -24,6 +28,9 @@ export interface ContractRecordDto {
   paymentStatus: string;
   documentStatus: string;
   hasRevenue: boolean;
+  leadId: string | null;
+  territoryId: string | null;
+  referredByCtvId: string | null;
 }
 
 export interface UpdateContractStatusInput {
@@ -39,6 +46,8 @@ export interface CreateContractInput {
   subscriberCodes: string[];
   totalValue: number;
   channel: string;
+  leadId?: string | null;
+  territoryId?: string | null;
 }
 
 const DEPLOYMENT_STATUSES = [
@@ -71,8 +80,13 @@ function toContractRecord(row: ContractRow): ContractRecordDto {
     paymentStatus: row.payment_status,
     documentStatus: row.document_status,
     hasRevenue: row.has_revenue === 1,
+    leadId: row.lead_id ?? null,
+    territoryId: row.territory_id ?? null,
+    referredByCtvId: row.referred_by_ctv_id ?? null,
   };
 }
+
+const commissionService = new CommissionService();
 
 export class ContractService {
   async getAll(): Promise<ContractRecordDto[]> {
@@ -99,12 +113,37 @@ export class ContractService {
       throw new Error("Giá trị hợp đồng không được âm");
     }
 
-    const id = `HD-${Date.now()}`;
+    let territoryId: string | null = null;
+    let referredByCtvId: string | null = null;
+    const leadId = data.leadId ? String(data.leadId) : null;
+
+    if (leadId) {
+      const lead = await query<{ territory_id: string | null; referred_by_ctv_id: string | null }>(
+        "SELECT territory_id, referred_by_ctv_id FROM leads WHERE id = ?",
+        [leadId]
+      );
+      if (!lead.length) {
+        throw new Error("Lead không tồn tại");
+      }
+      territoryId = lead[0].territory_id ?? null;
+      referredByCtvId = lead[0].referred_by_ctv_id ?? null;
+    }
+
+    if (data.territoryId) {
+      const territory = await query("SELECT id FROM territories WHERE id = ?", [data.territoryId]);
+      if (!territory.length) {
+        throw new Error("Phường không tồn tại");
+      }
+      territoryId = String(data.territoryId);
+    }
+
+    const id = `HD-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     await run(
       `INSERT INTO contracts (
         id, transaction_code, customer_name, subscriber_codes, total_value, channel,
-        deployment_status, payment_status, document_status, has_revenue
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        deployment_status, payment_status, document_status, has_revenue,
+        lead_id, territory_id, referred_by_ctv_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.transactionCode,
@@ -116,6 +155,9 @@ export class ContractService {
         "Chưa thanh toán",
         "Soạn thảo",
         0,
+        leadId,
+        territoryId,
+        referredByCtvId,
       ]
     );
 
@@ -185,7 +227,14 @@ export class ContractService {
       [nextDeploymentStatus, nextPaymentStatus, nextDocumentStatus, nextTotalValue, id]
     );
 
+    if (patch.totalValue !== undefined) {
+      await commissionService.recalculateForContract(id, nextTotalValue);
+    }
+
     const updated = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [id]);
+    if (patch.deploymentStatus === "Hoàn tất" && updated[0].referred_by_ctv_id) {
+      await commissionService.createForContract(updated[0]);
+    }
     return toContractRecord(updated[0]);
   }
 }

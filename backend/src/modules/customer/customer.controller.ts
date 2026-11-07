@@ -36,3 +36,15 @@ customerRouter.patch("/:id/transfer", requireAuth, async (req: Request, res: Res
   }
 });
 
+customerRouter.patch("/:id/transfer-caring", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { newCaringStaff } = req.body;
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
+    const result = await customerService.transferCaringStaff(id, newCaringStaff, operator);
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+

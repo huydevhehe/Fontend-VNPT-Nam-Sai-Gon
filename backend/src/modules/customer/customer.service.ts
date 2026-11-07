@@ -24,8 +24,14 @@ export class CustomerService {
     address?: string;
     services?: string;
     amStaff?: string;
+    amCaringStaff?: string;
   }) {
     const id = `KH-${Date.now()}`;
+    const amStaff = data.amStaff || "Nguyễn Thị Tình";
+    // AM chăm sóc (CSKH) là field độc lập với AM bán hàng — chỉ dùng amStaff làm
+    // mặc định khi người tạo không chỉ định rõ amCaringStaff, không ép buộc trùng nhau.
+    const amCaringStaff = data.amCaringStaff || amStaff;
+
     await run(
       `INSERT INTO customers (
         id, name, identity_code, type, customer_group, phone, address, services, am_staff, am_caring_staff
@@ -39,8 +45,8 @@ export class CustomerService {
         data.phone || null,
         data.address || null,
         data.services || "Internet Fiber",
-        data.amStaff || "Nguyễn Thị Tình",
-        data.amStaff || "Nguyễn Thị Tình",
+        amStaff,
+        amCaringStaff,
       ]
     );
 
@@ -49,23 +55,39 @@ export class CustomerService {
     return { success: true, customer: rows[0], message: "Thêm khách hàng thành công" };
   }
 
+  // Điều chuyển AM bán hàng (am_staff). KHÔNG đụng tới am_caring_staff —
+  // hai vai trò độc lập, xem transferCaringStaff() để đổi AM chăm sóc (CSKH).
   async transfer(id: string, newStaff: string, operator: string = "Admin") {
-    await run(
-      "UPDATE customers SET am_staff = ?, am_caring_staff = ? WHERE id = ?",
-      [newStaff, newStaff, id]
-    );
+    await run("UPDATE customers SET am_staff = ? WHERE id = ?", [newStaff, id]);
 
     await run(
       "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
       [
         `LOG-${Date.now()}`,
         operator,
-        "Điều chuyển khách hàng",
-        `Điều chuyển khách hàng ID ${id} sang cho nhân viên ${newStaff} phụ trách`,
+        "Điều chuyển AM phụ trách",
+        `Điều chuyển khách hàng ID ${id} sang cho AM bán hàng ${newStaff} phụ trách`,
       ]
     );
 
-    return { success: true, message: `Đã điều chuyển khách hàng cho ${newStaff}` };
+    return { success: true, message: `Đã điều chuyển AM phụ trách cho ${newStaff}` };
+  }
+
+  // Điều chuyển AM chăm sóc (CSKH, am_caring_staff). Không đụng tới am_staff.
+  async transferCaringStaff(id: string, newCaringStaff: string, operator: string = "Admin") {
+    await run("UPDATE customers SET am_caring_staff = ? WHERE id = ?", [newCaringStaff, id]);
+
+    await run(
+      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      [
+        `LOG-${Date.now()}`,
+        operator,
+        "Điều chuyển AM chăm sóc (CSKH)",
+        `Điều chuyển khách hàng ID ${id} sang cho AM chăm sóc ${newCaringStaff} phụ trách`,
+      ]
+    );
+
+    return { success: true, message: `Đã điều chuyển AM chăm sóc cho ${newCaringStaff}` };
   }
 }
 

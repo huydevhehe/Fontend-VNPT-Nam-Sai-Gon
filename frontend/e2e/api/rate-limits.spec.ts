@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { API_URL, randomIp, registerCtv } from "./helpers";
+import { ADMIN, API_URL, apiLogin, randomIp, registerCtv } from "./helpers";
 
 const REGISTER_LIMIT = 10;
 const REF_LIMIT = 60;
+const LOGIN_LIMIT = 10;
 
 test.describe("Giới hạn tần suất theo IP", () => {
   test("đăng ký CTV: quá 10 lần/giờ từ một IP -> 429, IP khác không bị ảnh hưởng", async ({ request }) => {
@@ -35,5 +36,31 @@ test.describe("Giới hạn tần suất theo IP", () => {
     expect((await blocked.json()).success).toBe(false);
 
     expect((await lookup(randomIp())).status()).toBe(200);
+  });
+
+  test("đăng nhập: quá 10 lần/15 phút từ một IP -> 429, IP khác và đăng nhập đúng không bị ảnh hưởng", async ({
+    request,
+  }) => {
+    const ip = randomIp();
+    const login = (from: string) =>
+      request.post(`${API_URL}/auth/login`, {
+        data: { username: "khong-ton-tai", password: "sai" },
+        headers: { "X-Forwarded-For": from },
+      });
+
+    for (let i = 0; i < LOGIN_LIMIT; i += 1) {
+      expect((await login(ip)).status(), `lần ${i + 1}`).toBe(401);
+    }
+    const blocked = await login(ip);
+    expect(blocked.status()).toBe(429);
+    const body = await blocked.json();
+    expect(body.success).toBe(false);
+    expect(typeof body.message).toBe("string");
+
+    // IP khác không bị ảnh hưởng.
+    expect((await login(randomIp())).status()).toBe(401);
+
+    // Đăng nhập admin hợp lệ từ IP khác vẫn hoạt động bình thường.
+    await apiLogin(request, ADMIN.username, ADMIN.password);
   });
 });

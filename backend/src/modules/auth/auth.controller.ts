@@ -13,8 +13,16 @@ const registerRateLimit = createRateLimiter({
   message: "Bạn đăng ký quá nhiều lần, vui lòng thử lại sau",
 });
 
+// Đăng nhập: tối đa 10 lần mỗi 15 phút trên mỗi IP (chặn brute-force mật khẩu
+// mặc định nhân viên <mã NV>@Vnpt2026, không phải để chặn người dùng hợp lệ).
+const loginRateLimit = createRateLimiter({
+  max: 10,
+  windowMs: 15 * 60 * 1000,
+  message: "Bạn đăng nhập sai quá nhiều lần, vui lòng thử lại sau ít phút",
+});
+
 // POST /api/auth/login
-authRouter.post("/login", async (req: Request, res: Response) => {
+authRouter.post("/login", loginRateLimit, async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {

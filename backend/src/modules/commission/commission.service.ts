@@ -115,12 +115,18 @@ export class CommissionService {
       if (!isUniqueViolation(error)) {
         throw error;
       }
-      // Một request khác đã tạo trước (race trên (contract_id, ctv_id)): coi như đã thành công.
+      // SQLITE_CONSTRAINT/23505 bao gồm mọi loại vi phạm (NOT NULL, FK, PK...),
+      // không chỉ unique index (contract_id, ctv_id). Chỉ coi là "đã tồn tại"
+      // (idempotent, race giữa 2 request) khi thực sự tìm thấy dòng đó; nếu
+      // không, đây là lỗi khác — ném lại, không được âm thầm trả null.
       const existingAfterRace = await query<CommissionRow>(
         "SELECT * FROM commissions WHERE contract_id = ? AND ctv_id = ?",
         [contract.id, ctvId]
       );
-      return existingAfterRace.length ? toCommissionRecord(existingAfterRace[0]) : null;
+      if (!existingAfterRace.length) {
+        throw error;
+      }
+      return toCommissionRecord(existingAfterRace[0]);
     }
 
     const created = await query<CommissionRow>("SELECT * FROM commissions WHERE id = ?", [id]);

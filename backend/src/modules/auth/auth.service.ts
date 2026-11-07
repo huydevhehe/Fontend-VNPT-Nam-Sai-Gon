@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { randomInt } from "crypto";
+import { randomBytes, randomInt } from "crypto";
 import { query, run } from "../../database/db.js";
 import { config } from "../../config/index.js";
 import { ROLES, USER_STATUS } from "../../constants/org.js";
@@ -127,7 +127,7 @@ export class AuthService {
     let lastError: unknown = null;
 
     for (let attempt = 0; attempt < MAX_REGISTER_ATTEMPTS; attempt += 1) {
-      const id = `USR-CTV-${Date.now() + attempt}`;
+      const id = `USR-CTV-${Date.now()}-${randomBytes(4).toString("hex")}`;
       const referralCode = generateReferralCode();
       try {
         await run(

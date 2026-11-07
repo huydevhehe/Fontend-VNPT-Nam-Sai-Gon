@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import bcrypt from "bcryptjs";
 import { config } from "../config/index.js";
 import { pgQuery, pgRun } from "./pg-adapter.js";
+import { applySchemaExtensions, backfillRelations } from "./schema-extensions.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +16,7 @@ if (!fs.existsSync(dbDir)) {
 }
 
 const dbPath = path.join(dbDir, "crm.sqlite");
-export const db = new sqlite3.Database(dbPath);
+export const db = new sqlite3.Database(process.env.SQLITE_PATH ? path.resolve(process.env.SQLITE_PATH) : dbPath);
 
 // Helper for promise-based queries.
 // Điều hướng theo config.dbDriver: "postgres" dùng pg-adapter, còn lại (mặc định
@@ -51,6 +52,8 @@ export async function initDatabase() {
   } else {
     await createTablesSqlite();
   }
+
+  await applySchemaExtensions();
 
   // Seed default data if debts table is empty
   // Dùng Number(...) vì driver Postgres trả COUNT(*) dạng chuỗi ("0"), so
@@ -101,6 +104,8 @@ export async function initDatabase() {
   if (Number(customerCountRes[0]?.count) === 0) {
     await seedCustomers();
   }
+
+  await backfillRelations();
 }
 
 // DDL cho driver sqlite (mặc định, hành vi giữ nguyên như trước Task 12).

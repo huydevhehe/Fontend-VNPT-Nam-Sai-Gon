@@ -1,6 +1,7 @@
 export type CustomerType = "Doanh nghiệp" | "Hộ kinh doanh" | "Cá nhân";
 export type CustomerGroup = "Tự phát triển" | "Tập hiện hữu";
 export type StaffRole = "Admin" | "AM" | "AM Bán chăm" | "Người xem";
+export type UserRole = "Admin" | "AM" | "AM Bán chăm" | "CTV";
 
 export type DebtStatus = "Đã gạch nợ" | "Nợ cước";
 export type RenewalStatus = "Chưa xử lý" | "Khách hẹn thanh toán" | "Hoàn thành" | "Thất bại";
@@ -60,6 +61,8 @@ export interface CustomerRecord {
   nearestExpiration: string;
   amStaff: string;
   amCaringStaff: string;
+  handoverBatch?: string; // Đợt giao (rỗng nếu chưa có)
+  handoverDate?: string; // Ngày giao (rỗng nếu chưa có)
 }
 
 // 4. Service & Alert
@@ -81,11 +84,14 @@ export interface LeadRecord {
   customerName: string;
   phone: string;
   group: "Khách hàng mới" | "Khách hiện hữu mua thêm" | "Gia hạn dịch vụ";
-  channel: "Online" | "Đối tác" | "Khách hàng hiện hữu" | "Chiến dịch";
+  channel: "Online" | "CTV giới thiệu" | "Đối tác" | "Khách hàng hiện hữu" | "Chiến dịch";
   staffName: string;
   status: LeadStatus;
   expectedValue: number;
   demandDescription: string;
+  territoryId?: string;
+  referredByCtvId?: string;
+  referredByCtvName?: string;
 }
 
 // 6. Contract
@@ -100,6 +106,9 @@ export interface ContractRecord {
   paymentStatus: PaymentStatus;
   documentStatus: DocumentStatus;
   hasRevenue: boolean;
+  leadId?: string;
+  territoryId?: string;
+  referredByCtvId?: string;
 }
 
 // 7. Commission
@@ -111,6 +120,8 @@ export interface CommissionRecord {
   amount: number;
   status: "Đã nhận" | "Chờ nhận" | "Đã chi" | "Chờ chi";
   date: string;
+  ctvId?: string;
+  contractId?: string;
 }
 
 // 8. Territory (7 Phường)
@@ -163,3 +174,123 @@ export interface AuditLogRecord {
   details: string;
 }
 
+// 12. Chi tiết Phường (lãnh đạo, khu phố, lead dự án, hợp đồng)
+export interface WardOfficialRecord {
+  id: string;
+  territoryId: string;
+  unit: string;
+  position: string;
+  fullName: string;
+  phone: string;
+}
+
+export interface QuarterRecord {
+  id: string;
+  territoryId: string;
+  name: string;
+  headName: string;
+  secretaryName: string;
+  mttqName: string;
+  householdCount: number;
+  population: number;
+}
+
+export interface TerritoryDetail {
+  territory: {
+    id: string;
+    wardName: string;
+    quarterCount: number;
+    householdCount: number;
+    opportunityCount: number;
+    deployedCount: number;
+    staffName: string;
+  };
+  officials: WardOfficialRecord[];
+  quarters: QuarterRecord[];
+  leads: {
+    id: string;
+    customerName: string;
+    status: LeadStatus;
+    expectedValue: number;
+    channel: string;
+    staffName: string;
+  }[];
+  contracts: {
+    id: string;
+    transactionCode: string;
+    customerName: string;
+    totalValue: number;
+    deploymentStatus: DeploymentStatus;
+    paymentStatus: PaymentStatus;
+  }[];
+  totals: {
+    quarterCount: number;
+    householdCount: number;
+    population: number;
+    leadCount: number;
+    contractCount: number;
+    contractValue: number;
+  };
+}
+
+// 13. Cộng tác viên (CTV)
+export interface CtvAccountRecord {
+  id: string;
+  username: string;
+  name: string;
+  phone: string;
+  email: string;
+  referralCode: string;
+  status: "Đang hoạt động" | "Chờ duyệt" | "Từ chối";
+  createdAt: string;
+  approvedAt: string;
+}
+
+export interface CtvProfile {
+  id: string;
+  username: string;
+  name: string;
+  email: string;
+  phone: string;
+  referralCode: string;
+}
+
+export interface CtvSummary {
+  totalLeads: number;
+  successfulLeads: number;
+  failedLeads: number;
+  totalContracts: number;
+  completedContracts: number;
+  totalCommission: number;
+  pendingCommission: number;
+  paidCommission: number;
+}
+
+export interface CtvLeadRecord {
+  id: string;
+  customerName: string;
+  maskedPhone: string;
+  group: LeadRecord["group"];
+  status: LeadStatus;
+  expectedValue: number;
+  createdAt: string;
+  contractStatus: string;
+}
+
+export interface CtvContractRecord {
+  id: string;
+  transactionCode: string;
+  customerName: string;
+  totalValue: number;
+  deploymentStatus: DeploymentStatus;
+  paymentStatus: PaymentStatus;
+  createdAt: string;
+}
+
+export interface CtvCommissionRecord {
+  id: string;
+  transactionCode: string;
+  amount: number;
+  status: CommissionRecord["status"];
+  date: string;
+}

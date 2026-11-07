@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { Request, Response } from "express";
-import { createRateLimiter } from "./rate-limit.js";
+import { createFailureLimiter, createRateLimiter } from "./rate-limit.js";
 
 function run(limiter: ReturnType<typeof createRateLimiter>, ip: string): number {
   let status = 200;
@@ -51,4 +51,29 @@ test("chạm trần số key: mục hết hạn được dọn trước khi từ
   assert.equal(run(limiter, "b"), 200);
   await new Promise((r) => setTimeout(r, 50));
   assert.equal(run(limiter, "c"), 200);
+});
+
+test("createFailureLimiter: chỉ các lần recordFailure mới tính, isBlocked không tự ghi nhận", () => {
+  const limiter = createFailureLimiter({ max: 2, windowMs: 60_000 });
+
+  // Gọi isBlocked nhiều lần không tự tính vào hạn mức.
+  assert.equal(limiter.isBlocked("k1"), false);
+  assert.equal(limiter.isBlocked("k1"), false);
+  assert.equal(limiter.isBlocked("k1"), false);
+
+  limiter.recordFailure("k1");
+  assert.equal(limiter.isBlocked("k1"), false);
+  limiter.recordFailure("k1");
+  assert.equal(limiter.isBlocked("k1"), true);
+
+  // Key khác không bị ảnh hưởng.
+  assert.equal(limiter.isBlocked("k2"), false);
+});
+
+test("createFailureLimiter: cửa sổ hết hạn thì cho phép lại", async () => {
+  const limiter = createFailureLimiter({ max: 1, windowMs: 30 });
+  limiter.recordFailure("k");
+  assert.equal(limiter.isBlocked("k"), true);
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(limiter.isBlocked("k"), false);
 });

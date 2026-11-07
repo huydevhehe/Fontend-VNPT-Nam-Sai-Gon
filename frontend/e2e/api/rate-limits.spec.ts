@@ -38,27 +38,41 @@ test.describe("Giới hạn tần suất theo IP", () => {
     expect((await lookup(randomIp())).status()).toBe(200);
   });
 
-  test("đăng nhập: quá 10 lần/15 phút từ một IP -> 429, IP khác và đăng nhập đúng không bị ảnh hưởng", async ({
+  test("đăng nhập: quá 10 lần/15 phút với CÙNG username từ một IP -> 429, username/IP khác và đăng nhập đúng không bị ảnh hưởng", async ({
     request,
   }) => {
     const ip = randomIp();
-    const login = (from: string) =>
+    const login = (from: string, username: string) =>
       request.post(`${API_URL}/auth/login`, {
-        data: { username: "khong-ton-tai", password: "sai" },
+        data: { username, password: "sai" },
         headers: { "X-Forwarded-For": from },
       });
 
-    for (let i = 0; i < LOGIN_LIMIT; i += 1) {
-      expect((await login(ip)).status(), `lần ${i + 1}`).toBe(401);
+    // Key theo (IP, username): nhiều username KHÁC NHAU từ cùng một IP (mạng
+    // văn phòng dùng NAT, hoặc nhiều nhân viên đăng nhập cùng lúc) không được
+    // tính chung vào một hạn mức — mỗi username vẫn được 401 bình thường.
+    for (let i = 0; i < LOGIN_LIMIT + 5; i += 1) {
+      expect((await login(ip, `khong-ton-tai-${i}`)).status(), `username khác #${i + 1}`).toBe(401);
     }
-    const blocked = await login(ip);
+
+    // Brute-force nhắm vào ĐÚNG MỘT username từ cùng IP đó: sau đúng
+    // LOGIN_LIMIT lần vẫn 401, lần thứ LOGIN_LIMIT + 1 mới bị 429 — không bị
+    // ảnh hưởng bởi các username khác đã gọi ở trên (key khác nhau).
+    const targetUsername = "khong-ton-tai-target";
+    for (let i = 0; i < LOGIN_LIMIT; i += 1) {
+      expect((await login(ip, targetUsername)).status(), `username target lần ${i + 1}`).toBe(401);
+    }
+    const blocked = await login(ip, targetUsername);
     expect(blocked.status()).toBe(429);
     const body = await blocked.json();
     expect(body.success).toBe(false);
     expect(typeof body.message).toBe("string");
 
-    // IP khác không bị ảnh hưởng.
-    expect((await login(randomIp())).status()).toBe(401);
+    // Cùng IP, username khác target (chưa chạm hạn mức riêng) vẫn 401 bình thường.
+    expect((await login(ip, "khong-ton-tai-chua-bi-chan")).status()).toBe(401);
+
+    // IP khác, cùng target username, không bị ảnh hưởng.
+    expect((await login(randomIp(), targetUsername)).status()).toBe(401);
 
     // Đăng nhập admin hợp lệ từ IP khác vẫn hoạt động bình thường.
     await apiLogin(request, ADMIN.username, ADMIN.password);

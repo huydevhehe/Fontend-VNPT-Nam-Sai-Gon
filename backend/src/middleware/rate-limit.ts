@@ -65,3 +65,60 @@ export function createRateLimiter(options: RateLimiterOptions): RequestHandler {
     next();
   };
 }
+
+export interface FailureLimiter {
+  /** true nếu key đã vượt hạn mức — gọi TRƯỚC khi xử lý để chặn sớm, không tự ghi nhận lần gọi này. */
+  isBlocked(key: string): boolean;
+  /** Ghi nhận một lần THẤT BẠI (tính vào hạn mức). Không gọi khi thành công. */
+  recordFailure(key: string): void;
+}
+
+/**
+ * Giới hạn theo key tuỳ ý (không phải theo mỗi request), chỉ tính các lần
+ * THẤT BẠI — dùng cho đăng nhập: nhiều lần đăng nhập ĐÚNG liên tiếp (nhiều
+ * tài khoản khác nhau từ cùng một IP mạng văn phòng, hoặc một tài khoản
+ * đăng nhập nhiều lần hợp lệ) không được tính vào hạn mức chống brute-force
+ * mật khẩu; chỉ các lần sai (đoán mật khẩu) mới bị tính.
+ */
+export function createFailureLimiter(options: RateLimiterOptions): FailureLimiter {
+  const { max, windowMs } = options;
+  const maxKeys = options.maxKeys ?? DEFAULT_MAX_KEYS;
+  const hits = new Map<string, number[]>();
+
+  function sweepExpired(now: number): void {
+    for (const [key, times] of hits) {
+      if (times.every((t) => now - t >= windowMs)) {
+        hits.delete(key);
+      }
+    }
+  }
+
+  function recentFor(key: string, now: number): number[] {
+    const existing = hits.get(key);
+    return (existing ?? []).filter((t) => now - t < windowMs);
+  }
+
+  return {
+    isBlocked(key: string): boolean {
+      return recentFor(key, Date.now()).length >= max;
+    },
+    recordFailure(key: string): void {
+      const now = Date.now();
+      if (hits.size > SWEEP_THRESHOLD) {
+        sweepExpired(now);
+      }
+      if (!hits.has(key) && hits.size >= maxKeys) {
+        sweepExpired(now);
+        if (hits.size >= maxKeys) {
+          // Chạm trần số key theo dõi: bỏ qua ghi nhận để tránh phình bộ
+          // nhớ vô hạn; key mới vẫn chưa bị chặn (isBlocked trả false) nên
+          // request vẫn qua được — đánh đổi chấp nhận được so với OOM.
+          return;
+        }
+      }
+      const recent = recentFor(key, now);
+      recent.push(now);
+      hits.set(key, recent);
+    },
+  };
+}

@@ -1,47 +1,29 @@
 import { Router, Request, Response } from "express";
+import { createRateLimiter } from "../../middleware/rate-limit.js";
 import { PublicService, PublicValidationError } from "./public.service.js";
 
 // Giới hạn gửi form liên hệ: tối đa 5 lần mỗi 10 phút trên mỗi IP.
 export const LEAD_RATE_LIMIT_MAX = 5;
 export const LEAD_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_SWEEP_THRESHOLD = 1000;
 
 export const publicRouter = Router();
 const service = new PublicService();
 
-const hits = new Map<string, number[]>();
+const leadRateLimit = createRateLimiter({
+  max: LEAD_RATE_LIMIT_MAX,
+  windowMs: LEAD_RATE_LIMIT_WINDOW_MS,
+  message: "Bạn gửi quá nhiều lần, vui lòng thử lại sau ít phút",
+});
 
-function sweepExpired(now: number): void {
-  for (const [ip, times] of hits) {
-    if (times.every((t) => now - t >= LEAD_RATE_LIMIT_WINDOW_MS)) {
-      hits.delete(ip);
-    }
-  }
-}
-
-/** Ghi nhận một lần gọi; trả true nếu IP đã vượt giới hạn. */
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  if (hits.size > RATE_LIMIT_SWEEP_THRESHOLD) {
-    sweepExpired(now);
-  }
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < LEAD_RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= LEAD_RATE_LIMIT_MAX) {
-    hits.set(ip, recent);
-    return true;
-  }
-  recent.push(now);
-  hits.set(ip, recent);
-  return false;
-}
+// Tra mã giới thiệu: tối đa 60 lần mỗi 10 phút trên mỗi IP (chống dò mã).
+const refLookupRateLimit = createRateLimiter({
+  max: 60,
+  windowMs: 10 * 60 * 1000,
+  message: "Bạn thao tác quá nhiều lần, vui lòng thử lại sau ít phút",
+});
 
 // POST /api/public/leads
-publicRouter.post("/leads", async (req: Request, res: Response) => {
-  if (isRateLimited(req.ip || "unknown")) {
-    res.status(429).json({ success: false, message: "Bạn gửi quá nhiều lần, vui lòng thử lại sau ít phút" });
-    return;
-  }
-
+publicRouter.post("/leads", leadRateLimit, async (req: Request, res: Response) => {
   const body = req.body && typeof req.body === "object" ? req.body : {};
 
   // Honeypot: bot điền ô ẩn "website" → giả vờ thành công, không lưu.
@@ -69,7 +51,7 @@ publicRouter.post("/leads", async (req: Request, res: Response) => {
 });
 
 // GET /api/public/ref/:code
-publicRouter.get("/ref/:code", async (req: Request, res: Response) => {
+publicRouter.get("/ref/:code", refLookupRateLimit, async (req: Request, res: Response) => {
   try {
     const valid = await service.isValidRefCode(req.params.code);
     res.json({ success: true, data: { valid } });

@@ -1,9 +1,17 @@
 import { Router, Request, Response } from "express";
 import { AuthService, HttpError } from "./auth.service.js";
 import { requireAuth } from "../../middleware/require-auth.js";
+import { createRateLimiter } from "../../middleware/rate-limit.js";
 
 export const authRouter = Router();
 const authService = new AuthService();
+
+// Đăng ký CTV: tối đa 10 lần mỗi giờ trên mỗi IP.
+const registerRateLimit = createRateLimiter({
+  max: 10,
+  windowMs: 60 * 60 * 1000,
+  message: "Bạn đăng ký quá nhiều lần, vui lòng thử lại sau",
+});
 
 // POST /api/auth/login
 authRouter.post("/login", async (req: Request, res: Response) => {
@@ -26,7 +34,7 @@ authRouter.post("/login", async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/register-ctv — CTV tự đăng ký, trạng thái "Chờ duyệt", không trả token
-authRouter.post("/register-ctv", async (req: Request, res: Response) => {
+authRouter.post("/register-ctv", registerRateLimit, async (req: Request, res: Response) => {
   try {
     const result = await authService.registerCtv(req.body ?? {});
     res.status(201).json({ success: true, data: result });

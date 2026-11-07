@@ -45,10 +45,17 @@ export function uniquePhone(): string {
   return `0${digits}`;
 }
 
+/** IP giả ngẫu nhiên (server tin X-Forwarded-For) để mỗi lần đăng ký không chạm giới hạn chung của một IP. */
+export function randomIp(): string {
+  const n = () => Math.floor(Math.random() * 254) + 1;
+  return `198.${n()}.${n()}.${n()}`;
+}
+
 /** Đăng ký CTV qua API thật với dữ liệu mặc định duy nhất; trả response thô để test tự kiểm tra status. */
 export async function registerCtv(
   request: APIRequestContext,
-  overrides: Partial<RegisterCtvPayload> = {}
+  overrides: Partial<RegisterCtvPayload> = {},
+  ip: string = randomIp()
 ) {
   const payload: RegisterCtvPayload = {
     username: `ctv_${Date.now()}_${randomSuffix()}`,
@@ -57,7 +64,10 @@ export async function registerCtv(
     phone: uniquePhone(),
     ...overrides,
   };
-  const res = await request.post(`${API_URL}/auth/register-ctv`, { data: payload });
+  const res = await request.post(`${API_URL}/auth/register-ctv`, {
+    data: payload,
+    headers: { "X-Forwarded-For": ip },
+  });
   return { res, payload };
 }
 

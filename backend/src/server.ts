@@ -24,6 +24,17 @@ import { requireAdmin, requireCtv, requireStaff } from "./middleware/require-rol
 
 const app = express();
 
+// "trust proxy" = 1: Express tin entry NGOÀI CÙNG BÊN PHẢI của header
+// X-Forwarded-For là IP client thật (dùng cho rate limiter theo req.ip).
+// Giả định này chỉ an toàn khi:
+//   (1) Node chỉ được truy cập qua ĐÚNG MỘT lớp reverse proxy (nginx) — proxy
+//       đó phải tự ghi đè X-Forwarded-For (dùng $proxy_add_x_forwarded_for
+//       hoặc $remote_addr trong site conf, không đọc thẳng giá trị client gửi
+//       lên), hoặc không có hop nào phía trước proxy mà client có thể chạm tới;
+//   (2) cổng Node (nội bộ, phía sau proxy) KHÔNG được mở trực tiếp ra Internet.
+// Nếu một trong hai điều kiện trên sai, client có thể tự gửi X-Forwarded-For
+// giả để bypass mọi rate limiter theo IP trong app này (leads, register-ctv,
+// tra mã giới thiệu, và login) — xem Task 10 ở plan để xác nhận trên server.
 app.set("trust proxy", 1);
 
 app.use(cors({ origin: config.corsOrigin }));

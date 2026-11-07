@@ -57,11 +57,21 @@ export interface CtvCommissionDto {
   date: string;
 }
 
-/** Giữ 4 số đầu + 2 số cuối, phần giữa thay bằng "*" (0909123456 -> 0909****56). */
+/**
+ * Che SĐT: bỏ ký tự không phải số trước. Dưới 9 chữ số che hết trừ 2 số cuối
+ * (không đủ an toàn để lộ đầu số); đủ 9+ số thì giữ 4 số đầu + 2 số cuối, giữa
+ * thay bằng "*" (0909123456 -> 0909****56, 09091234567 -> 0909*****67).
+ */
 export function maskPhone(phone: string | null | undefined): string {
-  const digits = String(phone ?? "").trim();
-  if (digits.length <= 6) {
-    return "*".repeat(digits.length);
+  const digits = String(phone ?? "").replace(/\D/g, "");
+  if (digits.length === 0) {
+    return "";
+  }
+  if (digits.length < 9) {
+    if (digits.length <= 2) {
+      return "*".repeat(digits.length);
+    }
+    return `${"*".repeat(digits.length - 2)}${digits.slice(-2)}`;
   }
   return `${digits.slice(0, 4)}${"*".repeat(digits.length - 6)}${digits.slice(-2)}`;
 }

@@ -137,7 +137,7 @@ export class CustomerService {
 
     const groupLabel = GROUP_LABEL[customer.customer_group] ?? customer.customer_group;
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [
         `LOG-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         operator,

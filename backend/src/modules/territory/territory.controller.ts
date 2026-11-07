@@ -12,6 +12,9 @@ async function handle(res: Response, status: number, action: () => Promise<unkno
     res.status(status).json({ success: true, data });
   } catch (error: any) {
     const code = error instanceof TerritoryServiceError ? error.status : 500;
+    if (code === 500) {
+      console.error("Territory module error:", error);
+    }
     res.status(code).json({ success: false, message: error.message });
   }
 }
@@ -21,6 +24,7 @@ territoryRouter.get("/", async (_req: Request, res: Response) => {
     const data = await territoryService.getAll();
     res.json({ success: true, data });
   } catch (error: any) {
+    console.error("Territory module error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

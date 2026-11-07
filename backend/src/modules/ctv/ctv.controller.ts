@@ -12,6 +12,7 @@ function sendError(res: Response, error: unknown): void {
     res.status(error.status).json({ success: false, message: error.message });
     return;
   }
+  console.error("CTV module error:", error);
   res.status(500).json({ success: false, message: "Lỗi hệ thống, vui lòng thử lại" });
 }
 

@@ -3,7 +3,7 @@ import CtaSection from "@/components/dich-vu-cntt/CtaSection";
 import FeaturedServices from "@/components/dich-vu-cntt/FeaturedServices";
 import HeroSection from "@/components/dich-vu-cntt/HeroSection";
 import PartnerLogos from "@/components/dich-vu-cntt/PartnerLogos";
-import RelatedNews from "@/components/dich-vu-cntt/RelatedNews";
+// import RelatedNews from "@/components/dich-vu-cntt/RelatedNews"; // Tạm ẩn: trùng/thừa với tin tức ở site riêng từng sản phẩm, menu chính cũng đã bỏ mục Tin tức.
 import SolutionsBySector from "@/components/dich-vu-cntt/SolutionsBySector";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function DichVuCnttPage() {
       <FeaturedServices />
       <SolutionsBySector />
       <PartnerLogos />
-      <RelatedNews />
+      {/* <RelatedNews /> */}
       <CtaSection />
     </div>
   );

@@ -1,11 +1,5 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import os from "os";
-import path from "path";
-import fs from "fs";
-
-const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vnpt-commission-"));
-process.env.SQLITE_PATH = path.join(tmpDir, "test.sqlite");
 
 const { initDatabase, run } = await import("../../database/db.js");
 const { CommissionService } = await import("./commission.service.js");

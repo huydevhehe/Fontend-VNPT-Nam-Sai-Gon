@@ -1,28 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import os from "os";
-import path from "path";
-import fs from "fs";
-
-const isPostgres = process.env.DB_DRIVER === "postgres";
-if (!isPostgres) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vnpt-schema-ext-"));
-  process.env.SQLITE_PATH = path.join(tmpDir, "test.sqlite");
-}
 
 const { initDatabase, query, run } = await import("./db.js");
 const { ensureColumn } = await import("./schema-extensions.js");
 
 async function columnExists(table: string, column: string): Promise<boolean> {
-  if (isPostgres) {
-    const rows = await query(
-      "SELECT 1 AS ok FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = ? AND column_name = ?",
-      [table, column]
-    );
-    return rows.length > 0;
-  }
-  const rows = await query<{ name: string }>(`PRAGMA table_info(${table})`);
-  return rows.some((r) => r.name === column);
+  const rows = await query(
+    "SELECT 1 AS ok FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = ? AND column_name = ?",
+    [table, column]
+  );
+  return rows.length > 0;
 }
 
 const EXPECTED_COLUMNS: Record<string, string[]> = {
@@ -74,16 +61,14 @@ test("initDatabase adds all new columns and tables, and is idempotent", async ()
   assert.equal(await count("ward_officials"), officialsBefore);
   assert.equal(await count("quarters"), quartersBefore);
 
-  const idx = isPostgres
-    ? await query("SELECT 1 AS ok FROM pg_indexes WHERE indexname = ?", ["ux_users_referral_code"])
-    : await query("SELECT 1 AS ok FROM sqlite_master WHERE type = 'index' AND name = ?", ["ux_users_referral_code"]);
+  const idx = await query("SELECT 1 AS ok FROM pg_indexes WHERE indexname = ?", [
+    "ux_users_referral_code",
+  ]);
   assert.equal(idx.length, 1, "unique index ux_users_referral_code should exist");
 
-  const commissionsIdx = isPostgres
-    ? await query("SELECT 1 AS ok FROM pg_indexes WHERE indexname = ?", ["ux_commissions_contract_ctv"])
-    : await query("SELECT 1 AS ok FROM sqlite_master WHERE type = 'index' AND name = ?", [
-        "ux_commissions_contract_ctv",
-      ]);
+  const commissionsIdx = await query("SELECT 1 AS ok FROM pg_indexes WHERE indexname = ?", [
+    "ux_commissions_contract_ctv",
+  ]);
   assert.equal(commissionsIdx.length, 1, "unique index ux_commissions_contract_ctv should exist");
 });
 

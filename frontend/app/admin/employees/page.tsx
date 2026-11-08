@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X } from "lucide-react";
+import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X, KeyRound } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
@@ -16,6 +16,7 @@ interface StaffFormState {
   role: StaffRecord["role"];
   territory: string;
   email: string;
+  password: string;
 }
 
 const EMPTY_FORM: StaffFormState = {
@@ -24,6 +25,7 @@ const EMPTY_FORM: StaffFormState = {
   role: ROLE_OPTIONS[0],
   territory: "",
   email: "",
+  password: "",
 };
 
 export default function EmployeesPage() {
@@ -35,6 +37,11 @@ export default function EmployeesPage() {
   const [form, setForm] = useState<StaffFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Mật khẩu mặc định chỉ hiển thị một lần ngay sau khi tạo nhân viên.
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    username: string;
+    password: string;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -81,11 +88,16 @@ export default function EmployeesPage() {
         role: form.role,
         territory: form.territory,
         email: form.email,
+        password: form.password || undefined,
       });
 
-      setData((prev) => [created, ...prev]);
+      const { initialPassword, ...staffRecord } = created;
+      setData((prev) => [staffRecord, ...prev]);
       setShowForm(false);
       setForm(EMPTY_FORM);
+      if (initialPassword) {
+        setCreatedCredentials({ username: staffRecord.code, password: initialPassword });
+      }
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "Không thể tạo Nhân viên. Vui lòng thử lại."
@@ -320,6 +332,21 @@ export default function EmployeesPage() {
                 />
               </div>
 
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Mật khẩu (không bắt buộc)
+                </label>
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  placeholder="Bỏ trống để dùng mật khẩu mặc định"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
               {formError && (
                 <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
                   {formError}
@@ -343,6 +370,45 @@ export default function EmployeesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mật khẩu mặc định của nhân viên mới (chỉ hiện một lần) */}
+      {createdCredentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-3 flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-vnpt" />
+              <h3 className="text-base font-bold text-slate-900">Đã tạo tài khoản nhân viên</h3>
+            </div>
+            <p className="text-xs text-slate-600">
+              Mật khẩu mặc định chỉ hiển thị một lần. Hãy gửi cho nhân viên và yêu cầu đổi sau khi
+              đăng nhập.
+            </p>
+            <dl className="mt-4 space-y-2 rounded-xl bg-slate-50 p-4 text-sm">
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-500">Tên đăng nhập</dt>
+                <dd className="font-mono font-semibold text-slate-900">
+                  {createdCredentials.username}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-500">Mật khẩu</dt>
+                <dd className="font-mono font-semibold text-slate-900">
+                  {createdCredentials.password}
+                </dd>
+              </div>
+            </dl>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setCreatedCredentials(null)}
+                className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark"
+              >
+                Đã lưu mật khẩu
+              </button>
+            </div>
           </div>
         </div>
       )}

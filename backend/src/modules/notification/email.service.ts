@@ -1,5 +1,5 @@
 import nodemailer, { type Transporter } from "nodemailer";
-import { config } from "../../config/index.js";
+import { SettingsService } from "../settings/settings.service.js";
 
 export interface SendEmailResult {
   sent: boolean;
@@ -28,15 +28,15 @@ async function getTestTransport(): Promise<{ transporter: Transporter; user: str
   return cachedTestTransport;
 }
 
-function getRealTransport(): Transporter {
+function getRealTransport(smtp: { host: string; port: number; user: string; pass: string }): Transporter {
   return nodemailer.createTransport({
-    host: config.smtp.host,
-    port: config.smtp.port,
-    secure: config.smtp.port === 465,
-    auth: config.smtp.user
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.port === 465,
+    auth: smtp.user
       ? {
-          user: config.smtp.user,
-          pass: config.smtp.pass,
+          user: smtp.user,
+          pass: smtp.pass,
         }
       : undefined,
   });
@@ -52,12 +52,14 @@ export const EmailService = {
     const text = `Dịch vụ "${serviceName}" của khách hàng sẽ hết hạn vào ngày ${expirationDate}. Vui lòng liên hệ khách hàng để gia hạn.`;
 
     try {
-      const usingRealSmtp = Boolean(config.smtp.host);
+      // Ưu tiên cấu hình SMTP admin nhập qua CMS (bảng system_settings), rơi về .env nếu chưa nhập.
+      const smtp = await SettingsService.getEffectiveSmtp();
+      const usingRealSmtp = Boolean(smtp.host);
 
       if (usingRealSmtp) {
-        const transporter = getRealTransport();
+        const transporter = getRealTransport(smtp);
         await transporter.sendMail({
-          from: config.smtp.user || "crm-vnpt-nam-sai-gon@example.com",
+          from: smtp.user || "crm-vnpt-nam-sai-gon@example.com",
           to,
           subject,
           text,

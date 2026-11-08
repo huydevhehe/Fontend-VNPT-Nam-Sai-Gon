@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { requireAuth } from "../../middleware/require-auth.js";
 import { StaffService } from "./staff.service.js";
+import { HttpError } from "../auth/auth.service.js";
 
 export const staffRouter = Router();
 const staffService = new StaffService();
@@ -23,11 +24,12 @@ staffRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   }
 
   try {
-    const { code, name, role, territory, email } = req.body;
-    const staff = await staffService.create({ code, name, role, territory, email });
+    const { code, name, role, territory, email, password } = req.body;
+    const staff = await staffService.create({ code, name, role, territory, email, password });
     res.status(201).json({ success: true, data: staff });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    const statusCode = error instanceof HttpError ? error.status : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 });
 

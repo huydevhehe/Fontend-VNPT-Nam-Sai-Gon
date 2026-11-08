@@ -110,7 +110,7 @@ export class RenewalService {
 
     // Audit log
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [
         `LOG-${Date.now()}`,
         operator,
@@ -141,7 +141,7 @@ export class RenewalService {
     );
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [
         `LOG-${Date.now()}`,
         operator,

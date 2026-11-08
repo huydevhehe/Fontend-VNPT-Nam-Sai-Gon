@@ -1,9 +1,14 @@
 import { Router, Request, Response } from "express";
 import { requireAuth } from "../../middleware/require-auth.js";
-import { LeadService } from "./lead.service.js";
+import { LeadService, LeadServiceError } from "./lead.service.js";
 
 export const leadRouter = Router();
 const leadService = new LeadService();
+
+function sendError(res: Response, error: any, fallbackStatus: number) {
+  const status = error instanceof LeadServiceError ? error.status : fallbackStatus;
+  res.status(status).json({ success: false, message: error.message });
+}
 
 // GET /api/leads
 leadRouter.get("/", async (_req: Request, res: Response) => {
@@ -15,10 +20,31 @@ leadRouter.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/leads/ctv-options (khai báo trước mọi route /:id)
+leadRouter.get("/ctv-options", async (_req: Request, res: Response) => {
+  try {
+    const options = await leadService.getCtvOptions();
+    res.json({ success: true, data: options });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // POST /api/leads
 leadRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { customerName, phone, group, channel, staffName, status, expectedValue, demandDescription } = req.body;
+    const {
+      customerName,
+      phone,
+      group,
+      channel,
+      staffName,
+      status,
+      expectedValue,
+      demandDescription,
+      territoryId,
+      referredByCtvId,
+    } = req.body ?? {};
 
     const lead = await leadService.create({
       customerName,
@@ -29,11 +55,13 @@ leadRouter.post("/", requireAuth, async (req: Request, res: Response) => {
       status,
       expectedValue: Number(expectedValue),
       demandDescription,
+      territoryId,
+      referredByCtvId,
     });
 
     res.status(201).json({ success: true, data: lead });
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    sendError(res, error, 400);
   }
 });
 
@@ -41,12 +69,24 @@ leadRouter.post("/", requireAuth, async (req: Request, res: Response) => {
 leadRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.body ?? {};
 
     const lead = await leadService.updateStatus(id, status);
     res.json({ success: true, data: lead });
   } catch (error: any) {
-    const statusCode = error.message === "Không tìm thấy Lead" ? 404 : 400;
-    res.status(statusCode).json({ success: false, message: error.message });
+    sendError(res, error, 400);
+  }
+});
+
+// PATCH /api/leads/:id/assignment
+leadRouter.patch("/:id/assignment", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { staffName, territoryId } = req.body ?? {};
+
+    const lead = await leadService.assign(id, { staffName, territoryId });
+    res.json({ success: true, data: lead });
+  } catch (error: any) {
+    sendError(res, error, 400);
   }
 });

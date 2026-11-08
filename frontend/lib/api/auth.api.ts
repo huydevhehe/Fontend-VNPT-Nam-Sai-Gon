@@ -19,6 +19,21 @@ export function login(username: string, password: string): Promise<LoginResult> 
   });
 }
 
+export interface RegisterCtvInput {
+  username: string;
+  password: string;
+  name: string;
+  phone: string;
+  email?: string;
+}
+
+export function registerCtv(input: RegisterCtvInput): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>("/auth/register-ctv", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 export function getMe(): Promise<AuthUser> {
   return apiFetch<AuthUser>("/auth/me");
 }

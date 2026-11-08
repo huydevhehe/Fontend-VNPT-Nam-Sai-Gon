@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { pgQuery, pgRun } from "./pg-adapter.js";
+import { applySchemaExtensions, backfillRelations } from "./schema-extensions.js";
 
 export const query = <T = any>(sql: string, params: any[] = []): Promise<T[]> => {
   return pgQuery<T>(sql, params);
@@ -33,53 +34,59 @@ export async function initDatabase() {
 
   await ensureTerritoryColumns();
 
+  await applySchemaExtensions();
+
   // Seed default data if debts table is empty
+  // Dùng Number(...) vì driver Postgres trả COUNT(*) dạng chuỗi ("0"), so
+  // sánh thẳng với số 0 sẽ luôn sai trên Postgres.
   const countRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM debts");
-  if (countRes[0]?.count === 0) {
+  if (Number(countRes[0]?.count) === 0) {
     await seedInitialData();
   }
 
   // Seed users table independently (table may be newer than the rest of the schema)
   const userCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM users");
-  if (userCountRes[0]?.count === 0) {
+  if (Number(userCountRes[0]?.count) === 0) {
     await seedUsers();
   }
 
   // Seed services table independently (table may be newer than the rest of the schema)
   const serviceCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM services");
-  if (serviceCountRes[0]?.count === 0) {
+  if (Number(serviceCountRes[0]?.count) === 0) {
     await seedServices();
   }
 
   // Seed leads table independently (table may be newer than the rest of the schema)
   const leadCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM leads");
-  if (leadCountRes[0]?.count === 0) {
+  if (Number(leadCountRes[0]?.count) === 0) {
     await seedLeads();
   }
 
   // Seed contracts table independently (table may be newer than the rest of the schema)
   const contractCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM contracts");
-  if (contractCountRes[0]?.count === 0) {
+  if (Number(contractCountRes[0]?.count) === 0) {
     await seedContracts();
   }
 
   // Seed commissions table independently (table may be newer than the rest of the schema)
   const commissionCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM commissions");
-  if (commissionCountRes[0]?.count === 0) {
+  if (Number(commissionCountRes[0]?.count) === 0) {
     await seedCommissions();
   }
 
   // Seed tasks table independently (table may be newer than the rest of the schema)
   const taskCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM tasks");
-  if (taskCountRes[0]?.count === 0) {
+  if (Number(taskCountRes[0]?.count) === 0) {
     await seedTasks();
   }
 
   // Seed customers table independently (table may be newer than the rest of the schema)
   const customerCountRes = await query<{ count: number }>("SELECT COUNT(*) as count FROM customers");
-  if (customerCountRes[0]?.count === 0) {
+  if (Number(customerCountRes[0]?.count) === 0) {
     await seedCustomers();
   }
+
+  await backfillRelations();
 }
 
 // DDL schema (Postgres). Cột "user" (từ khóa dành riêng trong Postgres) phải
@@ -294,6 +301,20 @@ async function createTables() {
       status TEXT DEFAULT 'Đang hoạt động'
     )
   `);
+
+  // 8. System settings (SMTP / Zalo OA cấu hình qua CMS thay vì .env)
+  await run(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      id TEXT PRIMARY KEY,
+      smtp_host TEXT DEFAULT '',
+      smtp_port INTEGER,
+      smtp_user TEXT DEFAULT '',
+      smtp_pass TEXT DEFAULT '',
+      zalo_oa_id TEXT DEFAULT '',
+      zalo_oa_token TEXT DEFAULT '',
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
 
 async function seedCustomers() {
@@ -308,7 +329,7 @@ async function seedCustomers() {
   ];
   for (const c of customers) {
     await run(
-      `INSERT OR REPLACE INTO customers (
+      `INSERT INTO customers (
         id, name, identity_code, type, customer_group, phone, address, services, nearest_expiration, am_staff, am_caring_staff
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       c
@@ -329,7 +350,7 @@ async function seedTasks() {
   ];
   for (const t of tasks) {
     await run(
-      `INSERT OR REPLACE INTO tasks (
+      `INSERT INTO tasks (
         id, title, related_target, assignee, due_date, priority, status, notes
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       t
@@ -350,7 +371,7 @@ async function seedCommissions() {
   ];
   for (const c of commissions) {
     await run(
-      `INSERT OR REPLACE INTO commissions (
+      `INSERT INTO commissions (
         id, recipient_name, type, transaction_code, amount, status, date
       ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       c
@@ -371,7 +392,7 @@ async function seedContracts() {
   ];
   for (const c of contracts) {
     await run(
-      `INSERT OR REPLACE INTO contracts (
+      `INSERT INTO contracts (
         id, transaction_code, customer_name, subscriber_codes, total_value,
         channel, deployment_status, payment_status, document_status, has_revenue
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -394,7 +415,7 @@ async function seedLeads() {
   ];
   for (const l of leads) {
     await run(
-      "INSERT OR REPLACE INTO leads (id, customer_name, phone, group_name, channel, staff_name, status, expected_value, demand_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO leads (id, customer_name, phone, group_name, channel, staff_name, status, expected_value, demand_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       l
     );
   }
@@ -414,7 +435,7 @@ async function seedServices() {
   ];
   for (const s of services) {
     await run(
-      "INSERT OR REPLACE INTO services (id, customer_name, service_name, service_code, start_date, expiration_date, staff_name) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO services (id, customer_name, service_name, service_code, start_date, expiration_date, staff_name) VALUES (?, ?, ?, ?, ?, ?, ?)",
       s
     );
   }
@@ -432,7 +453,7 @@ async function seedUsers() {
   for (const staff of staffRows) {
     const passwordHash = await bcrypt.hash(`${staff.code}@Vnpt2026`, 10);
     await run(
-      "INSERT OR REPLACE INTO users (id, username, password_hash, name, role, email) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO users (id, username, password_hash, name, role, email) VALUES (?, ?, ?, ?, ?, ?)",
       [`USR-${staff.code}`, staff.code, passwordHash, staff.name, staff.role, staff.email]
     );
   }
@@ -440,7 +461,7 @@ async function seedUsers() {
   // Tài khoản quản trị riêng, không gắn với nhân viên nào
   const adminPasswordHash = await bcrypt.hash("admin@Vnpt2026", 10);
   await run(
-    "INSERT OR REPLACE INTO users (id, username, password_hash, name, role, email) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO users (id, username, password_hash, name, role, email) VALUES (?, ?, ?, ?, ?, ?)",
     ["USR-ADMIN", "admin", adminPasswordHash, "Quản trị viên", "Admin", null]
   );
 
@@ -462,7 +483,7 @@ async function seedInitialData() {
   ];
   for (const w of wards) {
     await run(
-      "INSERT OR REPLACE INTO territories (id, ward_name, quarter_count, household_count, opportunity_count, deployed_count, staff_name, leadership_contact) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO territories (id, ward_name, quarter_count, household_count, opportunity_count, deployed_count, staff_name, leadership_contact) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       w
     );
   }
@@ -479,7 +500,7 @@ async function seedInitialData() {
   ];
   for (const s of staffMembers) {
     await run(
-      "INSERT OR REPLACE INTO staff (id, code, name, role, territory, assigned_customers, monthly_leads, monthly_contracts, revenue_executed, collection_rate, renewal_rate, status, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO staff (id, code, name, role, territory, assigned_customers, monthly_leads, monthly_contracts, revenue_executed, collection_rate, renewal_rate, status, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       s
     );
   }
@@ -493,7 +514,7 @@ async function seedInitialData() {
   ];
   for (const d of debts) {
     await run(
-      "INSERT OR REPLACE INTO debts (id, staff_name, service_group, payment_code, subscriber_code, customer_name, installation_address, immediate_debt, cumulative_debt, collected_amount, status, document_ref, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO debts (id, staff_name, service_group, payment_code, subscriber_code, customer_name, installation_address, immediate_debt, cumulative_debt, collected_amount, status, document_ref, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       d
     );
   }
@@ -507,7 +528,7 @@ async function seedInitialData() {
   ];
   for (const r of renewals) {
     await run(
-      "INSERT OR REPLACE INTO renewals (id, transaction_code, subscriber_code, customer_name, payment_code, installation_address, staff_name, term_amount, duration_months, cohort, status, failure_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO renewals (id, transaction_code, subscriber_code, customer_name, payment_code, installation_address, staff_name, term_amount, duration_months, cohort, status, failure_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       r
     );
   }

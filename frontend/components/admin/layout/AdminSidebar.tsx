@@ -13,9 +13,11 @@ import {
   Percent,
   MapPin,
   UserCheck,
+  UserRoundCheck,
   CheckSquare,
   UploadCloud,
   ShieldCheck,
+  Settings,
   X,
 } from "lucide-react";
 
@@ -100,6 +102,12 @@ const NAV_SECTIONS = [
         icon: UserCheck,
       },
       {
+        name: "Duyệt CTV",
+        href: "/admin/ctv-accounts",
+        icon: UserRoundCheck,
+        badge: "Admin",
+      },
+      {
         name: "Công việc / Nhắc việc",
         href: "/admin/tasks",
         icon: CheckSquare,
@@ -113,6 +121,12 @@ const NAV_SECTIONS = [
         name: "Tài khoản & Phân quyền",
         href: "/admin/settings",
         icon: ShieldCheck,
+      },
+      {
+        name: "Cài đặt hệ thống",
+        href: "/admin/system-settings",
+        icon: Settings,
+        badge: "Admin",
       },
     ],
   },

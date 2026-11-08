@@ -6,9 +6,12 @@ import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
 import { getContracts, createContract, updateContractStatus } from "@/lib/api/contracts.api";
-import { ContractRecord } from "@/lib/crm/types/crm.types";
+import { getLeads, getCtvOptions, CtvOption } from "@/lib/api/leads.api";
+import { getTerritories } from "@/lib/api/territories.api";
+import { ContractRecord, LeadRecord, TerritoryRecord } from "@/lib/crm/types/crm.types";
+import { LEAD_CHANNELS } from "@/lib/crm/constants/org.constants";
 
-const CHANNEL_OPTIONS = ["Online", "Đối tác", "Khách hàng hiện hữu", "Chiến dịch"];
+const CHANNEL_OPTIONS: readonly string[] = LEAD_CHANNELS;
 
 const DEPLOYMENT_STATUSES: ContractRecord["deploymentStatus"][] = [
   "Chưa triển khai",
@@ -35,6 +38,8 @@ interface ContractFormState {
   subscriberCodes: string;
   totalValue: string;
   channel: string;
+  leadId: string;
+  territoryId: string;
 }
 
 const EMPTY_FORM: ContractFormState = {
@@ -43,6 +48,8 @@ const EMPTY_FORM: ContractFormState = {
   subscriberCodes: "",
   totalValue: "",
   channel: CHANNEL_OPTIONS[0],
+  leadId: "",
+  territoryId: "",
 };
 
 export default function ContractsPage() {
@@ -54,6 +61,41 @@ export default function ContractsPage() {
   const [form, setForm] = useState<ContractFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const [leads, setLeads] = useState<LeadRecord[]>([]);
+  const [territories, setTerritories] = useState<TerritoryRecord[]>([]);
+  const [ctvOptions, setCtvOptions] = useState<CtvOption[]>([]);
+  const [codeFilter, setCodeFilter] = useState<string | null>(null);
+
+  const wardNameById = new Map(territories.map((t) => [t.id, t.wardName]));
+  const ctvNameById = new Map(ctvOptions.map((c) => [c.id, c.name]));
+
+  // Lead đã chốt thành công mà chưa gắn hợp đồng nào.
+  const linkableLeads = leads.filter(
+    (l) => l.status === "Chốt thành công" && !data.some((c) => c.leadId === l.id)
+  );
+
+  // Danh mục phụ: lỗi ở đây không được làm hỏng bảng Hợp đồng.
+  useEffect(() => {
+    let isMounted = true;
+    Promise.allSettled([getLeads(), getTerritories(), getCtvOptions()]).then(
+      ([leadRes, wardRes, ctvRes]) => {
+        if (!isMounted) return;
+        if (leadRes.status === "fulfilled") setLeads(leadRes.value);
+        if (wardRes.status === "fulfilled") setTerritories(wardRes.value);
+        if (ctvRes.status === "fulfilled") setCtvOptions(ctvRes.value);
+      }
+    );
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Liên kết từ trang Hoa hồng: /admin/contracts?ma=<mã giao dịch>
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("ma");
+    if (code) setCodeFilter(code);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -105,6 +147,8 @@ export default function ContractsPage() {
         subscriberCodes,
         totalValue: Number(form.totalValue),
         channel: form.channel,
+        leadId: form.leadId || null,
+        territoryId: form.territoryId || null,
       });
 
       setData((prev) => [created, ...prev]);
@@ -118,6 +162,24 @@ export default function ContractsPage() {
       setSubmitting(false);
     }
   }
+
+  function handleSelectLead(leadId: string) {
+    const lead = linkableLeads.find((l) => l.id === leadId);
+    if (!lead) {
+      setForm({ ...form, leadId: "" });
+      return;
+    }
+    setForm({
+      ...form,
+      leadId,
+      customerName: lead.customerName,
+      totalValue: String(lead.expectedValue),
+      channel: lead.channel,
+      territoryId: lead.territoryId || "",
+    });
+  }
+
+  const visibleData = codeFilter ? data.filter((c) => c.transactionCode === codeFilter) : data;
 
   const columns: Column<ContractRecord>[] = [
     {
@@ -164,6 +226,28 @@ export default function ContractsPage() {
     {
       header: "Kênh phát triển",
       accessorKey: "channel",
+    },
+    {
+      header: "CTV giới thiệu",
+      accessorKey: "referredByCtvId",
+      cell: (item) =>
+        item.referredByCtvId ? (
+          <span className="font-medium text-slate-700">
+            {ctvNameById.get(item.referredByCtvId) ?? item.referredByCtvId}
+          </span>
+        ) : (
+          <span className="text-slate-400">—</span>
+        ),
+    },
+    {
+      header: "Phường",
+      accessorKey: "territoryId",
+      cell: (item) =>
+        item.territoryId ? (
+          <span className="text-slate-700">{wardNameById.get(item.territoryId) ?? "—"}</span>
+        ) : (
+          <span className="text-slate-400">—</span>
+        ),
     },
     {
       header: "Triển khai",
@@ -274,6 +358,21 @@ export default function ContractsPage() {
         />
       </div>
 
+      {codeFilter && (
+        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs text-slate-600">
+          <span>
+            Đang lọc theo mã giao dịch <b className="font-mono">{codeFilter}</b>
+          </span>
+          <button
+            type="button"
+            onClick={() => setCodeFilter(null)}
+            className="font-bold text-vnpt hover:underline"
+          >
+            Bỏ lọc
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       {error ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
@@ -292,7 +391,7 @@ export default function ContractsPage() {
           title="Danh sách hợp đồng & giao dịch"
           subtitle="Theo dõi tiến độ triển khai kỹ thuật, tình trạng thanh toán và chứng từ bàn giao"
           columns={columns}
-          data={data}
+          data={visibleData}
           searchPlaceholder="Tìm theo mã giao dịch, khách hàng, mã thuê bao..."
           exportFileName="vnpt_hop_dong"
         />
@@ -313,6 +412,29 @@ export default function ContractsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Từ Lead
+                </label>
+                <select
+                  value={form.leadId}
+                  onChange={(e) => handleSelectLead(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                >
+                  <option value="">— Không chọn (nhập tay) —</option>
+                  {linkableLeads.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.customerName}
+                      {l.referredByCtvName ? ` · CTV ${l.referredByCtvName}` : ""}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Chỉ hiện Lead đã chốt thành công và chưa có hợp đồng. Hợp đồng kế thừa CTV và
+                  Phường của Lead.
+                </p>
+              </div>
+
               <div>
                 <label className="mb-1 block text-xs font-semibold text-slate-600">
                   Mã giao dịch
@@ -380,6 +502,24 @@ export default function ContractsPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Phường
+                </label>
+                <select
+                  value={form.territoryId}
+                  onChange={(e) => setForm({ ...form, territoryId: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                >
+                  <option value="">— Chưa gán phường —</option>
+                  {territories.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.wardName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {formError && (

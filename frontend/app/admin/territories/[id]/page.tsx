@@ -1,25 +1,24 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { use, useCallback, useEffect, useState, FormEvent } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import {
+  AlertTriangle,
   ArrowLeft,
   Building,
-  Users,
   GraduationCap,
   TrendingUp,
-  AlertTriangle,
+  Users,
   UserPlus,
   Pencil,
   Trash2,
   X,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth/auth-context";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import { TerritoryRecord, WardContactRecord } from "@/lib/crm/types/crm.types";
 import {
-  getTerritories,
+  getTerritoryDetail,
   getWardContacts,
   createWardContact,
   updateWardContact,
@@ -27,6 +26,10 @@ import {
   updateTerritoryStats,
   CreateWardContactInput,
 } from "@/lib/api/territories.api";
+import type { TerritoryDetail, WardContactRecord } from "@/lib/crm/types/crm.types";
+import OfficialsSection from "@/components/admin/territory/OfficialsSection";
+import QuartersSection from "@/components/admin/territory/QuartersSection";
+import WardLeadsContractsSection from "@/components/admin/territory/WardLeadsContractsSection";
 
 const EMPTY_CONTACT_FORM: CreateWardContactInput = {
   unit: "",
@@ -46,63 +49,78 @@ const EMPTY_STATS_FORM = {
   revenue: "",
 };
 
-export default function TerritoryDetailPage() {
-  const params = useParams<{ id: string }>();
-  const territoryId = params.id;
+export default function TerritoryDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const { user } = useAuth();
+  const canEdit = user?.role === "Admin";
 
-  const [territory, setTerritory] = useState<TerritoryRecord | null>(null);
-  const [contacts, setContacts] = useState<WardContactRecord[]>([]);
+  const [detail, setDetail] = useState<TerritoryDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [contacts, setContacts] = useState<WardContactRecord[]>([]);
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState<WardContactRecord | null>(null);
   const [contactForm, setContactForm] = useState<CreateWardContactInput>(EMPTY_CONTACT_FORM);
   const [contactFormError, setContactFormError] = useState<string | null>(null);
   const [submittingContact, setSubmittingContact] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingContactId, setDeletingContactId] = useState<string | null>(null);
 
   const [showStatsForm, setShowStatsForm] = useState(false);
   const [statsForm, setStatsForm] = useState(EMPTY_STATS_FORM);
   const [statsFormError, setStatsFormError] = useState<string | null>(null);
   const [submittingStats, setSubmittingStats] = useState(false);
 
+  const reload = useCallback(async () => {
+    try {
+      const [data, wardContacts] = await Promise.all([
+        getTerritoryDetail(id),
+        getWardContacts(id),
+      ]);
+      setDetail(data);
+      setContacts(wardContacts);
+      setError(null);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Không thể tải chi tiết phường. Vui lòng thử lại."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
-    if (!territoryId) return;
     let isMounted = true;
 
-    async function loadData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [territories, wardContacts] = await Promise.all([
-          getTerritories(),
-          getWardContacts(territoryId),
-        ]);
+    Promise.all([getTerritoryDetail(id), getWardContacts(id)])
+      .then(([data, wardContacts]) => {
         if (isMounted) {
-          const found = territories.find((t) => t.id === territoryId) || null;
-          setTerritory(found);
+          setDetail(data);
           setContacts(wardContacts);
+          setError(null);
         }
-      } catch (err) {
+      })
+      .catch((err) => {
         if (isMounted) {
           setError(
-            err instanceof Error ? err.message : "Không thể tải dữ liệu phường. Vui lòng thử lại."
+            err instanceof Error ? err.message : "Không thể tải chi tiết phường. Vui lòng thử lại."
           );
         }
-      } finally {
+      })
+      .finally(() => {
         if (isMounted) {
           setLoading(false);
         }
-      }
-    }
-
-    loadData();
+      });
 
     return () => {
       isMounted = false;
     };
-  }, [territoryId]);
+  }, [id]);
 
   function openCreateContact() {
     setEditingContact(null);
@@ -135,15 +153,13 @@ export default function TerritoryDetailPage() {
         const updated = await updateWardContact(editingContact.id, contactForm);
         setContacts((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       } else {
-        const created = await createWardContact(territoryId, contactForm);
+        const created = await createWardContact(id, contactForm);
         setContacts((prev) => [...prev, created]);
       }
       setShowContactForm(false);
       setContactForm(EMPTY_CONTACT_FORM);
       setEditingContact(null);
     } catch (err) {
-      // Lỗi trùng dữ liệu (trùng SĐT, hoặc trùng họ tên/đơn vị/phòng ban/chức vụ)
-      // được backend trả về message tiếng Việt rõ ràng, hiển thị thẳng cho người dùng.
       setContactFormError(
         err instanceof Error ? err.message : "Không thể lưu đầu mối. Vui lòng thử lại."
       );
@@ -156,26 +172,27 @@ export default function TerritoryDetailPage() {
     if (!window.confirm(`Xóa đầu mối "${contact.fullName}" khỏi phường?`)) {
       return;
     }
-    setDeletingId(contact.id);
+    setDeletingContactId(contact.id);
     try {
       await deleteWardContact(contact.id);
       setContacts((prev) => prev.filter((c) => c.id !== contact.id));
     } catch (err) {
       window.alert(err instanceof Error ? err.message : "Không thể xóa đầu mối. Vui lòng thử lại.");
     } finally {
-      setDeletingId(null);
+      setDeletingContactId(null);
     }
   }
 
   function openEditStats() {
-    if (!territory) return;
+    if (!detail) return;
+    const t = detail.territory;
     setStatsForm({
-      population: String(territory.population),
-      schoolMamnon: String(territory.schoolMamnon),
-      schoolTieuhoc: String(territory.schoolTieuhoc),
-      schoolThcs: String(territory.schoolThcs),
-      schoolThpt: String(territory.schoolThpt),
-      revenue: String(territory.revenue),
+      population: String(t.population),
+      schoolMamnon: String(t.schoolMamnon),
+      schoolTieuhoc: String(t.schoolTieuhoc),
+      schoolThcs: String(t.schoolThcs),
+      schoolThpt: String(t.schoolThpt),
+      revenue: String(t.revenue),
     });
     setStatsFormError(null);
     setShowStatsForm(true);
@@ -187,7 +204,7 @@ export default function TerritoryDetailPage() {
     setSubmittingStats(true);
 
     try {
-      const updated = await updateTerritoryStats(territoryId, {
+      const updatedTerritory = await updateTerritoryStats(id, {
         population: Number(statsForm.population) || 0,
         schoolMamnon: Number(statsForm.schoolMamnon) || 0,
         schoolTieuhoc: Number(statsForm.schoolTieuhoc) || 0,
@@ -195,7 +212,7 @@ export default function TerritoryDetailPage() {
         schoolThpt: Number(statsForm.schoolThpt) || 0,
         revenue: Number(statsForm.revenue) || 0,
       });
-      setTerritory(updated);
+      setDetail((prev) => (prev ? { ...prev, territory: { ...prev.territory, ...updatedTerritory } } : prev));
       setShowStatsForm(false);
     } catch (err) {
       setStatsFormError(
@@ -221,51 +238,58 @@ export default function TerritoryDetailPage() {
     },
     { header: "SĐT", accessorKey: "phone" },
     { header: "AM phụ trách", accessorKey: "amInCharge" },
-    {
-      header: "",
-      cell: (item) => (
-        <div className="flex items-center justify-end gap-1">
-          <button
-            type="button"
-            onClick={() => openEditContact(item)}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-vnpt"
-            title="Sửa"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDeleteContact(item)}
-            disabled={deletingId === item.id}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
-            title="Xóa"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      ),
-    },
+    ...(canEdit
+      ? [
+          {
+            header: "",
+            cell: (item: WardContactRecord) => (
+              <div className="flex items-center justify-end gap-1">
+                <button
+                  type="button"
+                  onClick={() => openEditContact(item)}
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-vnpt"
+                  title="Sửa"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteContact(item)}
+                  disabled={deletingContactId === item.id}
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                  title="Xóa"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link
             href="/admin/territories"
-            className="mb-1 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-vnpt"
+            className="text-caption inline-flex items-center gap-1 font-semibold text-vnpt hover:text-vnpt-dark"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Quay lại danh sách phường
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Địa bàn Phường
           </Link>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">
-            {territory ? territory.wardName : "Đang tải..."}
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
+            {detail ? `Phường ${detail.territory.wardName}` : "Chi tiết phường"}
           </h2>
-          <p className="text-xs text-slate-500">
-            Thống kê, trường học và đầu mối nhân sự trên địa bàn
-          </p>
+          {detail && (
+            <p className="text-xs text-slate-500">
+              Nhân viên phụ trách: {detail.territory.staffName || "Chưa phân công"} ·{" "}
+              {detail.territory.householdCount.toLocaleString("vi-VN")} hộ dân
+            </p>
+          )}
         </div>
-        {territory && (
+        {detail && canEdit && (
           <button
             type="button"
             onClick={openEditStats}
@@ -280,74 +304,95 @@ export default function TerritoryDetailPage() {
       {error ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
           <AlertTriangle className="h-6 w-6 text-rose-500" />
-          <p className="text-sm font-semibold text-rose-700">Không thể tải dữ liệu phường</p>
+          <p className="text-sm font-semibold text-rose-700">Không thể tải chi tiết phường</p>
           <p className="text-xs text-rose-600">{error}</p>
         </div>
-      ) : loading ? (
+      ) : loading || !detail ? (
         <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
-          Đang tải dữ liệu phường...
-        </div>
-      ) : !territory ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center">
-          <p className="text-sm font-semibold text-slate-700">Không tìm thấy phường này</p>
+          Đang tải chi tiết phường...
         </div>
       ) : (
         <>
-          {/* Mini board thống kê */}
+          {/* Mini board thống kê (dân số, trường học, doanh thu) */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard
               title="KHU PHỐ / HỘ DÂN"
-              value={`${territory.quarterCount} / ${territory.householdCount.toLocaleString("vi-VN")}`}
-              subtitle={`Dân số: ${territory.population.toLocaleString("vi-VN")}`}
+              value={`${detail.territory.quarterCount} / ${detail.territory.householdCount.toLocaleString("vi-VN")}`}
+              subtitle={`Dân số: ${detail.territory.population.toLocaleString("vi-VN")}`}
               icon={Building}
             />
             <KpiCard
               title="SỐ TRƯỜNG HỌC"
               value={
-                territory.schoolMamnon +
-                territory.schoolTieuhoc +
-                territory.schoolThcs +
-                territory.schoolThpt
+                detail.territory.schoolMamnon +
+                detail.territory.schoolTieuhoc +
+                detail.territory.schoolThcs +
+                detail.territory.schoolThpt
               }
-              subtitle={`MN ${territory.schoolMamnon} · TH ${territory.schoolTieuhoc} · THCS ${territory.schoolThcs} · THPT ${territory.schoolThpt}`}
+              subtitle={`MN ${detail.territory.schoolMamnon} · TH ${detail.territory.schoolTieuhoc} · THCS ${detail.territory.schoolThcs} · THPT ${detail.territory.schoolThpt}`}
               icon={GraduationCap}
             />
             <KpiCard
               title="CƠ HỘI / ĐÃ TRIỂN KHAI"
-              value={`${territory.opportunityCount} / ${territory.deployedCount}`}
+              value={`${detail.territory.opportunityCount} / ${detail.territory.deployedCount}`}
               subtitle={
-                territory.opportunityCount > 0
-                  ? `Tỷ lệ phủ: ${Math.round((territory.deployedCount / territory.opportunityCount) * 100)}%`
+                detail.territory.opportunityCount > 0
+                  ? `Tỷ lệ phủ: ${Math.round((detail.territory.deployedCount / detail.territory.opportunityCount) * 100)}%`
                   : "Chưa có cơ hội"
               }
               icon={Users}
             />
             <KpiCard
               title="DOANH THU"
-              value={`${territory.revenue.toLocaleString("vi-VN")} ₫`}
-              subtitle={`Đầu mối lãnh đạo: ${territory.leadershipContact || "Chưa có"}`}
+              value={`${detail.territory.revenue.toLocaleString("vi-VN")} ₫`}
+              subtitle={`Đầu mối lãnh đạo: ${detail.territory.leadershipContact || "Chưa có"}`}
               icon={TrendingUp}
             />
           </div>
 
-          {/* Bảng đầu mối nhân sự */}
+          <OfficialsSection
+            territoryId={detail.territory.id}
+            officials={detail.officials}
+            canEdit={canEdit}
+            onChanged={reload}
+          />
+          <QuartersSection
+            territoryId={detail.territory.id}
+            declaredCount={detail.territory.quarterCount}
+            quarters={detail.quarters}
+            totals={detail.totals}
+            canEdit={canEdit}
+            onChanged={reload}
+          />
+
+          {/* Đầu mối nhân sự tự do (trạm y tế, trường học, UBND...) — khác với
+              Lãnh đạo Phường/Phòng ban ở trên, danh sách này không theo cấu
+              trúc cố định. */}
           <DataTable
             title="Đầu mối nhân sự theo Đơn vị / Phòng ban"
             subtitle="Trạm Y tế, UBND, Đảng ủy, Trường học Mầm non/TH/THCS/THPT, Trung tâm Phục vụ HCC..."
             columns={contactColumns}
             data={contacts}
             searchPlaceholder="Tìm theo đơn vị, phòng ban, họ tên, chức..."
-            exportFileName={`vnpt_dau_moi_${territory.wardName}`}
+            exportFileName={`vnpt_dau_moi_${detail.territory.wardName}`}
             actionButton={
-              <button
-                type="button"
-                onClick={openCreateContact}
-                className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span className="btn-label">Thêm đầu mối</span>
-              </button>
+              canEdit ? (
+                <button
+                  type="button"
+                  onClick={openCreateContact}
+                  className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span className="btn-label">Thêm đầu mối</span>
+                </button>
+              ) : undefined
             }
+          />
+
+          <WardLeadsContractsSection
+            leads={detail.leads}
+            contracts={detail.contracts}
+            totals={detail.totals}
           />
         </>
       )}

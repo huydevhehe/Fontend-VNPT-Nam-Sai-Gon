@@ -98,7 +98,7 @@ export class DebtService {
 
     // Record audit log
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [
         `LOG-${Date.now()}`,
         operator,
@@ -132,7 +132,7 @@ export class DebtService {
     );
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [
         `LOG-${Date.now()}`,
         operator,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock, AlertTriangle } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
@@ -79,11 +80,19 @@ export default function CommissionsPage() {
     {
       header: "Hợp đồng / Mã GD",
       accessorKey: "transactionCode",
-      cell: (item) => (
-        <span className="font-mono text-slate-700 font-semibold">
-          {item.transactionCode}
-        </span>
-      ),
+      cell: (item) =>
+        item.contractId ? (
+          <Link
+            href={`/admin/contracts?ma=${encodeURIComponent(item.transactionCode)}`}
+            className="font-mono font-semibold text-vnpt hover:underline"
+          >
+            {item.transactionCode}
+          </Link>
+        ) : (
+          <span className="font-mono text-slate-700 font-semibold">
+            {item.transactionCode}
+          </span>
+        ),
     },
     {
       header: "Số tiền hoa hồng",

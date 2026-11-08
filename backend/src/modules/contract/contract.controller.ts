@@ -18,7 +18,7 @@ contractRouter.get("/", async (_req: Request, res: Response) => {
 // POST /api/contracts
 contractRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { transactionCode, customerName, subscriberCodes, totalValue, channel } = req.body;
+    const { transactionCode, customerName, subscriberCodes, totalValue, channel, leadId, territoryId } = req.body;
 
     const contract = await contractService.create({
       transactionCode,
@@ -26,6 +26,8 @@ contractRouter.post("/", requireAuth, async (req: Request, res: Response) => {
       subscriberCodes,
       totalValue: Number(totalValue),
       channel,
+      leadId,
+      territoryId,
     });
 
     res.status(201).json({ success: true, data: contract });

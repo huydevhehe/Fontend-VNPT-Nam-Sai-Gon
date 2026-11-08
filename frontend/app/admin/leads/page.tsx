@@ -5,8 +5,18 @@ import { Target, UserPlus, PhoneCall, CheckCircle2, TrendingUp, AlertTriangle, X
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
-import { getLeads, createLead, updateLeadStatus } from "@/lib/api/leads.api";
-import { LeadRecord, LeadStatus } from "@/lib/crm/types/crm.types";
+import {
+  getLeads,
+  createLead,
+  updateLeadStatus,
+  assignLead,
+  getCtvOptions,
+  CtvOption,
+} from "@/lib/api/leads.api";
+import { getTerritories } from "@/lib/api/territories.api";
+import { getStaff } from "@/lib/api/staff.api";
+import { LeadRecord, LeadStatus, StaffRecord, TerritoryRecord } from "@/lib/crm/types/crm.types";
+import { LEAD_CHANNELS, LEAD_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 
 const LEAD_STATUSES: LeadStatus[] = [
   "Mới tiếp nhận",
@@ -22,12 +32,7 @@ const GROUP_OPTIONS: LeadRecord["group"][] = [
   "Gia hạn dịch vụ",
 ];
 
-const CHANNEL_OPTIONS: LeadRecord["channel"][] = [
-  "Online",
-  "Đối tác",
-  "Khách hàng hiện hữu",
-  "Chiến dịch",
-];
+const CTV_CHANNEL: LeadRecord["channel"] = "CTV giới thiệu";
 
 interface LeadFormState {
   customerName: string;
@@ -37,16 +42,25 @@ interface LeadFormState {
   staffName: string;
   expectedValue: string;
   demandDescription: string;
+  referredByCtvId: string;
+  territoryId: string;
+}
+
+interface AssignFormState {
+  staffName: string;
+  territoryId: string;
 }
 
 const EMPTY_FORM: LeadFormState = {
   customerName: "",
   phone: "",
   group: GROUP_OPTIONS[0],
-  channel: CHANNEL_OPTIONS[0],
+  channel: LEAD_CHANNELS[0],
   staffName: "",
   expectedValue: "",
   demandDescription: "",
+  referredByCtvId: "",
+  territoryId: "",
 };
 
 export default function LeadsPage() {
@@ -58,6 +72,33 @@ export default function LeadsPage() {
   const [form, setForm] = useState<LeadFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const [ctvOptions, setCtvOptions] = useState<CtvOption[]>([]);
+  const [territories, setTerritories] = useState<TerritoryRecord[]>([]);
+  const [staffList, setStaffList] = useState<StaffRecord[]>([]);
+
+  const [assignTarget, setAssignTarget] = useState<LeadRecord | null>(null);
+  const [assignForm, setAssignForm] = useState<AssignFormState>({ staffName: "", territoryId: "" });
+  const [assignError, setAssignError] = useState<string | null>(null);
+  const [assigning, setAssigning] = useState(false);
+
+  const wardNameById = new Map(territories.map((t) => [t.id, t.wardName]));
+
+  // Danh mục phụ (CTV, Phường, Nhân viên): lỗi ở đây không được làm hỏng bảng Lead.
+  useEffect(() => {
+    let isMounted = true;
+    Promise.allSettled([getCtvOptions(), getTerritories(), getStaff()]).then(
+      ([ctvs, wards, staff]) => {
+        if (!isMounted) return;
+        if (ctvs.status === "fulfilled") setCtvOptions(ctvs.value);
+        if (wards.status === "fulfilled") setTerritories(wards.value);
+        if (staff.status === "fulfilled") setStaffList(staff.value);
+      }
+    );
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -107,6 +148,8 @@ export default function LeadsPage() {
         status: "Mới tiếp nhận",
         expectedValue: Number(form.expectedValue),
         demandDescription: form.demandDescription,
+        territoryId: form.territoryId || null,
+        referredByCtvId: form.channel === CTV_CHANNEL ? form.referredByCtvId || null : null,
       });
 
       setData((prev) => [created, ...prev]);
@@ -118,6 +161,33 @@ export default function LeadsPage() {
       );
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function openAssign(lead: LeadRecord) {
+    setAssignError(null);
+    setAssignTarget(lead);
+    setAssignForm({ staffName: lead.staffName, territoryId: lead.territoryId || "" });
+  }
+
+  async function handleAssign(e: FormEvent) {
+    e.preventDefault();
+    if (!assignTarget) return;
+    setAssignError(null);
+    setAssigning(true);
+    try {
+      const updated = await assignLead(assignTarget.id, {
+        staffName: assignForm.staffName,
+        territoryId: assignForm.territoryId || null,
+      });
+      setData((prev) => prev.map((row) => (row.id === updated.id ? updated : row)));
+      setAssignTarget(null);
+    } catch (err) {
+      setAssignError(
+        err instanceof Error ? err.message : "Không thể phân công Lead. Vui lòng thử lại."
+      );
+    } finally {
+      setAssigning(false);
     }
   }
 
@@ -144,7 +214,7 @@ export default function LeadsPage() {
       accessorKey: "group",
       cell: (item) => (
         <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
-          {item.group}
+          {LEAD_GROUP_LABEL[item.group] ?? item.group}
         </span>
       ),
     },
@@ -152,12 +222,38 @@ export default function LeadsPage() {
       header: "Kênh phát triển",
       accessorKey: "channel",
       cell: (item) => (
-        <span className="font-medium text-slate-600">{item.channel}</span>
+        <div>
+          <span className="font-medium text-slate-600">{item.channel}</span>
+          {item.referredByCtvName && (
+            <div className="text-[11px] text-slate-500">CTV: {item.referredByCtvName}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Phường",
+      accessorKey: "territoryId",
+      cell: (item) => (
+        <span className="text-slate-600">
+          {item.territoryId ? wardNameById.get(item.territoryId) ?? "—" : "—"}
+        </span>
       ),
     },
     {
       header: "AM Phụ trách",
       accessorKey: "staffName",
+      cell: (item) => (
+        <div className="flex items-center gap-2">
+          <span>{item.staffName}</span>
+          <button
+            type="button"
+            onClick={() => openAssign(item)}
+            className="rounded-lg border border-slate-200 px-2 py-0.5 text-[11px] font-bold text-vnpt hover:bg-slate-50"
+          >
+            Phân công
+          </button>
+        </div>
+      ),
     },
     {
       header: "Trạng thái",
@@ -329,7 +425,7 @@ export default function LeadsPage() {
                   >
                     {GROUP_OPTIONS.map((g) => (
                       <option key={g} value={g}>
-                        {g}
+                        {LEAD_GROUP_LABEL[g]}
                       </option>
                     ))}
                   </select>
@@ -341,17 +437,60 @@ export default function LeadsPage() {
                   <select
                     value={form.channel}
                     onChange={(e) =>
-                      setForm({ ...form, channel: e.target.value as LeadRecord["channel"] })
+                      setForm({
+                        ...form,
+                        channel: e.target.value as LeadRecord["channel"],
+                        referredByCtvId: "",
+                      })
                     }
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                   >
-                    {CHANNEL_OPTIONS.map((c) => (
+                    {LEAD_CHANNELS.map((c) => (
                       <option key={c} value={c}>
                         {c}
                       </option>
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {form.channel === CTV_CHANNEL && (
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Cộng tác viên giới thiệu
+                  </label>
+                  <select
+                    required
+                    value={form.referredByCtvId}
+                    onChange={(e) => setForm({ ...form, referredByCtvId: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  >
+                    <option value="">— Chọn cộng tác viên —</option>
+                    {ctvOptions.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.referralCode})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Phường
+                </label>
+                <select
+                  value={form.territoryId}
+                  onChange={(e) => setForm({ ...form, territoryId: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                >
+                  <option value="">— Chưa gán phường —</option>
+                  {territories.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.wardName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -400,6 +539,88 @@ export default function LeadsPage() {
                   className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {submitting ? "Đang tạo..." : "Tạo Lead"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Lead Modal */}
+      {assignTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Phân công Lead</h3>
+              <button
+                onClick={() => setAssignTarget(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="mb-3 text-xs text-slate-500">{assignTarget.customerName}</p>
+
+            <form onSubmit={handleAssign} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Nhân viên phụ trách
+                </label>
+                <select
+                  required
+                  value={assignForm.staffName}
+                  onChange={(e) => setAssignForm({ ...assignForm, staffName: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                >
+                  {!staffList.some((m) => m.name === assignForm.staffName) && (
+                    <option value={assignForm.staffName}>{assignForm.staffName}</option>
+                  )}
+                  {staffList.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Phường
+                </label>
+                <select
+                  value={assignForm.territoryId}
+                  onChange={(e) => setAssignForm({ ...assignForm, territoryId: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                >
+                  <option value="">— Chưa gán phường —</option>
+                  {territories.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.wardName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {assignError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {assignError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setAssignTarget(null)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={assigning}
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {assigning ? "Đang lưu..." : "Lưu phân công"}
                 </button>
               </div>
             </form>

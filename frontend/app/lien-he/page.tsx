@@ -13,6 +13,8 @@ import {
   Printer,
 } from "lucide-react";
 import Breadcrumb from "@/components/layout/Breadcrumb";
+import { submitPublicLead } from "@/lib/api/public.api";
+import { getStoredRef } from "@/lib/referral";
 
 const HERO_CHECKS = [
   "Tư vấn giải pháp phù hợp",
@@ -43,10 +45,37 @@ const GIO_LAM_VIEC = [
 
 function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSubmitted(true);
+    if (submitting) {
+      return;
+    }
+    const form = new FormData(e.currentTarget);
+    const text = (key: string) => String(form.get(key) ?? "").trim();
+    const email = text("email");
+    const noiDung = text("noiDung");
+    const demand = email ? `${noiDung}
+Email: ${email}` : noiDung;
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      await submitPublicLead({
+        name: text("hoTen"),
+        phone: text("soDienThoai"),
+        demand,
+        refCode: getStoredRef() ?? undefined,
+        website: text("website"),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không thể gửi thông tin, vui lòng thử lại.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -100,6 +129,7 @@ function ContactForm() {
             name="email"
             type="email"
             placeholder="Nhập email"
+            maxLength={80}
             className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-vnpt"
           />
         </div>
@@ -113,8 +143,13 @@ function ContactForm() {
             name="noiDung"
             placeholder="Nhập nội dung bạn muốn trao đổi"
             rows={4}
+            maxLength={400}
             className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-vnpt"
           />
+        </div>
+        {/* Honeypot chống bot: người dùng thật không thấy và không điền. */}
+        <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
         </div>
         <label className="flex items-start gap-2 text-xs text-slate-500">
           <input required type="checkbox" name="dongY" className="mt-0.5" />
@@ -123,11 +158,17 @@ function ContactForm() {
             Chính sách bảo mật thông tin
           </Link>
         </label>
+        {error && (
+          <p className="text-caption rounded-lg bg-red-50 px-3 py-2 text-red-600">
+            {error}
+          </p>
+        )}
         <button
           type="submit"
-          className="w-full rounded-md bg-vnpt py-2.5 text-sm font-semibold text-white hover:bg-vnpt-dark"
+          disabled={submitting}
+          className="w-full rounded-md bg-vnpt py-2.5 text-sm font-semibold text-white hover:bg-vnpt-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
-          GỬI THÔNG TIN
+          {submitting ? "ĐANG GỬI..." : "GỬI THÔNG TIN"}
         </button>
       </form>
     </div>

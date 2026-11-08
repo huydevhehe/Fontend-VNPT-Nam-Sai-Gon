@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock, AlertTriangle } from "lucide-react";
+import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock, AlertTriangle, Edit3, X } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
-import { getCommissions, updateCommissionStatus } from "@/lib/api/commissions.api";
+import { useAuth } from "@/lib/auth/auth-context";
+import { getCommissions, updateCommissionStatus, updateCommissionAmount } from "@/lib/api/commissions.api";
 import { CommissionRecord } from "@/lib/crm/types/crm.types";
 
 const COMMISSION_STATUSES: CommissionRecord["status"][] = [
@@ -17,9 +18,47 @@ const COMMISSION_STATUSES: CommissionRecord["status"][] = [
 ];
 
 export default function CommissionsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+
   const [data, setData] = useState<CommissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [editingItem, setEditingItem] = useState<CommissionRecord | null>(null);
+  const [amountInput, setAmountInput] = useState<string>("");
+  const [noteInput, setNoteInput] = useState<string>("");
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  function openEditModal(item: CommissionRecord) {
+    setEditingItem(item);
+    setAmountInput(String(item.amount));
+    setNoteInput(item.note ?? "");
+    setModalError(null);
+  }
+
+  async function handleSaveAmount(e: FormEvent) {
+    e.preventDefault();
+    if (!editingItem) return;
+    const val = Number(amountInput);
+    if (isNaN(val) || val < 0) {
+      setModalError("Số tiền phải là số lớn hơn hoặc bằng 0");
+      return;
+    }
+
+    setSaving(true);
+    setModalError(null);
+    try {
+      const updated = await updateCommissionAmount(editingItem.id, val, noteInput.trim() || null);
+      setData((prev) => prev.map((row) => (row.id === editingItem.id ? updated : row)));
+      setEditingItem(null);
+    } catch (err: any) {
+      setModalError(err.message || "Không thể cập nhật số tiền hoa hồng");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -98,9 +137,14 @@ export default function CommissionsPage() {
       header: "Số tiền hoa hồng",
       accessorKey: "amount",
       cell: (item) => (
-        <span className="font-bold text-slate-900">
-          {item.amount.toLocaleString("vi-VN")} ₫
-        </span>
+        <div>
+          <span className="font-bold text-slate-900">
+            {item.amount.toLocaleString("vi-VN")} ₫
+          </span>
+          {item.note && (
+            <p className="text-[11px] text-slate-500 italic mt-0.5">{item.note}</p>
+          )}
+        </div>
       ),
     },
     {
@@ -123,6 +167,23 @@ export default function CommissionsPage() {
         />
       ),
     },
+    ...(isAdmin
+      ? [
+          {
+            header: "Thao tác",
+            cell: (item: CommissionRecord) => (
+              <button
+                type="button"
+                onClick={() => openEditModal(item)}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
+              >
+                <Edit3 className="h-3 w-3" />
+                Sửa số tiền
+              </button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -194,6 +255,88 @@ export default function CommissionsPage() {
           searchPlaceholder="Tìm theo đối tượng thụ hưởng, mã giao dịch..."
           exportFileName="vnpt_hoa_hong"
         />
+      )}
+
+      {/* Modal Sửa Số Tiền Hoa Hồng (Chỉ dành cho Admin) */}
+      {editingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">
+                Sửa số tiền hoa hồng
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingItem(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAmount} className="mt-4 space-y-4">
+              <div>
+                <p className="text-xs text-slate-500 mb-1">
+                  Đối tượng: <strong className="text-slate-800">{editingItem.recipientName}</strong>
+                </p>
+                <p className="text-xs text-slate-500 mb-2">
+                  Mã GD: <strong className="font-mono text-slate-800">{editingItem.transactionCode}</strong>
+                </p>
+              </div>
+
+              <div>
+                <label className="text-form-label mb-1.5 block text-slate-700">
+                  Số tiền hoa hồng (VNĐ) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  required
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm text-slate-800 focus:border-vnpt focus:bg-white focus:outline-hidden"
+                  placeholder="Nhập số tiền..."
+                />
+              </div>
+
+              <div>
+                <label className="text-form-label mb-1.5 block text-slate-700">
+                  Ghi chú công thức / lý do điều chỉnh
+                </label>
+                <textarea
+                  rows={2}
+                  value={noteInput}
+                  onChange={(e) => setNoteInput(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm text-slate-800 focus:border-vnpt focus:bg-white focus:outline-hidden"
+                  placeholder="VD: Áp dụng mức 20% theo thoả thuận gói CNTT..."
+                />
+              </div>
+
+              {modalError && (
+                <p className="text-xs font-semibold text-rose-600">{modalError}</p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  disabled={saving}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="rounded-xl bg-vnpt px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-vnpt-darker"
+                >
+                  {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

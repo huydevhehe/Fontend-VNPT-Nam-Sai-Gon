@@ -5,6 +5,7 @@ export interface AuthUser {
   name: string;
   role: string;
   email: string | null;
+  mustChangePassword?: boolean;
 }
 
 export interface LoginResult {
@@ -16,6 +17,16 @@ export function login(username: string, password: string): Promise<LoginResult> 
   return apiFetch<LoginResult>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ username, password }),
+  });
+}
+
+export function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>("/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify({ currentPassword, newPassword }),
   });
 }
 

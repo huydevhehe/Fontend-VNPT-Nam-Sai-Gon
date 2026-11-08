@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { pgQuery, pgRun } from "./pg-adapter.js";
+import { pgQuery, pgRun, pgTransaction, type TransactionClient } from "./pg-adapter.js";
 import { applySchemaExtensions, backfillRelations } from "./schema-extensions.js";
 
 export const query = <T = any>(sql: string, params: any[] = []): Promise<T[]> => {
@@ -9,6 +9,14 @@ export const query = <T = any>(sql: string, params: any[] = []): Promise<T[]> =>
 export const run = (sql: string, params: any[] = []): Promise<{ id: number; changes: number }> => {
   return pgRun(sql, params);
 };
+
+export const transaction = <T>(
+  callback: (tx: TransactionClient) => Promise<T>
+): Promise<T> => {
+  return pgTransaction<T>(callback);
+};
+
+export type { TransactionClient };
 
 // Các cột thống kê mở rộng của bảng territories (dân số, số trường theo cấp,
 // doanh thu) được thêm sau khi bảng đã tồn tại trên môi trường cũ — CREATE

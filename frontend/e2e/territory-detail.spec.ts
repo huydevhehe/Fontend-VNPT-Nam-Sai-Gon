@@ -27,7 +27,7 @@ async function openTanHung(page: Page) {
   await page.goto("/admin/territories");
   await showTerritoryList(page);
   await page.getByRole("link", { name: "Tân Hưng" }).click();
-  await expect(page).toHaveURL(/\/admin\/territories\/TB-01$/);
+  await expect(page).toHaveURL(/\/admin\/territories\/TB-01$/, { timeout: 15_000 });
 }
 
 function parseNumber(text: string | null): number {

@@ -27,6 +27,10 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const loggedIn = await login(username.trim(), password);
+      if (loggedIn.mustChangePassword) {
+        router.push("/doi-mat-khau");
+        return;
+      }
       router.push(
         loggedIn.role === "CTV" ? "/cong-tac-vien/dashboard" : "/admin/dashboard"
       );

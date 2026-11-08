@@ -22,10 +22,12 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("users", "approved_at", "TEXT");
   await ensureColumn("users", "approved_by", "TEXT");
   await ensureColumn("users", "created_at", "TEXT");
+  await ensureColumn("users", "must_change_password", "BOOLEAN DEFAULT FALSE");
   await run("CREATE UNIQUE INDEX IF NOT EXISTS ux_users_referral_code ON users(referral_code)");
 
   await ensureColumn("customers", "handover_batch", "TEXT");
   await ensureColumn("customers", "handover_date", "TEXT");
+  await ensureColumn("customers", "territory_id", "TEXT");
 
   await ensureColumn("leads", "territory_id", "TEXT");
   await ensureColumn("leads", "referred_by_ctv_id", "TEXT");
@@ -36,6 +38,7 @@ export async function applySchemaExtensions(): Promise<void> {
 
   await ensureColumn("commissions", "contract_id", "TEXT");
   await ensureColumn("commissions", "ctv_id", "TEXT");
+  await ensureColumn("commissions", "note", "TEXT");
   await run(
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_commissions_contract_ctv ON commissions(contract_id, ctv_id)
      WHERE contract_id IS NOT NULL AND ctv_id IS NOT NULL`

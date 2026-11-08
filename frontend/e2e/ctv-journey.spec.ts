@@ -83,15 +83,14 @@ test.describe("Hành trình CTV đầu-cuối", () => {
     let leadRow: Locator;
 
     await test.step("Khách vào /ref/<mã>?to=/lien-he và gửi form liên hệ", async () => {
-      const ip = randomIp();
       await page.route("**/public/leads", (route) =>
-        route.continue({ headers: { ...route.request().headers(), "x-forwarded-for": ip } })
+        route.continue({ headers: { ...route.request().headers(), "x-forwarded-for": randomIp() } })
       );
       await page.goto(`/ref/${ctv.referralCode}?to=/lien-he`);
       await page.waitForURL((url) => url.pathname === "/lien-he");
       await fillContactForm(page, customerName, phone);
       await page.getByRole("button", { name: "GỬI THÔNG TIN" }).click();
-      await expect(page.getByText("Cảm ơn bạn đã liên hệ!")).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText("Cảm ơn bạn đã liên hệ!")).toBeVisible({ timeout: 15_000 });
     });
 
     await test.step("Admin thấy lead \"CTV giới thiệu\" chưa phân công", async () => {

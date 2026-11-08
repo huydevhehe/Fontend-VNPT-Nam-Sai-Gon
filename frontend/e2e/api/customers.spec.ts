@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
-import { ADMIN, API_URL, apiLogin, bearer } from "./helpers";
+import { ADMIN, AM, API_URL, apiLogin, bearer } from "./helpers";
 
 const STAFF_OLD = "Nguyễn Thị Tình";
 const STAFF_NEW = "Phạm Thanh Hà";
@@ -10,9 +10,11 @@ function today(): string {
 
 test.describe("API khách hàng PTM / KHDN chăm", () => {
   let token: string;
+  let amToken: string;
 
   test.beforeAll(async ({ request }) => {
     token = await apiLogin(request, ADMIN.username, ADMIN.password);
+    amToken = await apiLogin(request, AM.username, AM.password);
   });
 
   async function createCustomer(
@@ -27,6 +29,7 @@ test.describe("API khách hàng PTM / KHDN chăm", () => {
         type: "Doanh nghiệp",
         customerGroup,
         amStaff: STAFF_OLD,
+        amCaringStaff: STAFF_OLD,
       },
     });
   }
@@ -146,7 +149,7 @@ test.describe("API khách hàng PTM / KHDN chăm", () => {
     expect(unknown.status()).toBe(400);
 
     const row = await findCustomer(request, id);
-    expect(row.am_caring_staff).toBe(STAFF_OLD);
+    expect(row.am_staff).toBe(STAFF_OLD);
   });
 
   test("tạo KH với customerGroup ngoài whitelist trả 400", async ({ request }) => {
@@ -199,5 +202,26 @@ test.describe("API khách hàng PTM / KHDN chăm", () => {
     expect(line.details).toContain(STAFF_OLD);
     expect(line.details).toContain(STAFF_NEW);
     expect(line.details).toContain(batch);
+  });
+
+  test("AM không có quyền điều chuyển khách hàng: /transfer và /transfer-caring trả 403", async ({
+    request,
+  }) => {
+    const created = await createCustomer(request, "Tập hiện hữu", `PERM-${Date.now()}`);
+    const id = (await created.json()).data.id;
+
+    // AM gọi /transfer -> 403
+    const transferRes = await request.patch(`${API_URL}/customers/${id}/transfer`, {
+      headers: bearer(amToken),
+      data: { newStaff: STAFF_NEW },
+    });
+    expect(transferRes.status()).toBe(403);
+
+    // AM gọi /transfer-caring -> 403
+    const transferCaringRes = await request.patch(`${API_URL}/customers/${id}/transfer-caring`, {
+      headers: bearer(amToken),
+      data: { newCaringStaff: STAFF_NEW },
+    });
+    expect(transferCaringRes.status()).toBe(403);
   });
 });

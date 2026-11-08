@@ -74,4 +74,12 @@ test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
     await page.reload();
     await expect(page.locator("tbody tr", { hasText: khdnName })).toContainText(batch);
   });
+
+  test("AM vào /admin/customers không thấy các nút Điều chuyển", async ({ page }) => {
+    await loginAs(page, "am");
+    await page.goto("/admin/customers");
+    await expect(page.locator("table")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Điều chuyển AM" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Điều chuyển CSKH" })).toHaveCount(0);
+  });
 });

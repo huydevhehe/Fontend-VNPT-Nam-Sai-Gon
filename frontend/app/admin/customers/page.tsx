@@ -14,6 +14,7 @@ import {
 } from "@/lib/api/customers.api";
 import { getStaff } from "@/lib/api/staff.api";
 import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
 const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu"];
@@ -43,6 +44,9 @@ const EMPTY_FORM: CustomerFormState = {
 };
 
 export default function CustomersPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+
   const [data, setData] = useState<CustomerRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -322,28 +326,32 @@ export default function CustomersPage() {
           <span className="text-slate-400">—</span>
         ),
     },
-    {
-      header: "Thao tác",
-      accessorKey: "id",
-      cell: (item) => (
-        <div className="flex flex-col items-start gap-1">
-          <button
-            onClick={() => openTransfer(item)}
-            className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
-          >
-            <ArrowRightLeft className="h-3 w-3" />
-            Điều chuyển AM
-          </button>
-          <button
-            onClick={() => openCaringTransfer(item)}
-            className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
-          >
-            <ArrowRightLeft className="h-3 w-3" />
-            Điều chuyển CSKH
-          </button>
-        </div>
-      ),
-    },
+    ...(isAdmin
+      ? [
+          {
+            header: "Thao tác",
+            accessorKey: "id" as const,
+            cell: (item: CustomerRecord) => (
+              <div className="flex flex-col items-start gap-1">
+                <button
+                  onClick={() => openTransfer(item)}
+                  className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
+                >
+                  <ArrowRightLeft className="h-3 w-3" />
+                  Điều chuyển AM
+                </button>
+                <button
+                  onClick={() => openCaringTransfer(item)}
+                  className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
+                >
+                  <ArrowRightLeft className="h-3 w-3" />
+                  Điều chuyển CSKH
+                </button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -691,11 +699,16 @@ export default function CustomersPage() {
 
             <form onSubmit={handleCaringTransfer} className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                <label
+                  htmlFor="caring-transfer-staff"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
                   AM chăm sóc mới
                 </label>
                 <input
+                  id="caring-transfer-staff"
                   required
+                  list="customer-staff-names"
                   value={caringTransferStaff}
                   onChange={(e) => setCaringTransferStaff(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
@@ -703,10 +716,14 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                <label
+                  htmlFor="caring-transfer-batch"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
                   Mã đợt giao
                 </label>
                 <input
+                  id="caring-transfer-batch"
                   value={caringTransferBatch}
                   onChange={(e) => setCaringTransferBatch(e.target.value)}
                   placeholder="Tuỳ chọn, ví dụ DOT-2026-01"

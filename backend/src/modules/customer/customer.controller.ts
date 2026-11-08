@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { requireAuth } from "../../middleware/require-auth.js";
+import { requireAdmin } from "../../middleware/require-role.js";
 import { CustomerService, CustomerServiceError } from "./customer.service.js";
 
 export const customerRouter = Router();
@@ -32,7 +33,7 @@ customerRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-customerRouter.patch("/:id/transfer", requireAuth, async (req: Request, res: Response) => {
+customerRouter.patch("/:id/transfer", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { newStaff } = req.body ?? {};
@@ -44,7 +45,7 @@ customerRouter.patch("/:id/transfer", requireAuth, async (req: Request, res: Res
   }
 });
 
-customerRouter.patch("/:id/transfer-caring", requireAuth, async (req: Request, res: Response) => {
+customerRouter.patch("/:id/transfer-caring", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { newCaringStaff, handoverBatch } = req.body ?? {};

@@ -55,13 +55,13 @@ test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
 
     await filter.selectOption({ label: LABEL_KHDN });
 
-    // Điều chuyển KHDN chăm kèm mã đợt giao
+    // Điều chuyển KHDN chăm kèm mã đợt giao qua Điều chuyển CSKH
     await expect(page.getByRole("columnheader", { name: "Đợt giao" })).toBeVisible();
-    await khdnRow.getByRole("button", { name: "Điều chuyển" }).click();
+    await khdnRow.getByRole("button", { name: "Điều chuyển CSKH" }).click();
 
-    const modal = page.locator("div.fixed", { hasText: "Điều chuyển AM phụ trách" });
+    const modal = page.locator("div.fixed", { hasText: "Điều chuyển AM chăm sóc (CSKH)" });
     await expect(modal).toBeVisible();
-    await modal.getByLabel("AM phụ trách mới").fill("Phạm Thanh Hà");
+    await modal.getByLabel("AM chăm sóc mới").fill("Phạm Thanh Hà");
     await modal.getByLabel("Mã đợt giao").fill(batch);
     await modal.getByRole("button", { name: "Điều chuyển", exact: true }).click();
 
@@ -72,5 +72,13 @@ test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
     // Tải lại: dữ liệu lấy từ backend vẫn hiện đợt giao
     await page.reload();
     await expect(page.locator("tbody tr", { hasText: khdnName })).toContainText(batch);
+  });
+
+  test("AM vào /admin/customers không thấy các nút Điều chuyển", async ({ page }) => {
+    await loginAs(page, "am");
+    await page.goto("/admin/customers");
+    await expect(page.locator("table")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Điều chuyển AM" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Điều chuyển CSKH" })).toHaveCount(0);
   });
 });

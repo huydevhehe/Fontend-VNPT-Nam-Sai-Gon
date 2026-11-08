@@ -222,6 +222,13 @@ export interface TerritoryDetail {
     opportunityCount: number;
     deployedCount: number;
     staffName: string;
+    leadershipContact: string;
+    population: number;
+    schoolMamnon: number;
+    schoolTieuhoc: number;
+    schoolThcs: number;
+    schoolThpt: number;
+    revenue: number;
   };
   officials: WardOfficialRecord[];
   quarters: QuarterRecord[];

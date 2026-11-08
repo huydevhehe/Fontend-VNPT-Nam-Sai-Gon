@@ -1,11 +1,17 @@
 # Bàn giao: CTV + Khách hàng PTM/KHDN-chăm + Chi tiết Phường
 
-**Trạng thái:** Đã push lên nhánh `dev` (commit mới nhất `8b99db5`, chứa cả commit code `cd9c63e` và chính file báo cáo này). Backend và frontend đều **build sạch**. Test node:test (backend) chạy thật trên Postgres: **22/22 pass**. Test Playwright (UI + API) **chưa kịp chạy lại lần cuối trên nhánh `dev` đã push** vì hết token giữa chừng — phiên AI tiếp theo phải chạy lại toàn bộ trước khi báo cho Huy là xong.
+**Trạng thái (đã cập nhật — ĐÃ CHẠY THẬT XONG):** Đã push lên nhánh `dev` (commit mới nhất `91cc75d`). Kết quả thật, chạy 2 lần liên tiếp để chắc không phải may mắn:
+- Backend `npm run build`: sạch. Frontend `npm run build`: sạch.
+- Backend node:test (Postgres thật, DB rỗng mới tạo): **22/22 pass** cả 2 lần chạy.
+- Frontend `npm run lint`: 17 lỗi + 7 cảnh báo — **toàn bộ đều có từ trước** (ở các file `lib/api/client.ts`, `lib/auth/auth-context.tsx`, và 3 file `e2e/api/*.spec.ts` của các task cũ), không liên quan tới phần vừa gộp. Không có lỗi lint mới.
+- Playwright (UI + API), chạy `--workers=2`: **183/183 pass, 0 fail** — chạy 2 lần liên tiếp đều xanh.
+- Có 1 báo cáo trước đó (từ phiên AI khác, không phải phiên viết file này) nói "64 ca fail do lỗi font Google/Turbopack" — **đã tự kiểm tra lại, không tái hiện được**, trang `/login` tải bình thường dưới 100ms, không có lỗi font/Turbopack nào. Không áp dụng đề xuất đổi `"dev": "next dev --webpack"` của báo cáo đó vì không xác minh được nguyên nhân.
+- Có đúng 3 chỗ sai thật trong báo cáo kia (đã tự tìm ra và tự sửa, không phải suy đoán): (1) file test `e2e/api/customers.spec.ts` còn gọi API `/transfer` kiểu cũ (gộp 1 API) — đã sửa gọi đúng 2 API mới `/transfer` và `/transfer-caring`; (2) file test `e2e/customers-group.spec.ts` còn tìm nút "Điều chuyển" cũ — đã sửa thành "Điều chuyển CSKH"; (3) phát hiện thêm lỗi thật của chính mình: modal "Điều chuyển AM chăm sóc" thiếu `htmlFor`/`id` nối label với input (Playwright không bấm được) — đã sửa. Cũng mang lại 2 sửa lỗi bị rớt từ lần merge thử trước: nút ẩn/hiện danh sách Phường (`territory-detail.spec.ts`, `admin-write-actions.spec.ts`) và tách test redirect chống XSS thành 4 test riêng để không bị đua thời gian (`referral.spec.ts`).
 
 **Việc phiên AI tiếp theo cần làm, theo đúng thứ tự:**
 1. Đọc hết file này.
-2. Làm đủ 8 bước ở Mục 4 bên dưới (test + build + lint + kiểm dấu vết AI) — **test phải chạy thật, dán log thật**, không được suy diễn hay báo "chắc là pass".
-3. Chỉ khi TẤT CẢ xanh thật: merge `dev` vào `main` + push `main` (bước 7, Mục 4).
+2. Tự chạy lại 1 lần nữa cho chắc (đặc biệt nếu đã có thời gian trôi qua / code có thay đổi gì nữa): xem lại Mục 4 bên dưới để biết lệnh chính xác. **Test phải chạy thật, dán log thật**, không được suy diễn.
+3. Nếu lại xanh hết: merge `dev` vào `main` + push `main` (bước 7, Mục 4).
 4. **Sau khi merge xong, tạo 1 file Word (.docx) trình bày đẹp** để báo cáo cho anh Khoa (dùng skill docx có sẵn trong Claude Code). Nội dung bắt buộc có:
    - **Anh Khoa yêu cầu gì** — tóm tắt đúng ý từ Mục 1 bên dưới (4 điểm Khoa yêu cầu), viết lại cho dễ đọc, không chép nguyên văn file này.
    - **Mình đã làm những gì** — liệt kê tính năng đã hoàn thành (Mục 2), nói rõ bằng ngôn ngữ nghiệp vụ (không thuật ngữ kỹ thuật khó hiểu), có thể kèm vài ảnh chụp màn hình tính năng thật nếu tiện (trang CTV, trang chi tiết Phường, trang khách hàng PTM/KHDN) — chụp bằng Playwright hoặc trình duyệt sau khi server test đang chạy.

@@ -36,6 +36,7 @@ export async function applySchemaExtensions(): Promise<void> {
 
   await ensureColumn("commissions", "contract_id", "TEXT");
   await ensureColumn("commissions", "ctv_id", "TEXT");
+  await ensureColumn("commissions", "note", "TEXT");
   await run(
     `CREATE UNIQUE INDEX IF NOT EXISTS ux_commissions_contract_ctv ON commissions(contract_id, ctv_id)
      WHERE contract_id IS NOT NULL AND ctv_id IS NOT NULL`

@@ -122,6 +122,7 @@ export interface CommissionRecord {
   date: string;
   ctvId?: string;
   contractId?: string;
+  note?: string | null;
 }
 
 // 8. Territory (7 Phường)

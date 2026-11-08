@@ -14,3 +14,14 @@ export function updateCommissionStatus(
     body: JSON.stringify({ status }),
   });
 }
+
+export function updateCommissionAmount(
+  id: string,
+  amount: number,
+  note?: string | null
+): Promise<CommissionRecord> {
+  return apiFetch<CommissionRecord>(`/commissions/${id}/amount`, {
+    method: "PATCH",
+    body: JSON.stringify({ amount, note: note ?? null }),
+  });
+}

@@ -15,6 +15,7 @@ export interface CommissionRow {
   date: string;
   contract_id: string | null;
   ctv_id: string | null;
+  note?: string | null;
 }
 
 export interface CommissionRecordDto {
@@ -27,6 +28,7 @@ export interface CommissionRecordDto {
   date: string;
   ctvId: string | null;
   contractId: string | null;
+  note: string | null;
 }
 
 /** Phần hợp đồng mà CommissionService cần để sinh / tính lại hoa hồng. */
@@ -50,6 +52,7 @@ function toCommissionRecord(row: CommissionRow): CommissionRecordDto {
     date: row.date,
     ctvId: row.ctv_id ?? null,
     contractId: row.contract_id ?? null,
+    note: row.note ?? null,
   };
 }
 
@@ -159,6 +162,25 @@ export class CommissionService {
     await run(
       "UPDATE commissions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
       [status, id]
+    );
+
+    const updated = await query<CommissionRow>("SELECT * FROM commissions WHERE id = ?", [id]);
+    return toCommissionRecord(updated[0]);
+  }
+
+  async updateAmount(id: string, amount: number, note: string | null = null): Promise<CommissionRecordDto> {
+    if (typeof amount !== "number" || Number.isNaN(amount) || amount < 0) {
+      throw new Error("Số tiền hoa hồng không hợp lệ (phải là số >= 0)");
+    }
+
+    const existing = await query<CommissionRow>("SELECT * FROM commissions WHERE id = ?", [id]);
+    if (!existing.length) {
+      throw new Error("Không tìm thấy Hoa hồng");
+    }
+
+    await run(
+      "UPDATE commissions SET amount = ?, note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [amount, note ? note.trim() : null, id]
     );
 
     const updated = await query<CommissionRow>("SELECT * FROM commissions WHERE id = ?", [id]);

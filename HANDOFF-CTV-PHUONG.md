@@ -1,6 +1,8 @@
 # Bàn giao: CTV + Khách hàng PTM/KHDN-chăm + Chi tiết Phường
 
-**Trạng thái:** Đã push lên nhánh `dev` (commit `cd9c63e`). Backend và frontend đều **build sạch**. Test node:test (backend) chạy thật trên Postgres: **22/22 pass**. Test Playwright (UI + API) **chưa kịp chạy lại lần cuối trên nhánh `dev` đã push** vì hết token giữa chừng — phiên AI tiếp theo phải chạy lại toàn bộ trước khi báo cho Huy là xong.
+**Trạng thái:** Đã push lên nhánh `dev` (commit mới nhất `8b99db5`, chứa cả commit code `cd9c63e` và chính file báo cáo này). Backend và frontend đều **build sạch**. Test node:test (backend) chạy thật trên Postgres: **22/22 pass**. Test Playwright (UI + API) **chưa kịp chạy lại lần cuối trên nhánh `dev` đã push** vì hết token giữa chừng — phiên AI tiếp theo phải chạy lại toàn bộ trước khi báo cho Huy là xong.
+
+**Việc phiên AI tiếp theo cần làm, theo đúng thứ tự:** (1) đọc hết file này, (2) làm đủ 8 bước ở Mục 4 bên dưới (test + build + lint + kiểm dấu vết AI), (3) **viết một file báo cáo hoàn tất mới** tên `docs/superpowers/plans/REPORT-ctv-phuong-done.md` (lưu ý thư mục `docs/` bị gitignore nên file này sẽ không tự lên git — nếu muốn commit thì phải `git add -f`; nếu không cần commit, cứ để Huy đọc trực tiếp trên máy) ghi rõ: đã chạy lệnh gì, kết quả bao nhiêu pass/fail thật (dán log thật, không tóm tắt), có sửa gì thêm không và sửa gì, rồi mới merge `dev` vào `main` theo Mục 4 bước 7. **Không merge nếu còn test fail.**
 
 ---
 

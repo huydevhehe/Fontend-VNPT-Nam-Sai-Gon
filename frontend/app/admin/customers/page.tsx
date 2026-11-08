@@ -1,17 +1,30 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
-import { Users, UserPlus, Building2, User, ShieldAlert, AlertTriangle, X, ArrowRightLeft } from "lucide-react";
+import { useEffect, useState, FormEvent, ChangeEvent } from "react";
+import {
+  Users,
+  UserPlus,
+  Building2,
+  User,
+  ShieldAlert,
+  AlertTriangle,
+  X,
+  ArrowRightLeft,
+  UploadCloud,
+  CheckCircle2,
+} from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { CustomerRecord, CustomerType, CustomerGroup } from "@/lib/crm/types/crm.types";
+import { CustomerRecord, CustomerType, CustomerGroup, TerritoryRecord } from "@/lib/crm/types/crm.types";
 import {
   getCustomers,
   createCustomer,
   transferCustomer,
   transferCaringStaff,
+  importCustomerBatchExcel,
 } from "@/lib/api/customers.api";
+import { getTerritories } from "@/lib/api/territories.api";
 import { getStaff } from "@/lib/api/staff.api";
 import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -58,7 +71,6 @@ export default function CustomersPage() {
 
   const [transferTarget, setTransferTarget] = useState<CustomerRecord | null>(null);
   const [transferStaff, setTransferStaff] = useState("");
-  const [transferBatch, setTransferBatch] = useState("");
   const [groupFilter, setGroupFilter] = useState<CustomerGroup | "">("");
   const [staffNames, setStaffNames] = useState<string[]>([]);
   const [transferError, setTransferError] = useState<string | null>(null);
@@ -69,6 +81,18 @@ export default function CustomersPage() {
   const [caringTransferBatch, setCaringTransferBatch] = useState("");
   const [caringTransferError, setCaringTransferError] = useState<string | null>(null);
   const [caringTransferring, setCaringTransferring] = useState(false);
+
+  // Batch import state (Task D)
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [territories, setTerritories] = useState<TerritoryRecord[]>([]);
+  const [batchTerritoryId, setBatchTerritoryId] = useState("");
+  const [batchAmCaringStaff, setBatchAmCaringStaff] = useState("");
+  const [batchHandoverBatch, setBatchHandoverBatch] = useState("");
+  const [batchMode, setBatchMode] = useState<"append" | "replace">("append");
+  const [batchFile, setBatchFile] = useState<File | null>(null);
+  const [batchError, setBatchError] = useState<string | null>(null);
+  const [batchSuccess, setBatchSuccess] = useState<string | null>(null);
+  const [batchLoading, setBatchLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -112,10 +136,64 @@ export default function CustomersPage() {
       .catch(() => {
         // Gợi ý tên nhân viên là tuỳ chọn; backend vẫn kiểm tra khi điều chuyển.
       });
+
+    getTerritories()
+      .then((terrs) => {
+        if (isMounted) {
+          setTerritories(terrs);
+          if (terrs.length > 0) setBatchTerritoryId(terrs[0].id);
+        }
+      })
+      .catch(() => {});
+
     return () => {
       isMounted = false;
     };
   }, []);
+
+  async function handleBatchSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!batchFile) {
+      setBatchError("Vui lòng chọn file Excel");
+      return;
+    }
+    if (!batchTerritoryId) {
+      setBatchError("Vui lòng chọn Địa bàn / Phường");
+      return;
+    }
+    if (!batchAmCaringStaff.trim()) {
+      setBatchError("Vui lòng chọn hoặc nhập AM chăm sóc");
+      return;
+    }
+    if (!batchHandoverBatch.trim()) {
+      setBatchError("Vui lòng nhập mã đợt giao");
+      return;
+    }
+
+    setBatchError(null);
+    setBatchSuccess(null);
+    setBatchLoading(true);
+
+    try {
+      const res = await importCustomerBatchExcel(batchFile, {
+        territoryId: batchTerritoryId,
+        amCaringStaff: batchAmCaringStaff.trim(),
+        handoverBatch: batchHandoverBatch.trim(),
+        mode: batchMode,
+      });
+
+      setBatchSuccess(
+        `Xử lý thành công ${res.totalProcessed} khách hàng: tạo mới ${res.createdCount}, cập nhật ${res.updatedCount}, gỡ gán cũ ${res.clearedCount}.`
+      );
+
+      const updated = await getCustomers();
+      setData(updated);
+    } catch (err) {
+      setBatchError(err instanceof Error ? err.message : "Nhập đợt thất bại");
+    } finally {
+      setBatchLoading(false);
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -366,17 +444,32 @@ export default function CustomersPage() {
             Quản lý {CUSTOMER_GROUP_LABEL["Tự phát triển"]} và {CUSTOMER_GROUP_LABEL["Tập hiện hữu"]} được giao phụ trách
           </p>
         </div>
-        <button
-          onClick={() => {
-            setFormError(null);
-            setForm(EMPTY_FORM);
-            setShowForm(true);
-          }}
-          className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
-        >
-          <UserPlus className="h-4 w-4" />
-          <span className="btn-label">Thêm khách hàng</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setBatchError(null);
+                setBatchSuccess(null);
+                setShowBatchModal(true);
+              }}
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-vnpt bg-white px-3.5 text-xs font-bold text-vnpt shadow-xs hover:bg-vnpt/5 transition-colors"
+            >
+              <UploadCloud className="h-4 w-4" />
+              <span className="btn-label">Nhập đợt KHDN chăm</span>
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setFormError(null);
+              setForm(EMPTY_FORM);
+              setShowForm(true);
+            }}
+            className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
+          >
+            <UserPlus className="h-4 w-4" />
+            <span className="btn-label">Thêm khách hàng</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -751,6 +844,198 @@ export default function CustomersPage() {
                   className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {caringTransferring ? "Đang điều chuyển..." : "Điều chuyển"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Batch Import KHDN-chăm Modal (Task D) */}
+      {showBatchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vnpt/10 text-vnpt">
+                  <UploadCloud className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Nhập tập KHDN-chăm theo đợt
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Nhập danh sách từ Excel và phân công AM chăm sóc theo địa bàn
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBatchModal(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleBatchSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="batch-territory-select"
+                    className="mb-1 block text-xs font-semibold text-slate-600"
+                  >
+                    Địa bàn / Phường <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    id="batch-territory-select"
+                    required
+                    value={batchTerritoryId}
+                    onChange={(e) => setBatchTerritoryId(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  >
+                    {territories.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.wardName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="batch-caring-staff"
+                    className="mb-1 block text-xs font-semibold text-slate-600"
+                  >
+                    AM chăm sóc (CSKH) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="batch-caring-staff"
+                    required
+                    list="customer-staff-names"
+                    value={batchAmCaringStaff}
+                    onChange={(e) => setBatchAmCaringStaff(e.target.value)}
+                    placeholder="Chọn hoặc nhập tên AM"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="batch-handover-batch"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
+                  Mã đợt bàn giao <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  id="batch-handover-batch"
+                  required
+                  value={batchHandoverBatch}
+                  onChange={(e) => setBatchHandoverBatch(e.target.value)}
+                  placeholder="Ví dụ: DOT-2026-11 hoặc DOT-Q4-2026"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Chế độ xác lập tập <span className="text-rose-500">*</span>
+                </label>
+                <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      id="batch-mode-append"
+                      name="batch-mode"
+                      value="append"
+                      checked={batchMode === "append"}
+                      onChange={() => setBatchMode("append")}
+                      className="mt-0.5 text-vnpt focus:ring-vnpt"
+                    />
+                    <div>
+                      <span className="font-semibold text-slate-800">
+                        Thêm vào tập hiện tại (append)
+                      </span>
+                      <p className="text-[11px] text-slate-500">
+                        Thêm mới hoặc cập nhật người chăm sóc cho khách trong file. Giữ nguyên toàn bộ khách hàng cũ khác.
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 cursor-pointer pt-1 border-t border-slate-200/60">
+                    <input
+                      type="radio"
+                      id="batch-mode-replace"
+                      name="batch-mode"
+                      value="replace"
+                      checked={batchMode === "replace"}
+                      onChange={() => setBatchMode("replace")}
+                      className="mt-0.5 text-vnpt focus:ring-vnpt"
+                    />
+                    <div>
+                      <span className="font-semibold text-slate-800">
+                        Thay thế toàn bộ tập hiện tại (replace)
+                      </span>
+                      <p className="text-[11px] text-amber-700">
+                        Khách hàng thuộc phường này không có trong file sẽ bị gỡ người chăm sóc (xác lập lại tập mới).
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="batch-file-input"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
+                  File Excel danh sách khách hàng (.xlsx, .xls) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  id="batch-file-input"
+                  type="file"
+                  required
+                  accept=".xlsx,.xls"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    const f = e.target.files?.[0] || null;
+                    setBatchFile(f);
+                  }}
+                  className="w-full text-xs text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-vnpt/10 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-vnpt hover:file:bg-vnpt/20"
+                />
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Hỗ trợ các cột: Tên khách hàng, Mã số thuế/CCCD, Số điện thoại, Địa chỉ, Dịch vụ.
+                </p>
+              </div>
+
+              {batchError && (
+                <div className="flex items-start gap-2 rounded-lg bg-rose-50 p-2.5 text-xs text-rose-700">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-rose-500 mt-0.5" />
+                  <span>{batchError}</span>
+                </div>
+              )}
+
+              {batchSuccess && (
+                <div className="flex items-start gap-2 rounded-lg bg-emerald-50 p-2.5 text-xs text-emerald-700">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
+                  <span>{batchSuccess}</span>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBatchModal(false)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="submit"
+                  disabled={batchLoading}
+                  className="btn-label rounded-xl bg-vnpt px-4 py-2 text-xs font-bold text-white hover:bg-vnpt-dark disabled:opacity-60 flex items-center gap-1.5"
+                >
+                  <UploadCloud className="h-4 w-4" />
+                  <span>{batchLoading ? "Đang nhập đợt..." : "Bắt đầu nhập đợt"}</span>
                 </button>
               </div>
             </form>

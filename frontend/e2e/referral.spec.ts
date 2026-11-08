@@ -71,17 +71,15 @@ test.describe("Mã giới thiệu CTV và form liên hệ công khai", () => {
       .toContain("CTVABC123");
   });
 
-  test("to=//evil.com và to=https://evil.com đều về trang chủ, không rời domain", async ({
-    page,
-  }) => {
-    for (const to of ["//evil.com", "https://evil.com", "/\\evil.com", "javascript:alert(1)"]) {
-      await page.goto(`/ref/x?to=${encodeURIComponent(to)}`);
+  for (const to of ["//evil.com", "https://evil.com", "/\\evil.com", "javascript:alert(1)"]) {
+    test(`redirect chống XSS: to=${to} về trang chủ, không rời domain`, async ({ page }) => {
+      await page.goto(`/ref/x?to=${encodeURIComponent(to)}`, { waitUntil: "domcontentloaded" });
       await page.waitForURL((url) => url.pathname === "/" && url.hostname === "localhost", {
         timeout: 10_000,
       });
       expect(new URL(page.url()).hostname, `to=${to}`).toBe("localhost");
-    }
-  });
+    });
+  }
 
   test("gửi form khi chưa có ref → lead kênh Online", async ({ page, request }) => {
     await useDistinctForwardedIp(page);

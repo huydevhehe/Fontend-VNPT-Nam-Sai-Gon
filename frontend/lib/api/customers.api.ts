@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, apiFetchRaw } from "./client";
 import {
   CustomerRecord,
   CustomerType,
@@ -107,4 +107,69 @@ export function transferCaringStaff(
     method: "PATCH",
     body: JSON.stringify({ newCaringStaff, handoverBatch: handoverBatch || undefined }),
   });
+}
+
+export interface BatchCustomerInputItem {
+  identityCode?: string;
+  phone?: string;
+  name: string;
+  type?: string;
+  address?: string;
+  services?: string;
+}
+
+export interface ImportCustomerBatchInput {
+  territoryId: string;
+  amCaringStaff: string;
+  handoverBatch: string;
+  mode: "append" | "replace";
+  customers: BatchCustomerInputItem[];
+}
+
+export interface ImportCustomerBatchResult {
+  createdCount: number;
+  updatedCount: number;
+  clearedCount: number;
+  totalProcessed: number;
+}
+
+export async function importCustomerBatch(
+  data: ImportCustomerBatchInput
+): Promise<ImportCustomerBatchResult> {
+  return apiFetch<ImportCustomerBatchResult>("/customers/batches", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function importCustomerBatchExcel(
+  file: File,
+  params: {
+    territoryId: string;
+    amCaringStaff: string;
+    handoverBatch: string;
+    mode: "append" | "replace";
+  }
+): Promise<ImportCustomerBatchResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("territoryId", params.territoryId);
+  formData.append("amCaringStaff", params.amCaringStaff);
+  formData.append("handoverBatch", params.handoverBatch);
+  formData.append("mode", params.mode);
+
+  const payload = await apiFetchRaw<{
+    success: boolean;
+    data: ImportCustomerBatchResult;
+    message?: string;
+  }>("/customers/batches/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!payload || !payload.success) {
+    throw new Error(payload?.message || "Import tập khách hàng thất bại");
+  }
+
+  return payload.data;
 }

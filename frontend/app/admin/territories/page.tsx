@@ -12,7 +12,7 @@ export default function TerritoriesPage() {
   const [data, setData] = useState<TerritoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showList, setShowList] = useState(false);
+  const [showList, setShowList] = useState(true);
 
   // State cho pattern click-to-edit số hộ dân inline trên bảng.
   const [editingId, setEditingId] = useState<string | null>(null);

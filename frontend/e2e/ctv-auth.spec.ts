@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./fixtures/auth";
-import { uniquePhone } from "./api/helpers";
+import { randomIp, uniquePhone } from "./api/helpers";
 
 function fieldByLabel(page: Page, labelText: string) {
   return page
@@ -9,6 +9,12 @@ function fieldByLabel(page: Page, labelText: string) {
 }
 
 test.describe("CTV đăng ký, Admin duyệt, đăng nhập chung (UI)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/auth/register-ctv", (route) =>
+      route.continue({ headers: { ...route.request().headers(), "x-forwarded-for": randomIp() } })
+    );
+  });
+
   test("đăng ký → chờ duyệt → Admin duyệt → CTV vào dashboard riêng", async ({ page, browser }) => {
     const suffix = Date.now();
     const username = `ctv_ui_${suffix}`;
@@ -49,16 +55,19 @@ test.describe("CTV đăng ký, Admin duyệt, đăng nhập chung (UI)", () => {
     await expect(row.getByText("Đang hoạt động")).toBeVisible({ timeout: 10_000 });
     await adminContext.close();
 
-    // (d) CTV đăng nhập → dashboard CTV
-    await page.goto("/login");
-    await page.getByLabel("Tên đăng nhập").fill(username);
-    await page.getByLabel("Mật khẩu").fill(password);
-    await page.getByRole("button", { name: "Đăng nhập" }).click();
-    await page.waitForURL("**/cong-tac-vien/dashboard", { timeout: 15_000 });
+    // (d) CTV đăng nhập → dashboard CTV trong browser context mới
+    const ctvContext = await browser.newContext();
+    const ctvPage = await ctvContext.newPage();
+    await ctvPage.goto("/login");
+    await ctvPage.getByLabel("Tên đăng nhập").fill(username);
+    await ctvPage.getByLabel("Mật khẩu").fill(password);
+    await ctvPage.getByRole("button", { name: "Đăng nhập" }).click();
+    await ctvPage.waitForURL("**/cong-tac-vien/dashboard", { timeout: 15_000, waitUntil: "domcontentloaded" });
 
     // CTV vào /admin bị đẩy về dashboard CTV
-    await page.goto("/admin/dashboard");
-    await page.waitForURL("**/cong-tac-vien/dashboard", { timeout: 15_000 });
+    await ctvPage.goto("/admin/dashboard");
+    await ctvPage.waitForURL("**/cong-tac-vien/dashboard", { timeout: 15_000, waitUntil: "domcontentloaded" });
+    await ctvContext.close();
   });
 
   test("Admin từ chối CTV → đăng nhập thấy thông báo chưa được duyệt", async ({ page, browser }) => {
@@ -85,13 +94,16 @@ test.describe("CTV đăng ký, Admin duyệt, đăng nhập chung (UI)", () => {
     await expect(row.getByText("Từ chối", { exact: true }).first()).toBeVisible({ timeout: 10_000 });
     await adminContext.close();
 
-    await page.goto("/login");
-    await page.getByLabel("Tên đăng nhập").fill(username);
-    await page.getByLabel("Mật khẩu").fill(password);
-    await page.getByRole("button", { name: "Đăng nhập" }).click();
-    await expect(page.getByText("Đăng ký cộng tác viên chưa được duyệt")).toBeVisible({
+    const ctvContext = await browser.newContext();
+    const ctvPage = await ctvContext.newPage();
+    await ctvPage.goto("/login");
+    await ctvPage.getByLabel("Tên đăng nhập").fill(username);
+    await ctvPage.getByLabel("Mật khẩu").fill(password);
+    await ctvPage.getByRole("button", { name: "Đăng nhập" }).click();
+    await expect(ctvPage.getByText("Đăng ký cộng tác viên chưa được duyệt")).toBeVisible({
       timeout: 10_000,
     });
+    await ctvContext.close();
   });
 
   test("form đăng ký hiện lỗi 409 từ server khi trùng tên đăng nhập, và chặn dữ liệu sai ở client", async ({
@@ -131,14 +143,23 @@ test.describe("CTV đăng ký, Admin duyệt, đăng nhập chung (UI)", () => {
     await page.getByRole("button", { name: "Đã lưu mật khẩu" }).click();
     await expect(page.getByText(`${code}@Vnpt2026`)).toHaveCount(0);
 
-    // Nhân viên mới đăng nhập được bằng mật khẩu mặc định
+    // Nhân viên mới đăng nhập bằng mật khẩu mặc định → bị bắt đổi mật khẩu lần đầu (Task B)
     const fresh = await page.context().browser()!.newContext();
     const freshPage = await fresh.newPage();
     await freshPage.goto("/login");
     await freshPage.getByLabel("Tên đăng nhập").fill(code);
     await freshPage.getByLabel("Mật khẩu").fill(`${code}@Vnpt2026`);
     await freshPage.getByRole("button", { name: "Đăng nhập" }).click();
-    await freshPage.waitForURL("**/admin/dashboard", { timeout: 15_000 });
+    await freshPage.waitForURL("**/doi-mat-khau", { timeout: 15_000, waitUntil: "domcontentloaded" });
+
+    // Đổi mật khẩu sang mật khẩu mới
+    const newPass = `${code}@NewPass123`;
+    await freshPage.getByLabel("Mật khẩu hiện tại").fill(`${code}@Vnpt2026`);
+    await freshPage.locator("#newPassword").fill(newPass);
+    await freshPage.locator("#confirmPassword").fill(newPass);
+    await freshPage.getByRole("button", { name: "Cập nhật mật khẩu" }).click();
+
+    await freshPage.waitForURL("**/admin/dashboard", { timeout: 15_000, waitUntil: "domcontentloaded" });
     await fresh.close();
   });
 });

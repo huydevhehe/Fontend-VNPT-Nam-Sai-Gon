@@ -17,8 +17,9 @@ test.describe("Admin sửa số tiền hoa hồng trên UI", () => {
     // Modal hiển thị
     await expect(page.getByRole("heading", { name: "Sửa số tiền hoa hồng" })).toBeVisible();
 
-    const uniqueAmount = 456000;
+    const uniqueAmount = 400000 + Math.floor((Date.now() % 90000) / 1000) * 1000;
     const testNote = `Ghi chú test UI ${Date.now()}`;
+    const formattedAmount = `${uniqueAmount.toLocaleString("vi-VN")} ₫`;
 
     const amountInput = page.getByPlaceholder("Nhập số tiền...");
     await amountInput.fill(String(uniqueAmount));
@@ -32,13 +33,13 @@ test.describe("Admin sửa số tiền hoa hồng trên UI", () => {
     await expect(page.getByRole("heading", { name: "Sửa số tiền hoa hồng" })).toBeHidden({ timeout: 10_000 });
 
     // Kiểm tra số tiền mới hiển thị trong bảng
-    await expect(page.getByText("456.000 ₫")).toBeVisible();
+    await expect(page.getByText(formattedAmount).first()).toBeVisible();
     await expect(page.getByText(testNote)).toBeVisible();
 
     // Reload lại trang để kiểm tra ghi DB thật
     await page.reload();
     await expect(page.locator("table")).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("456.000 ₫")).toBeVisible();
+    await expect(page.getByText(formattedAmount).first()).toBeVisible();
     await expect(page.getByText(testNote)).toBeVisible();
   });
 

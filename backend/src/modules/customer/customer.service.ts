@@ -1,10 +1,34 @@
-import { query, run } from "../../database/db.js";
+import { query, run, transaction } from "../../database/db.js";
 import { CUSTOMER_GROUPS } from "../../constants/org.js";
 
 const GROUP_LABEL: Record<string, string> = {
   "Tự phát triển": "KH PTM",
   "Tập hiện hữu": "KHDN chăm",
 };
+
+export interface BatchCustomerItem {
+  identityCode?: string;
+  phone?: string;
+  name: string;
+  type?: string;
+  address?: string;
+  services?: string;
+}
+
+export interface CustomerBatchInput {
+  territoryId: string;
+  amCaringStaff: string;
+  handoverBatch: string;
+  mode: "append" | "replace";
+  customers: BatchCustomerItem[];
+}
+
+export interface CustomerBatchResult {
+  createdCount: number;
+  updatedCount: number;
+  clearedCount: number;
+  totalProcessed: number;
+}
 
 export class CustomerServiceError extends Error {
   constructor(
@@ -176,5 +200,144 @@ export class CustomerService {
     );
 
     return { success: true, message: `Đã điều chuyển AM chăm sóc cho ${staffName}` };
+  }
+
+  async importBatch(
+    payload: CustomerBatchInput,
+    operator: string = "Admin"
+  ): Promise<CustomerBatchResult> {
+    const { territoryId, amCaringStaff, handoverBatch, mode, customers } = payload ?? {};
+
+    if (!territoryId) {
+      throw new CustomerServiceError("Vui lòng chọn Địa bàn / Phường", 400);
+    }
+    const terrRows = await query("SELECT id FROM territories WHERE id = ?", [territoryId]);
+    if (terrRows.length === 0) {
+      throw new CustomerServiceError("Địa bàn không tồn tại", 404);
+    }
+
+    if (!amCaringStaff || typeof amCaringStaff !== "string") {
+      throw new CustomerServiceError("Vui lòng chọn AM chăm sóc (CSKH)", 400);
+    }
+    const staffRows = await query("SELECT id FROM staff WHERE name = ?", [amCaringStaff.trim()]);
+    if (staffRows.length === 0) {
+      throw new CustomerServiceError("Nhân viên phụ trách chăm sóc không tồn tại", 400);
+    }
+
+    const batch = typeof handoverBatch === "string" ? handoverBatch.trim() : "";
+    if (!batch) {
+      throw new CustomerServiceError("Vui lòng nhập mã đợt giao", 400);
+    }
+
+    if (mode !== "append" && mode !== "replace") {
+      throw new CustomerServiceError("Chế độ nhập không hợp lệ (phải là append hoặc replace)", 400);
+    }
+
+    if (!Array.isArray(customers) || customers.length === 0) {
+      throw new CustomerServiceError("Danh sách khách hàng không được để trống", 400);
+    }
+
+    return transaction(async (tx) => {
+      let createdCount = 0;
+      let updatedCount = 0;
+      let clearedCount = 0;
+      const touchedCustomerIds = new Set<string>();
+
+      for (let i = 0; i < customers.length; i++) {
+        const item = customers[i];
+        const name = typeof item.name === "string" ? item.name.trim() : "";
+        if (!name) {
+          throw new CustomerServiceError(`Dòng ${i + 1}: Tên khách hàng không được để trống`, 400);
+        }
+
+        const idCode = typeof item.identityCode === "string" ? item.identityCode.trim() : "";
+        const phone = typeof item.phone === "string" ? item.phone.trim() : "";
+
+        // Tìm khách đã tồn tại: ưu tiên identityCode rồi đến phone
+        let existing: any = null;
+        if (idCode) {
+          const rows = await tx.query("SELECT * FROM customers WHERE identity_code = ?", [idCode]);
+          if (rows.length > 0) existing = rows[0];
+        }
+        if (!existing && phone) {
+          const rows = await tx.query("SELECT * FROM customers WHERE phone = ?", [phone]);
+          if (rows.length > 0) existing = rows[0];
+        }
+
+        if (existing) {
+          await tx.run(
+            `UPDATE customers SET 
+              am_caring_staff = ?,
+              handover_batch = ?,
+              handover_date = ?,
+              territory_id = ?
+            WHERE id = ?`,
+            [amCaringStaff.trim(), batch, today(), territoryId, existing.id]
+          );
+          touchedCustomerIds.add(existing.id);
+          updatedCount++;
+        } else {
+          const newId = `KH-B-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`;
+          await tx.run(
+            `INSERT INTO customers (
+              id, name, identity_code, type, customer_group, phone, address, services,
+              am_staff, am_caring_staff, handover_batch, handover_date, territory_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              newId,
+              name,
+              idCode || null,
+              item.type || "Doanh nghiệp",
+              "Tập hiện hữu",
+              phone || null,
+              item.address || null,
+              item.services || "Internet Fiber",
+              amCaringStaff.trim(),
+              amCaringStaff.trim(),
+              batch,
+              today(),
+              territoryId,
+            ]
+          );
+          touchedCustomerIds.add(newId);
+          createdCount++;
+        }
+      }
+
+      // Nếu mode === "replace": xác lập lại tập — gỡ người chăm sóc của khách cũ cùng territoryId
+      if (mode === "replace") {
+        const terrOld = await tx.query<any>(
+          "SELECT id FROM customers WHERE territory_id = ? AND customer_group = 'Tập hiện hữu'",
+          [territoryId]
+        );
+        for (const row of terrOld) {
+          if (!touchedCustomerIds.has(row.id)) {
+            await tx.run(
+              "UPDATE customers SET am_caring_staff = NULL WHERE id = ?",
+              [row.id]
+            );
+            clearedCount++;
+          }
+        }
+      }
+
+      // Ghi audit log
+      await tx.run(
+        'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+        [
+          `LOG-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          operator,
+          `Nhập đợt KHDN chăm (${mode})`,
+          `Đợt: ${batch}, Phường: ${territoryId}, AM chăm sóc: ${amCaringStaff.trim()}. Tạo mới: ${createdCount}, Cập nhật: ${updatedCount}, Xác lập lại (gỡ gán cũ): ${clearedCount}`,
+        ]
+      );
+
+      return {
+        createdCount,
+        updatedCount,
+        clearedCount,
+        totalProcessed: customers.length,
+      };
+    });
   }
 }

@@ -291,7 +291,7 @@ export default function CommissionsPage() {
                 <input
                   type="number"
                   min="0"
-                  step="1000"
+                  step="any"
                   required
                   value={amountInput}
                   onChange={(e) => setAmountInput(e.target.value)}

@@ -24,6 +24,6 @@ export async function loginAs(page: Page, role: Role): Promise<void> {
   await page.getByLabel("Mật khẩu").fill(account.password);
   await page.getByRole("button", { name: "Đăng nhập" }).click();
 
-  await page.waitForURL("**/admin/dashboard");
+  await page.waitForURL("**/admin/dashboard", { waitUntil: "domcontentloaded" });
   await expect(page.locator("h1").first()).toBeVisible();
 }

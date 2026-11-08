@@ -71,17 +71,24 @@ test.describe("Mã giới thiệu CTV và form liên hệ công khai", () => {
       .toContain("CTVABC123");
   });
 
-  test("to=//evil.com và to=https://evil.com đều về trang chủ, không rời domain", async ({
-    page,
-  }) => {
-    for (const to of ["//evil.com", "https://evil.com", "/\\evil.com", "javascript:alert(1)"]) {
-      await page.goto(`/ref/x?to=${encodeURIComponent(to)}`);
+  // Mỗi giá trị `to` độc hại là một test riêng (không phải vòng lặp trên
+  // cùng 1 trang): nhiều lần page.goto liên tiếp trên cùng page đôi khi đua
+  // với chính router.replace() phía client của lần điều hướng trước, khiến
+  // page.goto ném net::ERR_ABORTED hoặc waitForURL treo — tách test để mỗi
+  // lần có page sạch, không còn đua.
+  for (const to of ["//evil.com", "https://evil.com", "/\\evil.com", "javascript:alert(1)"]) {
+    test(`to=${to} về trang chủ, không rời domain`, async ({ page }) => {
+      // Trang /ref/[code] tự chuyển hướng gần như ngay lập tức bằng router
+      // phía client; đôi khi điều hướng đó "vượt mặt" chính page.goto và
+      // khiến nó ném net::ERR_ABORTED dù trang vẫn hoạt động đúng — bỏ qua
+      // lỗi điều hướng của goto, chỉ xác nhận nơi dừng cuối cùng.
+      await page.goto(`/ref/x?to=${encodeURIComponent(to)}`).catch(() => {});
       await page.waitForURL((url) => url.pathname === "/" && url.hostname === "localhost", {
         timeout: 10_000,
       });
       expect(new URL(page.url()).hostname, `to=${to}`).toBe("localhost");
-    }
-  });
+    });
+  }
 
   test("gửi form khi chưa có ref → lead kênh Online", async ({ page, request }) => {
     await useDistinctForwardedIp(page);

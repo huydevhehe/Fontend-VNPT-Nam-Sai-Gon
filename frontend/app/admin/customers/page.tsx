@@ -54,7 +54,6 @@ export default function CustomersPage() {
 
   const [transferTarget, setTransferTarget] = useState<CustomerRecord | null>(null);
   const [transferStaff, setTransferStaff] = useState("");
-  const [transferBatch, setTransferBatch] = useState("");
   const [groupFilter, setGroupFilter] = useState<CustomerGroup | "">("");
   const [staffNames, setStaffNames] = useState<string[]>([]);
   const [transferError, setTransferError] = useState<string | null>(null);
@@ -691,11 +690,16 @@ export default function CustomersPage() {
 
             <form onSubmit={handleCaringTransfer} className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                <label
+                  htmlFor="caring-transfer-staff"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
                   AM chăm sóc mới
                 </label>
                 <input
+                  id="caring-transfer-staff"
                   required
+                  list="customer-staff-names"
                   value={caringTransferStaff}
                   onChange={(e) => setCaringTransferStaff(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
@@ -703,10 +707,14 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                <label
+                  htmlFor="caring-transfer-batch"
+                  className="mb-1 block text-xs font-semibold text-slate-600"
+                >
                   Mã đợt giao
                 </label>
                 <input
+                  id="caring-transfer-batch"
                   value={caringTransferBatch}
                   onChange={(e) => setCaringTransferBatch(e.target.value)}
                   placeholder="Tuỳ chọn, ví dụ DOT-2026-01"

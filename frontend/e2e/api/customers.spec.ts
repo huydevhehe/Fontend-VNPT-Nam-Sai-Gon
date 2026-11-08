@@ -37,10 +37,50 @@ test.describe("API khách hàng PTM / KHDN chăm", () => {
     return (body.data as any[]).find((c) => c.id === id);
   }
 
-  test("điều chuyển KH Tự phát triển giữ nguyên người phát triển, chỉ đổi người chăm", async ({
+  // Ghi chú: điều chuyển AM bán hàng (/transfer) và AM chăm sóc
+  // (/transfer-caring) giờ là 2 API độc lập (không còn tự động theo nhóm KH
+  // qua 1 API gộp) — FE quyết định nút nào hiện theo nhóm KH, test ở đây gọi
+  // đúng API cho từng vai trò.
+  test("đổi AM chăm sóc không ảnh hưởng AM bán hàng (KH Tự phát triển)", async ({
     request,
   }) => {
     const created = await createCustomer(request, "Tự phát triển", `PTM-${Date.now()}`);
+    expect(created.status()).toBe(201);
+    const id = (await created.json()).data.id;
+
+    const res = await request.patch(`${API_URL}/customers/${id}/transfer-caring`, {
+      headers: bearer(token),
+      data: { newCaringStaff: STAFF_NEW },
+    });
+    expect(res.status()).toBe(200);
+
+    const row = await findCustomer(request, id);
+    expect(row.am_staff).toBe(STAFF_OLD);
+    expect(row.am_caring_staff).toBe(STAFF_NEW);
+  });
+
+  test("đổi AM chăm sóc KH Tập hiện hữu kèm đợt giao ghi đúng đợt + ngày giao", async ({
+    request,
+  }) => {
+    const created = await createCustomer(request, "Tập hiện hữu", `KHDN-${Date.now()}`);
+    expect(created.status()).toBe(201);
+    const id = (await created.json()).data.id;
+    const batch = `DOT-${Date.now()}`;
+
+    const res = await request.patch(`${API_URL}/customers/${id}/transfer-caring`, {
+      headers: bearer(token),
+      data: { newCaringStaff: STAFF_NEW, handoverBatch: batch },
+    });
+    expect(res.status()).toBe(200);
+
+    const row = await findCustomer(request, id);
+    expect(row.am_caring_staff).toBe(STAFF_NEW);
+    expect(row.handover_batch).toBe(batch);
+    expect(row.handover_date).toBe(today());
+  });
+
+  test("đổi AM bán hàng (sales AM) không ảnh hưởng AM chăm sóc", async ({ request }) => {
+    const created = await createCustomer(request, "Tập hiện hữu", `SALES-${Date.now()}`);
     expect(created.status()).toBe(201);
     const id = (await created.json()).data.id;
 
@@ -51,29 +91,8 @@ test.describe("API khách hàng PTM / KHDN chăm", () => {
     expect(res.status()).toBe(200);
 
     const row = await findCustomer(request, id);
-    expect(row.am_staff).toBe(STAFF_OLD);
-    expect(row.am_caring_staff).toBe(STAFF_NEW);
-  });
-
-  test("điều chuyển KH Tập hiện hữu đổi cả hai người và ghi đợt giao + ngày giao", async ({
-    request,
-  }) => {
-    const created = await createCustomer(request, "Tập hiện hữu", `KHDN-${Date.now()}`);
-    expect(created.status()).toBe(201);
-    const id = (await created.json()).data.id;
-    const batch = `DOT-${Date.now()}`;
-
-    const res = await request.patch(`${API_URL}/customers/${id}/transfer`, {
-      headers: bearer(token),
-      data: { newStaff: STAFF_NEW, handoverBatch: batch },
-    });
-    expect(res.status()).toBe(200);
-
-    const row = await findCustomer(request, id);
     expect(row.am_staff).toBe(STAFF_NEW);
-    expect(row.am_caring_staff).toBe(STAFF_NEW);
-    expect(row.handover_batch).toBe(batch);
-    expect(row.handover_date).toBe(today());
+    expect(row.am_caring_staff).toBe(STAFF_OLD);
   });
 
   test("tạo KH kèm handoverBatch lưu đợt giao và ngày giao", async ({ request }) => {
@@ -162,9 +181,9 @@ test.describe("API khách hàng PTM / KHDN chăm", () => {
     const id = (await created.json()).data.id;
     const batch = `DOT-AUD-${Date.now()}`;
 
-    const res = await request.patch(`${API_URL}/customers/${id}/transfer`, {
+    const res = await request.patch(`${API_URL}/customers/${id}/transfer-caring`, {
       headers: bearer(token),
-      data: { newStaff: STAFF_NEW, handoverBatch: batch },
+      data: { newCaringStaff: STAFF_NEW, handoverBatch: batch },
     });
     expect(res.status()).toBe(200);
 

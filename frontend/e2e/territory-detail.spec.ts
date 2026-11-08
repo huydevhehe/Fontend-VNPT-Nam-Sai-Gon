@@ -15,8 +15,17 @@ function trackSevereConsoleErrors(page: Page): string[] {
   return errors;
 }
 
+async function showTerritoryList(page: Page) {
+  const table = page.locator("table tbody tr").first();
+  if (await table.isVisible().catch(() => false)) return;
+  const toggle = page.getByRole("button", { name: /Xem danh sách phường/ });
+  await toggle.click();
+  await expect(table).toBeVisible();
+}
+
 async function openTanHung(page: Page) {
   await page.goto("/admin/territories");
+  await showTerritoryList(page);
   await page.getByRole("link", { name: "Tân Hưng" }).click();
   await expect(page).toHaveURL(/\/admin\/territories\/TB-01$/);
 }
@@ -93,6 +102,7 @@ test.describe("Chi tiết Phường", () => {
   test("[admin] sửa số hộ dân inline trên danh sách vẫn hoạt động", async ({ page }) => {
     await loginAs(page, "admin");
     await page.goto("/admin/territories");
+    await showTerritoryList(page);
     const row = page.locator("table tbody tr", { hasText: "Tân Mỹ" });
     const button = row.getByTitle("Nhấn để sửa số hộ dân");
     await expect(button).toBeVisible();

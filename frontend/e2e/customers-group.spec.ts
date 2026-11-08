@@ -55,13 +55,14 @@ test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
 
     await filter.selectOption({ label: LABEL_KHDN });
 
-    // Điều chuyển KHDN chăm kèm mã đợt giao
+    // Điều chuyển AM chăm sóc (CSKH) của KHDN chăm kèm mã đợt giao — việc
+    // "bàn giao" đợt giờ gắn với nút Điều chuyển CSKH, tách khỏi Điều chuyển AM.
     await expect(page.getByRole("columnheader", { name: "Đợt giao" })).toBeVisible();
-    await khdnRow.getByRole("button", { name: "Điều chuyển" }).click();
+    await khdnRow.getByRole("button", { name: "Điều chuyển CSKH" }).click();
 
-    const modal = page.locator("div.fixed", { hasText: "Điều chuyển AM phụ trách" });
+    const modal = page.locator("div.fixed", { hasText: "Điều chuyển AM chăm sóc (CSKH)" });
     await expect(modal).toBeVisible();
-    await modal.getByLabel("AM phụ trách mới").fill("Phạm Thanh Hà");
+    await modal.getByLabel("AM chăm sóc mới").fill("Phạm Thanh Hà");
     await modal.getByLabel("Mã đợt giao").fill(batch);
     await modal.getByRole("button", { name: "Điều chuyển", exact: true }).click();
 

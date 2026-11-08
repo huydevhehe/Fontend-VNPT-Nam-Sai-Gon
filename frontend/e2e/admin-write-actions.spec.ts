@@ -198,9 +198,12 @@ test.describe("Hành động ghi dữ liệu trên trang Admin (Task 3-10)", () 
 
     await loginAs(page, "admin");
     await page.goto("/admin/territories");
-
+    const territoryListToggle = page.getByRole("button", { name: /Xem danh sách phường/ });
     const firstRow = page.locator("table tbody tr").first();
-    await expect(firstRow).toBeVisible();
+    if (!(await firstRow.isVisible().catch(() => false))) {
+      await territoryListToggle.click();
+      await expect(firstRow).toBeVisible();
+    }
 
     const editButton = firstRow.locator("button").first();
     const originalValueText = (await editButton.innerText()).trim();
@@ -221,6 +224,10 @@ test.describe("Hành động ghi dữ liệu trên trang Admin (Task 3-10)", () 
     // Reload để xác nhận backend thực sự không lưu giá trị âm.
     await page.reload();
     const firstRowAfterReload = page.locator("table tbody tr").first();
+    if (!(await firstRowAfterReload.isVisible().catch(() => false))) {
+      await territoryListToggle.click();
+      await expect(firstRowAfterReload).toBeVisible();
+    }
     await expect(
       firstRowAfterReload.locator("button").first()
     ).toHaveText(originalValueText);

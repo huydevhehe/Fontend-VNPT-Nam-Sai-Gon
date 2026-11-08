@@ -2,7 +2,17 @@
 
 **Trạng thái:** Đã push lên nhánh `dev` (commit mới nhất `8b99db5`, chứa cả commit code `cd9c63e` và chính file báo cáo này). Backend và frontend đều **build sạch**. Test node:test (backend) chạy thật trên Postgres: **22/22 pass**. Test Playwright (UI + API) **chưa kịp chạy lại lần cuối trên nhánh `dev` đã push** vì hết token giữa chừng — phiên AI tiếp theo phải chạy lại toàn bộ trước khi báo cho Huy là xong.
 
-**Việc phiên AI tiếp theo cần làm, theo đúng thứ tự:** (1) đọc hết file này, (2) làm đủ 8 bước ở Mục 4 bên dưới (test + build + lint + kiểm dấu vết AI), (3) **viết một file báo cáo hoàn tất mới** tên `docs/superpowers/plans/REPORT-ctv-phuong-done.md` (lưu ý thư mục `docs/` bị gitignore nên file này sẽ không tự lên git — nếu muốn commit thì phải `git add -f`; nếu không cần commit, cứ để Huy đọc trực tiếp trên máy) ghi rõ: đã chạy lệnh gì, kết quả bao nhiêu pass/fail thật (dán log thật, không tóm tắt), có sửa gì thêm không và sửa gì, rồi mới merge `dev` vào `main` theo Mục 4 bước 7. **Không merge nếu còn test fail.**
+**Việc phiên AI tiếp theo cần làm, theo đúng thứ tự:**
+1. Đọc hết file này.
+2. Làm đủ 8 bước ở Mục 4 bên dưới (test + build + lint + kiểm dấu vết AI) — **test phải chạy thật, dán log thật**, không được suy diễn hay báo "chắc là pass".
+3. Chỉ khi TẤT CẢ xanh thật: merge `dev` vào `main` + push `main` (bước 7, Mục 4).
+4. **Sau khi merge xong, tạo 1 file Word (.docx) trình bày đẹp** để báo cáo cho anh Khoa (dùng skill docx có sẵn trong Claude Code). Nội dung bắt buộc có:
+   - **Anh Khoa yêu cầu gì** — tóm tắt đúng ý từ Mục 1 bên dưới (4 điểm Khoa yêu cầu), viết lại cho dễ đọc, không chép nguyên văn file này.
+   - **Mình đã làm những gì** — liệt kê tính năng đã hoàn thành (Mục 2), nói rõ bằng ngôn ngữ nghiệp vụ (không thuật ngữ kỹ thuật khó hiểu), có thể kèm vài ảnh chụp màn hình tính năng thật nếu tiện (trang CTV, trang chi tiết Phường, trang khách hàng PTM/KHDN) — chụp bằng Playwright hoặc trình duyệt sau khi server test đang chạy.
+   - **Hướng giải quyết so với dự án thực tế hiện tại** — giải thích vì sao chọn cách này (dùng chung dữ liệu CRM thay vì tách hệ thống riêng cho CTV, cấu trúc Phường cố định theo đúng yêu cầu, v.v.), và nói rõ phần đã gộp thêm với việc của phiên AI khác (thống kê Phường, tách API điều chuyển khách hàng) để Khoa biết đây không phải trùng lặp mà là bổ sung.
+   - Kết quả test (số liệu pass/fail thật, không cần chi tiết kỹ thuật, chỉ cần dòng tổng kết "đã kiểm tra toàn bộ, X/X pass").
+   - Các việc còn để ngỏ cần Khoa xác nhận (tỷ lệ hoa hồng CTV 10%, mật khẩu mặc định nhân viên mới, quy tắc điều chuyển khách hàng — xem lại nội dung quyết định đã chốt trong plan gốc nếu cần).
+   - File docx lưu lại đường dẫn rõ ràng, báo cho Huy đường dẫn file đó.
 
 ---
 

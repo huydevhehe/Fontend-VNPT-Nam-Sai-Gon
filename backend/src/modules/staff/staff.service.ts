@@ -125,9 +125,11 @@ export class StaffService {
       [id, data.code, data.name, data.role, data.territory, 0, 0, 0, 0, 0, 0, USER_STATUS.ACTIVE, data.email]
     );
 
+    const mustChangePassword = customPassword ? false : true;
+
     try {
       await run(
-        "INSERT INTO users (id, username, password_hash, name, role, email, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO users (id, username, password_hash, name, role, email, status, created_at, must_change_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
           `USR-${data.code}`,
           data.code,
@@ -137,6 +139,7 @@ export class StaffService {
           data.email || null,
           USER_STATUS.ACTIVE,
           new Date().toISOString(),
+          mustChangePassword,
         ]
       );
     } catch (error) {

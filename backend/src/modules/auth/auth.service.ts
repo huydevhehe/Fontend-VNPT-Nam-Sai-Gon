@@ -13,6 +13,7 @@ export interface UserRow {
   role: string;
   email: string | null;
   status: string | null;
+  must_change_password?: boolean | null;
 }
 
 export interface AuthUser {
@@ -20,6 +21,7 @@ export interface AuthUser {
   name: string;
   role: string;
   email: string | null;
+  mustChangePassword: boolean;
 }
 
 /** Lỗi nghiệp vụ mang sẵn mã HTTP để controller trả đúng status. */
@@ -90,8 +92,41 @@ export class AuthService {
 
     return {
       token,
-      user: { id: user.id, name: user.name, role: user.role, email: user.email },
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        email: user.email,
+        mustChangePassword: Boolean(user.must_change_password),
+      },
     };
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const rows = await query<UserRow>("SELECT * FROM users WHERE id = ?", [userId]);
+    const user = rows[0];
+    if (!user) {
+      throw new HttpError(404, "Không tìm thấy người dùng");
+    }
+
+    const isValid = await bcrypt.compare(String(currentPassword), user.password_hash);
+    if (!isValid) {
+      throw new HttpError(401, "Mật khẩu hiện tại không đúng");
+    }
+
+    const nextPass = typeof newPassword === "string" ? newPassword : "";
+    if (nextPass.length < 8) {
+      throw new HttpError(400, "Mật khẩu mới phải có ít nhất 8 ký tự");
+    }
+    if (nextPass.length > 72) {
+      throw new HttpError(400, "Mật khẩu mới tối đa 72 ký tự");
+    }
+
+    const newHash = await bcrypt.hash(nextPass, 10);
+    await run(
+      "UPDATE users SET password_hash = ?, must_change_password = FALSE WHERE id = ?",
+      [newHash, userId]
+    );
   }
 
   async registerCtv(input: RegisterCtvInput): Promise<{ message: string }> {
@@ -163,7 +198,13 @@ export class AuthService {
     if (!user) {
       return null;
     }
-    return { id: user.id, name: user.name, role: user.role, email: user.email };
+    return {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      email: user.email,
+      mustChangePassword: Boolean(user.must_change_password),
+    };
   }
 
   private async assertAccountFree(username: string, phone: string): Promise<void> {

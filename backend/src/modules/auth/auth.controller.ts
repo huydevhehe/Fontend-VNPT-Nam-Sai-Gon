@@ -102,3 +102,27 @@ authRouter.get("/me", requireAuth, async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+// POST /api/auth/change-password — đổi mật khẩu (requireAuth)
+authRouter.post("/change-password", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Chưa đăng nhập" });
+      return;
+    }
+    const { currentPassword, newPassword } = req.body ?? {};
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ success: false, message: "Vui lòng nhập mật khẩu hiện tại và mật khẩu mới" });
+      return;
+    }
+    await authService.changePassword(userId, currentPassword, newPassword);
+    res.json({ success: true, message: "Đổi mật khẩu thành công" });
+  } catch (error: any) {
+    if (error instanceof HttpError) {
+      res.status(error.status).json({ success: false, message: error.message });
+      return;
+    }
+    res.status(400).json({ success: false, message: error.message || "Không thể đổi mật khẩu" });
+  }
+});

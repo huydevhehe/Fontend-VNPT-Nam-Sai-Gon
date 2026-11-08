@@ -17,6 +17,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (username: string, password: string) => Promise<AuthUser>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -84,6 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const me = await getMe();
+    setUser(me);
+  }, []);
+
   useEffect(() => {
     window.addEventListener("vnpt:unauthorized", logout);
     return () => {
@@ -92,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [logout]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

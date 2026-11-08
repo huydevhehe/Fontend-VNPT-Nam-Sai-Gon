@@ -22,6 +22,7 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("users", "approved_at", "TEXT");
   await ensureColumn("users", "approved_by", "TEXT");
   await ensureColumn("users", "created_at", "TEXT");
+  await ensureColumn("users", "must_change_password", "BOOLEAN DEFAULT FALSE");
   await run("CREATE UNIQUE INDEX IF NOT EXISTS ux_users_referral_code ON users(referral_code)");
 
   await ensureColumn("customers", "handover_batch", "TEXT");

@@ -44,6 +44,7 @@ leadRouter.post("/", requireAuth, async (req: Request, res: Response) => {
       demandDescription,
       territoryId,
       referredByCtvId,
+      note,
     } = req.body ?? {};
 
     const lead = await leadService.create({
@@ -57,6 +58,7 @@ leadRouter.post("/", requireAuth, async (req: Request, res: Response) => {
       demandDescription,
       territoryId,
       referredByCtvId,
+      note,
     });
 
     res.status(201).json({ success: true, data: lead });
@@ -85,6 +87,19 @@ leadRouter.patch("/:id/assignment", requireAuth, async (req: Request, res: Respo
     const { staffName, territoryId } = req.body ?? {};
 
     const lead = await leadService.assign(id, { staffName, territoryId });
+    res.json({ success: true, data: lead });
+  } catch (error: any) {
+    sendError(res, error, 400);
+  }
+});
+
+// PATCH /api/leads/:id/note
+leadRouter.patch("/:id/note", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { note } = req.body ?? {};
+
+    const lead = await leadService.updateNote(id, typeof note === "string" ? note : "");
     res.json({ success: true, data: lead });
   } catch (error: any) {
     sendError(res, error, 400);

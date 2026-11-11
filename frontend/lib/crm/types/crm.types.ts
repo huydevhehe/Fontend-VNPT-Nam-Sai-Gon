@@ -92,6 +92,7 @@ export interface LeadRecord {
   territoryId?: string;
   referredByCtvId?: string;
   referredByCtvName?: string;
+  note?: string | null;
 }
 
 // 6. Contract

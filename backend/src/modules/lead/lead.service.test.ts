@@ -149,3 +149,74 @@ test("create rejects unknown staffName", async () => {
     }
   );
 });
+
+test("updateNote saves trimmed note", async () => {
+  const service = new LeadService();
+  const suffix = Date.now();
+  const lead = await service.create({
+    customerName: `KH Note Test ${suffix}`,
+    phone: `090${String(suffix).slice(-7)}`,
+    group: "Lead KH mới",
+    channel: "Online",
+    staffName: "Nguyễn Thị Tình",
+  });
+
+  const updated = await (service as any).updateNote(lead.id, "   Ghi chú khách hàng quan tâm gói Fiber   ");
+  assert.equal(updated.note, "Ghi chú khách hàng quan tâm gói Fiber");
+});
+
+test("updateNote with empty string clears note", async () => {
+  const service = new LeadService();
+  const suffix = Date.now();
+  const lead = await service.create({
+    customerName: `KH Note Empty ${suffix}`,
+    phone: `090${String(suffix).slice(-7)}`,
+    group: "Lead KH mới",
+    channel: "Online",
+    staffName: "Nguyễn Thị Tình",
+  });
+
+  await (service as any).updateNote(lead.id, "Ghi chú ban đầu");
+  const cleared = await (service as any).updateNote(lead.id, "   ");
+  assert.equal(cleared.note, null);
+});
+
+test("updateNote rejects 1001 chars", async () => {
+  const service = new LeadService();
+  const suffix = Date.now();
+  const lead = await service.create({
+    customerName: `KH Note Long ${suffix}`,
+    phone: `090${String(suffix).slice(-7)}`,
+    group: "Lead KH mới",
+    channel: "Online",
+    staffName: "Nguyễn Thị Tình",
+  });
+
+  const longNote = "a".repeat(1001);
+  await assert.rejects(
+    async () => {
+      await (service as any).updateNote(lead.id, longNote);
+    },
+    (err: any) => {
+      assert.ok(err instanceof LeadServiceError);
+      assert.equal(err.message, "Ghi chú tối đa 1000 ký tự");
+      assert.equal(err.status, 400);
+      return true;
+    }
+  );
+});
+
+test("updateNote 404 on unknown id", async () => {
+  const service = new LeadService();
+  await assert.rejects(
+    async () => {
+      await (service as any).updateNote("UNKNOWN-LEAD-ID-999", "Một ghi chú");
+    },
+    (err: any) => {
+      assert.ok(err instanceof LeadServiceError);
+      assert.equal(err.message, "Không tìm thấy Lead");
+      assert.equal(err.status, 404);
+      return true;
+    }
+  );
+});

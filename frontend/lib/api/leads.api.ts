@@ -49,3 +49,10 @@ export function assignLead(id: string, input: LeadAssignmentInput): Promise<Lead
     body: JSON.stringify(input),
   });
 }
+
+export function updateLeadNote(id: string, note: string): Promise<LeadRecord> {
+  return apiFetch<LeadRecord>(`/leads/${id}/note`, {
+    method: "PATCH",
+    body: JSON.stringify({ note }),
+  });
+}

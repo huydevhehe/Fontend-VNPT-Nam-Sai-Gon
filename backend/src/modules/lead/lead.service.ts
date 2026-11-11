@@ -31,6 +31,7 @@ export interface LeadRow {
   territory_id: string | null;
   referred_by_ctv_id: string | null;
   referred_by_ctv_name: string | null;
+  note?: string | null;
 }
 
 export interface LeadRecordDto {
@@ -46,6 +47,7 @@ export interface LeadRecordDto {
   territoryId: string | null;
   referredByCtvId: string | null;
   referredByCtvName: string | null;
+  note: string | null;
 }
 
 export interface CreateLeadInput {
@@ -59,6 +61,7 @@ export interface CreateLeadInput {
   demandDescription?: string;
   territoryId?: string | null;
   referredByCtvId?: string | null;
+  note?: string | null;
 }
 
 export interface LeadAssignmentInput {
@@ -101,6 +104,7 @@ function toLeadRecord(row: LeadRow): LeadRecordDto {
     territoryId: row.territory_id ?? null,
     referredByCtvId: row.referred_by_ctv_id ?? null,
     referredByCtvName: row.referred_by_ctv_name ?? null,
+    note: row.note ?? null,
   };
 }
 
@@ -209,12 +213,21 @@ export class LeadService {
       await assertTerritoryExists(territoryId);
     }
 
+    let note: string | null = null;
+    if (data.note !== undefined && data.note !== null) {
+      const trimmed = String(data.note).trim();
+      if (trimmed.length > 1000) {
+        throw new LeadServiceError("Ghi chú tối đa 1000 ký tự", 400);
+      }
+      note = trimmed.length > 0 ? trimmed : null;
+    }
+
     const id = `LEAD-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     await run(
       `INSERT INTO leads (
         id, customer_name, phone, group_name, channel, staff_name,
-        status, expected_value, demand_description, territory_id, referred_by_ctv_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        status, expected_value, demand_description, territory_id, referred_by_ctv_id, note
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.customerName,
@@ -227,6 +240,7 @@ export class LeadService {
         data.demandDescription || "",
         territoryId,
         referredByCtvId,
+        note,
       ]
     );
 
@@ -300,6 +314,26 @@ export class LeadService {
       [...params, id]
     );
 
+    return (await findLeadById(id))!;
+  }
+
+  async updateNote(id: string, noteInput: string): Promise<LeadRecordDto> {
+    if (typeof noteInput !== "string") {
+      throw new LeadServiceError("Ghi chú phải là chuỗi", 400);
+    }
+    const trimmed = noteInput.trim();
+    if (trimmed.length > 1000) {
+      throw new LeadServiceError("Ghi chú tối đa 1000 ký tự", 400);
+    }
+    const existing = await query("SELECT id FROM leads WHERE id = ?", [id]);
+    if (!existing.length) {
+      throw new LeadServiceError("Không tìm thấy Lead", 404);
+    }
+    const note = trimmed.length > 0 ? trimmed : null;
+    await run(
+      "UPDATE leads SET note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [note, id]
+    );
     return (await findLeadById(id))!;
   }
 }

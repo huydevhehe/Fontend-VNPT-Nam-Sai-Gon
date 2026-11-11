@@ -99,39 +99,52 @@ async function markMigrationApplied(key: string): Promise<void> {
   ]);
 }
 
+/**
+ * Chạy một hàm migration duy nhất một lần dựa trên key.
+ * Trả về true nếu lần này có chạy fn, false nếu key đã được áp dụng trước đó.
+ * Chỉ đánh dấu thành công nếu fn chạy không ném lỗi.
+ */
+export async function runMigrationOnce(
+  key: string,
+  fn: () => Promise<void>
+): Promise<boolean> {
+  if (await isMigrationApplied(key)) {
+    return false;
+  }
+  await fn();
+  await markMigrationApplied(key);
+  return true;
+}
+
 // Chạy sau seed: chỉ điền các giá trị còn NULL, không ghi đè dữ liệu đã gán tay.
 // Chỉ chạy MỘT LẦN (đánh dấu bằng schema_migrations_state) để một giá trị
 // NULL mà admin chủ động gán (gỡ phường) không bị điền lại ở lần khởi động
 // server sau.
 export async function backfillRelations(): Promise<void> {
-  if (await isMigrationApplied(TERRITORY_BACKFILL_KEY)) {
-    return;
-  }
+  await runMigrationOnce(TERRITORY_BACKFILL_KEY, async () => {
+    await run(`
+      UPDATE leads
+      SET territory_id = (
+        SELECT t.id
+        FROM staff s
+        JOIN territories t ON t.ward_name = s.territory
+        WHERE s.name = leads.staff_name
+        LIMIT 1
+      )
+      WHERE territory_id IS NULL
+    `);
 
-  await run(`
-    UPDATE leads
-    SET territory_id = (
-      SELECT t.id
-      FROM staff s
-      JOIN territories t ON t.ward_name = s.territory
-      WHERE s.name = leads.staff_name
-      LIMIT 1
-    )
-    WHERE territory_id IS NULL
-  `);
-
-  await run(`
-    UPDATE contracts
-    SET territory_id = (
-      SELECT l.territory_id
-      FROM leads l
-      WHERE l.customer_name = contracts.customer_name
-        AND l.territory_id IS NOT NULL
-      ORDER BY l.id
-      LIMIT 1
-    )
-    WHERE territory_id IS NULL
-  `);
-
-  await markMigrationApplied(TERRITORY_BACKFILL_KEY);
+    await run(`
+      UPDATE contracts
+      SET territory_id = (
+        SELECT l.territory_id
+        FROM leads l
+        WHERE l.customer_name = contracts.customer_name
+          AND l.territory_id IS NOT NULL
+        ORDER BY l.id
+        LIMIT 1
+      )
+      WHERE territory_id IS NULL
+    `);
+  });
 }

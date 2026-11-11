@@ -96,9 +96,9 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
   }) => {
     const suffix = Date.now();
     const groups: Array<[string, string]> = [
-      ["Khách hàng mới", "Lead KH mới"],
-      ["Gia hạn dịch vụ", "Lead gia hạn"],
-      ["Khách hiện hữu mua thêm", "Lead bán chéo"],
+      ["Lead KH mới", "Lead KH mới"],
+      ["Lead gia hạn", "Lead gia hạn"],
+      ["Lead bán chéo DV", "Lead bán chéo DV"],
     ];
     const phones: string[] = [];
     for (const [i, [group]] of groups.entries()) {
@@ -142,7 +142,7 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
       data: {
         customerName,
         phone: `07${String(suffix).slice(-8)}`,
-        group: "Khách hàng mới",
+        group: "Lead KH mới",
         channel: "CTV giới thiệu",
         referredByCtvId: ctv.id,
         territoryId: wards[0].id,

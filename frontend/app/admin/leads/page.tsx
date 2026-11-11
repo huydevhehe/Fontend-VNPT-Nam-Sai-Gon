@@ -27,9 +27,9 @@ const LEAD_STATUSES: LeadStatus[] = [
 ];
 
 const GROUP_OPTIONS: LeadRecord["group"][] = [
-  "Khách hàng mới",
-  "Khách hiện hữu mua thêm",
-  "Gia hạn dịch vụ",
+  "Lead KH mới",
+  "Lead bán chéo DV",
+  "Lead gia hạn",
 ];
 
 const CTV_CHANNEL: LeadRecord["channel"] = "CTV giới thiệu";

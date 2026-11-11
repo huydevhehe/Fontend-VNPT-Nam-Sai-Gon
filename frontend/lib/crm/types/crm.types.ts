@@ -83,7 +83,7 @@ export interface LeadRecord {
   id: string;
   customerName: string;
   phone: string;
-  group: "Khách hàng mới" | "Khách hiện hữu mua thêm" | "Gia hạn dịch vụ";
+  group: "Lead KH mới" | "Lead gia hạn" | "Lead bán chéo DV";
   channel: "Online" | "CTV giới thiệu" | "Đối tác" | "Khách hàng hiện hữu" | "Chiến dịch";
   staffName: string;
   status: LeadStatus;

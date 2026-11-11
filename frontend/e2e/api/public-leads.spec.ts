@@ -73,7 +73,7 @@ test.describe("POST /api/public/leads", () => {
     expect(lead, "lead phải được tạo").toBeTruthy();
     expect(lead!.channel).toBe("Online");
     expect(lead!.staffName).toBe("Chưa phân công");
-    expect(lead!.group).toBe("Khách hàng mới");
+    expect(lead!.group).toBe("Lead KH mới");
     expect(lead!.phone).toBe(phone);
     expect(lead!.expectedValue).toBe(0);
     expect(lead!.demandDescription).toBe("Cần tư vấn gói cước cáp quang");

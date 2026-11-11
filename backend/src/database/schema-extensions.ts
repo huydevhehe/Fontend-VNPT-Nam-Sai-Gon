@@ -1,4 +1,5 @@
 import { query, run } from "./db.js";
+import { LEAD_GROUP_RENAMES } from "../constants/org.js";
 
 const IDENTIFIER_PATTERN = /^[a-z_]+$/;
 
@@ -80,6 +81,12 @@ export async function applySchemaExtensions(): Promise<void> {
       applied_at TEXT
     )
   `);
+
+  await runMigrationOnce("lead_group_rename_v1", async () => {
+    for (const [oldName, newName] of Object.entries(LEAD_GROUP_RENAMES)) {
+      await run("UPDATE leads SET group_name = ? WHERE group_name = ?", [newName, oldName]);
+    }
+  });
 }
 
 const TERRITORY_BACKFILL_KEY = "territory_backfill_v1";

@@ -415,11 +415,11 @@ async function seedLeads() {
   console.log("[Database] Seeding dữ liệu Lead & Cơ hội...");
 
   const leads = [
-    ["LEAD-01", "Công ty TNHH Thương mại Minh Phát", "0909123456", "Khách hàng mới", "Online", "Nguyễn Thị Tình", "Mới tiếp nhận", 15000000, "Cần lắp Internet Fiber cho văn phòng mới"],
-    ["LEAD-02", "Hộ kinh doanh An Bình", "0918234567", "Khách hiện hữu mua thêm", "Khách hàng hiện hữu", "Nguyễn Đức Tiến", "Đã liên hệ", 5000000, "Muốn nâng cấp gói Internet hiện tại"],
-    ["LEAD-03", "Công ty Cổ phần Xây dựng Đại Thành", "0987345678", "Gia hạn dịch vụ", "Đối tác", "Nguyễn Thị Huyền Trang", "Đang tư vấn", 8500000, "Gia hạn hóa đơn điện tử VNPT Invoice"],
-    ["LEAD-04", "Nguyễn Văn An", "0932456789", "Khách hàng mới", "Chiến dịch", "Phạm Thanh Hà", "Chốt thành công", 3200000, "Đăng ký Internet Fiber & MyTV"],
-    ["LEAD-05", "Hộ kinh doanh Phát Đạt", "0977567890", "Khách hiện hữu mua thêm", "Online", "Nguyễn Lê Vi", "Thất bại", 12000000, "Quan tâm lắp camera an ninh iAlert"],
+    ["LEAD-01", "Công ty TNHH Thương mại Minh Phát", "0909123456", "Lead KH mới", "Online", "Nguyễn Thị Tình", "Mới tiếp nhận", 15000000, "Cần lắp Internet Fiber cho văn phòng mới"],
+    ["LEAD-02", "Hộ kinh doanh An Bình", "0918234567", "Lead bán chéo DV", "Khách hàng hiện hữu", "Nguyễn Đức Tiến", "Đã liên hệ", 5000000, "Muốn nâng cấp gói Internet hiện tại"],
+    ["LEAD-03", "Công ty Cổ phần Xây dựng Đại Thành", "0987345678", "Lead gia hạn", "Đối tác", "Nguyễn Thị Huyền Trang", "Đang tư vấn", 8500000, "Gia hạn hóa đơn điện tử VNPT Invoice"],
+    ["LEAD-04", "Nguyễn Văn An", "0932456789", "Lead KH mới", "Chiến dịch", "Phạm Thanh Hà", "Chốt thành công", 3200000, "Đăng ký Internet Fiber & MyTV"],
+    ["LEAD-05", "Hộ kinh doanh Phát Đạt", "0977567890", "Lead bán chéo DV", "Online", "Nguyễn Lê Vi", "Thất bại", 12000000, "Quan tâm lắp camera an ninh iAlert"],
   ];
   for (const l of leads) {
     await run(

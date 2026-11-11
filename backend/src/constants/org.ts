@@ -13,7 +13,17 @@ export const USER_STATUS = {
 
 export const LEAD_CHANNELS = ["Online", "CTV giới thiệu", "Khách hàng hiện hữu", "Đối tác", "Chiến dịch"] as const;
 
-export const LEAD_GROUPS = ["Khách hàng mới", "Khách hiện hữu mua thêm", "Gia hạn dịch vụ"] as const;
+export const LEAD_GROUPS = [
+  "Lead KH mới",
+  "Lead gia hạn",
+  "Lead bán chéo DV",
+] as const;
+
+export const LEAD_GROUP_RENAMES: Record<string, string> = {
+  "Khách hàng mới": "Lead KH mới",
+  "Gia hạn dịch vụ": "Lead gia hạn",
+  "Khách hiện hữu mua thêm": "Lead bán chéo DV",
+};
 
 export const CUSTOMER_GROUPS = ["Tự phát triển", "Tập hiện hữu"] as const;
 

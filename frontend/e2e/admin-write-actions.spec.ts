@@ -159,8 +159,9 @@ test.describe("Hành động ghi dữ liệu trên trang Admin (Task 3-10)", () 
 
     await fieldByLabel(page, "Tên khách hàng / Đầu mối").fill(customerName);
     await fieldByLabel(page, "Số điện thoại").fill(phone);
-    await fieldByLabel(page, "AM Phụ trách").fill("AM E2E Test");
-    await fieldByLabel(page, "Giá trị dự kiến (₫)").fill("5000000");
+    // "AM Phụ trách" là <select> (dropdown AM + "🎲 Ngẫu nhiên"), không phải input.
+    // "Giá trị dự kiến (₫)" đã bị bỏ khỏi form tạo (Đợt 1, Task 3) nên không còn điền ở đây.
+    await fieldByLabel(page, "AM Phụ trách").selectOption("Nguyễn Thị Tình");
 
     await page.getByRole("button", { name: "Tạo Lead", exact: true }).click();
     await expect(

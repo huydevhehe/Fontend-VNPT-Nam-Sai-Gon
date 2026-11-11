@@ -106,7 +106,7 @@ test("create with RANDOM_STAFF_TOKEN picks an active AM", async () => {
   assert.equal(lead.staffName, activeAmRows[0].name);
 });
 
-test("create with RANDOM_STAFF_TOKEN never picks inactive staff", async () => {
+test("create with RANDOM_STAFF_TOKEN never picks inactive staff (deterministic, every index)", async () => {
   const suffix = Date.now();
   const inactiveStaffName = `AM Inactive ${suffix}`;
 
@@ -115,16 +115,38 @@ test("create with RANDOM_STAFF_TOKEN never picks inactive staff", async () => {
     [`STF-INACT-${suffix}`, inactiveStaffName, `CODE-INACT-${suffix}`, "AM", "Nghỉ việc"]
   );
 
-  const service = new LeadService();
-  const lead = await service.create({
-    customerName: `KH Inactive Test ${suffix}`,
-    phone: `090${String(suffix).slice(-7)}`,
-    group: "Lead KH mới",
-    channel: "Online",
-    staffName: RANDOM_STAFF_TOKEN,
-  });
+  // Lấy đúng tập AM đang hoạt động mà service thực sự truy vấn (cùng điều kiện
+  // WHERE/ORDER BY), để biết chính xác kích thước pool N — rồi ép random() đi
+  // qua MỌI chỉ số 0..N-1. Nếu service lỡ không lọc status (bug), nhân viên
+  // "Nghỉ việc" sẽ lọt vào pool và một trong các chỉ số sẽ trả về tên đó —
+  // test này bắt được lỗi đó chắc chắn, không phụ thuộc may rủi của Math.random thật.
+  const activeAmRows = await query<{ name: string }>(
+    `SELECT name FROM staff WHERE status = 'Đang hoạt động' AND role IN ('AM', 'AM Bán chăm') ORDER BY name`
+  );
+  const poolSize = activeAmRows.length;
+  assert.ok(poolSize > 0, "Cần có ít nhất 1 AM đang hoạt động để test có ý nghĩa");
+  assert.ok(
+    !activeAmRows.some((r) => r.name === inactiveStaffName),
+    "Nhân viên vừa tạo phải là 'Nghỉ việc', không được xuất hiện trong pool AM đang hoạt động"
+  );
 
-  assert.notEqual(lead.staffName, inactiveStaffName);
+  for (let index = 0; index < poolSize; index += 1) {
+    // random() trả về giá trị sao cho Math.floor(random() * poolSize) === index.
+    const service = new LeadService({ random: () => index / poolSize });
+    const lead = await service.create({
+      customerName: `KH Inactive Test ${suffix}-${index}`,
+      phone: `09${String(suffix).slice(-7)}${index}`,
+      group: "Lead KH mới",
+      channel: "Online",
+      staffName: RANDOM_STAFF_TOKEN,
+    });
+
+    assert.notEqual(lead.staffName, inactiveStaffName, `Chỉ số ${index}/${poolSize} không được chọn nhân viên nghỉ việc`);
+    assert.ok(
+      activeAmRows.some((r) => r.name === lead.staffName),
+      `Chỉ số ${index}/${poolSize} phải chọn đúng tên trong pool AM đang hoạt động, nhận được "${lead.staffName}"`
+    );
+  }
 });
 
 test("create rejects unknown staffName", async () => {
@@ -161,7 +183,7 @@ test("updateNote saves trimmed note", async () => {
     staffName: "Nguyễn Thị Tình",
   });
 
-  const updated = await (service as any).updateNote(lead.id, "   Ghi chú khách hàng quan tâm gói Fiber   ");
+  const updated = await service.updateNote(lead.id, "   Ghi chú khách hàng quan tâm gói Fiber   ");
   assert.equal(updated.note, "Ghi chú khách hàng quan tâm gói Fiber");
 });
 
@@ -176,8 +198,8 @@ test("updateNote with empty string clears note", async () => {
     staffName: "Nguyễn Thị Tình",
   });
 
-  await (service as any).updateNote(lead.id, "Ghi chú ban đầu");
-  const cleared = await (service as any).updateNote(lead.id, "   ");
+  await service.updateNote(lead.id, "Ghi chú ban đầu");
+  const cleared = await service.updateNote(lead.id, "   ");
   assert.equal(cleared.note, null);
 });
 
@@ -195,7 +217,7 @@ test("updateNote rejects 1001 chars", async () => {
   const longNote = "a".repeat(1001);
   await assert.rejects(
     async () => {
-      await (service as any).updateNote(lead.id, longNote);
+      await service.updateNote(lead.id, longNote);
     },
     (err: any) => {
       assert.ok(err instanceof LeadServiceError);
@@ -210,7 +232,7 @@ test("updateNote 404 on unknown id", async () => {
   const service = new LeadService();
   await assert.rejects(
     async () => {
-      await (service as any).updateNote("UNKNOWN-LEAD-ID-999", "Một ghi chú");
+      await service.updateNote("UNKNOWN-LEAD-ID-999", "Một ghi chú");
     },
     (err: any) => {
       assert.ok(err instanceof LeadServiceError);

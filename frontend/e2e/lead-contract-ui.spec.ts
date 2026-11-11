@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import * as fs from "fs";
 import { loginAs } from "./fixtures/auth";
 import { ADMIN, API_URL, apiLogin, bearer, createApprovedCtv } from "./api/helpers";
 
@@ -92,12 +93,25 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     await expect(reloaded).toContainText("CTV E2E Test");
   });
 
-  test("tạo lead để AM Ngẫu nhiên thì bảng hiển thị một AM hợp lệ (không phải __RANDOM__)", async ({
+  test("tạo lead để AM Ngẫu nhiên thì bảng hiển thị một AM đang hoạt động thật (không phải __RANDOM__)", async ({
     page,
+    request,
   }) => {
     const suffix = Date.now();
     const customerName = `KH Random AM ${suffix}`;
     const phone = `09${String(suffix).slice(-8)}`;
+
+    // Lấy danh sách AM đang hoạt động thật từ API (không hardcode tên — dữ liệu
+    // seed có thể đổi), để so khớp với tên được gán ngẫu nhiên cho lead.
+    const activeAmNames = await request
+      .get(`${API_URL}/staff`, { headers: bearer(token) })
+      .then((res) => res.json())
+      .then((body) =>
+        (body.data as Array<{ name: string; role: string; status: string }>)
+          .filter((s) => s.status === "Đang hoạt động" && (s.role === "AM" || s.role === "AM Bán chăm"))
+          .map((s) => s.name)
+      );
+    expect(activeAmNames.length).toBeGreaterThan(0);
 
     await loginAs(page, "admin");
     await page.goto("/admin/leads");
@@ -119,7 +133,9 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     await expect(row).toHaveCount(1);
     const rowText = await row.innerText();
     expect(rowText).not.toContain("__RANDOM__");
-    await expect(row.getByRole("button", { name: "Phân công" })).toBeVisible();
+    // AM thực sự được gán phải là MỘT trong các AM đang hoạt động thật.
+    const matchedAm = activeAmNames.find((name) => rowText.includes(name));
+    expect(matchedAm, `Không tìm thấy AM hợp lệ trong hàng: "${rowText}"`).toBeTruthy();
   });
 
   test("nhãn loại lead hiển thị Lead KH mới / Lead gia hạn / Lead bán chéo", async ({
@@ -274,6 +290,29 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     expect(count).toBeGreaterThanOrEqual(1);
     for (let i = 0; i < count; i++) {
       await expect(rows.nth(i)).toContainText("Chốt thành công");
+    }
+
+    // Với bộ lọc đang chọn ở trên, xuất CSV: file tải về phải chỉ chứa đúng
+    // các dòng đang hiển thị sau khi lọc (không phải toàn bộ dữ liệu chưa lọc).
+    const rowCountAfterFilter = count;
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Xuất CSV" }).click();
+    const download = await downloadPromise;
+    const downloadPath = await download.path();
+    expect(downloadPath).toBeTruthy();
+    const csvContent = fs.readFileSync(downloadPath!, "utf-8");
+
+    const BOM = "﻿";
+    const csvLines = csvContent
+      .replace(new RegExp(`^${BOM}`), "")
+      .split("\r\n")
+      .filter((line) => line.length > 0);
+    // Dòng đầu là header, các dòng sau là dữ liệu.
+    const csvDataLines = csvLines.slice(1);
+    expect(csvDataLines).toHaveLength(rowCountAfterFilter);
+    for (const line of csvDataLines) {
+      expect(line).toContain("Chốt thành công");
     }
 
     // Nhấn Xóa lọc -> filter về rỗng

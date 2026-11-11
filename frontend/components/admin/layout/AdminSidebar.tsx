@@ -15,7 +15,6 @@ import {
   UserCheck,
   UserRoundCheck,
   CheckSquare,
-  UploadCloud,
   ShieldCheck,
   Settings,
   X,
@@ -111,11 +110,6 @@ const NAV_SECTIONS = [
         name: "Công việc / Nhắc việc",
         href: "/admin/tasks",
         icon: CheckSquare,
-      },
-      {
-        name: "Import / Export",
-        href: "/admin/data-transfer",
-        icon: UploadCloud,
       },
       {
         name: "Tài khoản & Phân quyền",

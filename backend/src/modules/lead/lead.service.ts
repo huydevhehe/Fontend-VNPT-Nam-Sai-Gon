@@ -1,5 +1,13 @@
 import { query, run } from "../../database/db.js";
-import { LEAD_CHANNELS, LEAD_GROUPS, ROLES, USER_STATUS } from "../../constants/org.js";
+import {
+  ACTIVE_AM_ROLES,
+  LEAD_CHANNELS,
+  LEAD_GROUPS,
+  RANDOM_STAFF_TOKEN,
+  ROLES,
+  UNASSIGNED_STAFF,
+  USER_STATUS,
+} from "../../constants/org.js";
 
 export class LeadServiceError extends Error {
   constructor(
@@ -23,6 +31,7 @@ export interface LeadRow {
   territory_id: string | null;
   referred_by_ctv_id: string | null;
   referred_by_ctv_name: string | null;
+  note?: string | null;
 }
 
 export interface LeadRecordDto {
@@ -38,6 +47,7 @@ export interface LeadRecordDto {
   territoryId: string | null;
   referredByCtvId: string | null;
   referredByCtvName: string | null;
+  note: string | null;
 }
 
 export interface CreateLeadInput {
@@ -47,10 +57,11 @@ export interface CreateLeadInput {
   channel: string;
   staffName: string;
   status?: string;
-  expectedValue: number;
+  expectedValue?: number;
   demandDescription?: string;
   territoryId?: string | null;
   referredByCtvId?: string | null;
+  note?: string | null;
 }
 
 export interface LeadAssignmentInput {
@@ -93,6 +104,7 @@ function toLeadRecord(row: LeadRow): LeadRecordDto {
     territoryId: row.territory_id ?? null,
     referredByCtvId: row.referred_by_ctv_id ?? null,
     referredByCtvName: row.referred_by_ctv_name ?? null,
+    note: row.note ?? null,
   };
 }
 
@@ -108,7 +120,17 @@ async function assertTerritoryExists(territoryId: string): Promise<void> {
   }
 }
 
+export interface LeadServiceOptions {
+  random?: () => number;
+}
+
 export class LeadService {
+  private readonly random: () => number;
+
+  constructor(options?: LeadServiceOptions) {
+    this.random = options?.random ?? Math.random;
+  }
+
   async getAll(): Promise<LeadRecordDto[]> {
     const rows = await query<LeadRow>(`${LEAD_SELECT} ORDER BY l.created_at DESC`);
     return rows.map(toLeadRecord);
@@ -135,16 +157,39 @@ export class LeadService {
       throw new LeadServiceError("Nhóm cơ hội không hợp lệ", 400);
     }
 
-    if (typeof data.expectedValue !== "number" || Number.isNaN(data.expectedValue)) {
+    const expectedValue = data.expectedValue === undefined ? 0 : Number(data.expectedValue);
+    if (typeof expectedValue !== "number" || Number.isNaN(expectedValue)) {
       throw new LeadServiceError("Giá trị dự kiến phải là một số hợp lệ", 400);
     }
 
-    if (data.expectedValue < 0) {
+    if (expectedValue < 0) {
       throw new LeadServiceError("Giá trị dự kiến không được âm", 400);
     }
 
     if (data.status !== undefined && !LEAD_STATUSES.includes(data.status as (typeof LEAD_STATUSES)[number])) {
       throw new LeadServiceError("Trạng thái không hợp lệ", 400);
+    }
+
+    let staffName = String(data.staffName).trim();
+    if (!staffName) {
+      throw new LeadServiceError("Thiếu thông tin bắt buộc để tạo Lead", 400);
+    }
+
+    if (staffName === RANDOM_STAFF_TOKEN) {
+      const amRows = await query<{ name: string }>(
+        `SELECT name FROM staff WHERE status = 'Đang hoạt động' AND role IN (?, ?) ORDER BY name`,
+        [ACTIVE_AM_ROLES[0], ACTIVE_AM_ROLES[1]]
+      );
+      if (!amRows.length) {
+        throw new LeadServiceError("Không có nhân viên AM đang hoạt động để chia ngẫu nhiên", 400);
+      }
+      const index = Math.floor(this.random() * amRows.length);
+      staffName = amRows[index].name;
+    } else if (staffName !== UNASSIGNED_STAFF) {
+      const staffRows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [staffName]);
+      if (!staffRows.length) {
+        throw new LeadServiceError("Nhân viên không tồn tại", 400);
+      }
     }
 
     const referredByCtvId = data.referredByCtvId ? String(data.referredByCtvId) : null;
@@ -168,24 +213,34 @@ export class LeadService {
       await assertTerritoryExists(territoryId);
     }
 
+    let note: string | null = null;
+    if (data.note !== undefined && data.note !== null) {
+      const trimmed = String(data.note).trim();
+      if (trimmed.length > 1000) {
+        throw new LeadServiceError("Ghi chú tối đa 1000 ký tự", 400);
+      }
+      note = trimmed.length > 0 ? trimmed : null;
+    }
+
     const id = `LEAD-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     await run(
       `INSERT INTO leads (
         id, customer_name, phone, group_name, channel, staff_name,
-        status, expected_value, demand_description, territory_id, referred_by_ctv_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        status, expected_value, demand_description, territory_id, referred_by_ctv_id, note
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.customerName,
         data.phone,
         data.group,
         data.channel,
-        data.staffName,
+        staffName,
         data.status || DEFAULT_LEAD_STATUS,
-        data.expectedValue,
+        expectedValue,
         data.demandDescription || "",
         territoryId,
         referredByCtvId,
+        note,
       ]
     );
 
@@ -259,6 +314,26 @@ export class LeadService {
       [...params, id]
     );
 
+    return (await findLeadById(id))!;
+  }
+
+  async updateNote(id: string, noteInput: string): Promise<LeadRecordDto> {
+    if (typeof noteInput !== "string") {
+      throw new LeadServiceError("Ghi chú phải là chuỗi", 400);
+    }
+    const trimmed = noteInput.trim();
+    if (trimmed.length > 1000) {
+      throw new LeadServiceError("Ghi chú tối đa 1000 ký tự", 400);
+    }
+    const existing = await query("SELECT id FROM leads WHERE id = ?", [id]);
+    if (!existing.length) {
+      throw new LeadServiceError("Không tìm thấy Lead", 404);
+    }
+    const note = trimmed.length > 0 ? trimmed : null;
+    await run(
+      "UPDATE leads SET note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [note, id]
+    );
     return (await findLeadById(id))!;
   }
 }

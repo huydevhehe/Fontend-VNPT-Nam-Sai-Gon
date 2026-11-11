@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { query, run } from "../../database/db.js";
-import { LEAD_CHANNELS, ROLES, UNASSIGNED_STAFF, USER_STATUS } from "../../constants/org.js";
+import { LEAD_CHANNELS, LEAD_GROUPS, ROLES, UNASSIGNED_STAFF, USER_STATUS } from "../../constants/org.js";
 
 export const NAME_MIN = 2;
 export const NAME_MAX = 100;
@@ -86,7 +86,7 @@ export class PublicService {
         id, customer_name, phone, group_name, channel, staff_name,
         status, expected_value, demand_description, referred_by_ctv_id
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, phone, "Khách hàng mới", channel, UNASSIGNED_STAFF, "Mới tiếp nhận", 0, demand, ctvId]
+      [id, name, phone, LEAD_GROUPS[0], channel, UNASSIGNED_STAFF, "Mới tiếp nhận", 0, demand, ctvId]
     );
   }
 }

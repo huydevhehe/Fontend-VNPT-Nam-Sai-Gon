@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { Target, UserPlus, PhoneCall, CheckCircle2, TrendingUp, AlertTriangle, X } from "lucide-react";
+import { Target, UserPlus, PhoneCall, CheckCircle2, TrendingUp, AlertTriangle, X, Pencil } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { TableFilter } from "@/lib/table-filters";
 import {
   getLeads,
   createLead,
   updateLeadStatus,
   assignLead,
+  updateLeadNote,
   getCtvOptions,
   CtvOption,
 } from "@/lib/api/leads.api";
@@ -27,9 +29,9 @@ const LEAD_STATUSES: LeadStatus[] = [
 ];
 
 const GROUP_OPTIONS: LeadRecord["group"][] = [
-  "Khách hàng mới",
-  "Khách hiện hữu mua thêm",
-  "Gia hạn dịch vụ",
+  "Lead KH mới",
+  "Lead bán chéo DV",
+  "Lead gia hạn",
 ];
 
 const CTV_CHANNEL: LeadRecord["channel"] = "CTV giới thiệu";
@@ -40,10 +42,9 @@ interface LeadFormState {
   group: LeadRecord["group"];
   channel: LeadRecord["channel"];
   staffName: string;
-  expectedValue: string;
   demandDescription: string;
   referredByCtvId: string;
-  territoryId: string;
+  note: string;
 }
 
 interface AssignFormState {
@@ -56,11 +57,10 @@ const EMPTY_FORM: LeadFormState = {
   phone: "",
   group: GROUP_OPTIONS[0],
   channel: LEAD_CHANNELS[0],
-  staffName: "",
-  expectedValue: "",
+  staffName: "__RANDOM__",
   demandDescription: "",
   referredByCtvId: "",
-  territoryId: "",
+  note: "",
 };
 
 export default function LeadsPage() {
@@ -82,7 +82,18 @@ export default function LeadsPage() {
   const [assignError, setAssignError] = useState<string | null>(null);
   const [assigning, setAssigning] = useState(false);
 
+  const [noteTarget, setNoteTarget] = useState<LeadRecord | null>(null);
+  const [noteInput, setNoteInput] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteError, setNoteError] = useState<string | null>(null);
+
   const wardNameById = new Map(territories.map((t) => [t.id, t.wardName]));
+
+  const activeAms = staffList.filter(
+    (s) =>
+      (s.role === "AM" || s.role === "AM Bán chăm") &&
+      s.status === "Đang hoạt động"
+  );
 
   // Danh mục phụ (CTV, Phường, Nhân viên): lỗi ở đây không được làm hỏng bảng Lead.
   useEffect(() => {
@@ -146,10 +157,9 @@ export default function LeadsPage() {
         channel: form.channel,
         staffName: form.staffName,
         status: "Mới tiếp nhận",
-        expectedValue: Number(form.expectedValue),
         demandDescription: form.demandDescription,
-        territoryId: form.territoryId || null,
         referredByCtvId: form.channel === CTV_CHANNEL ? form.referredByCtvId || null : null,
+        note: form.note.trim() ? form.note.trim() : undefined,
       });
 
       setData((prev) => [created, ...prev]);
@@ -161,6 +171,28 @@ export default function LeadsPage() {
       );
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function openEditNote(lead: LeadRecord) {
+    setNoteTarget(lead);
+    setNoteInput(lead.note || "");
+    setNoteError(null);
+  }
+
+  async function handleSaveNote(e: FormEvent) {
+    e.preventDefault();
+    if (!noteTarget) return;
+    setSavingNote(true);
+    setNoteError(null);
+    try {
+      const updated = await updateLeadNote(noteTarget.id, noteInput);
+      setData((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      setNoteTarget(null);
+    } catch (err) {
+      setNoteError(err instanceof Error ? err.message : "Không thể cập nhật ghi chú");
+    } finally {
+      setSavingNote(false);
     }
   }
 
@@ -272,13 +304,58 @@ export default function LeadsPage() {
       ),
     },
     {
-      header: "Giá trị dự kiến",
-      accessorKey: "expectedValue",
+      header: "Ghi chú",
+      accessorKey: "note",
       cell: (item) => (
-        <span className="font-semibold text-slate-900">
-          {item.expectedValue.toLocaleString("vi-VN")} ₫
-        </span>
+        <div className="flex items-center gap-1.5 max-w-[220px]">
+          <span
+            className="truncate text-xs text-slate-600"
+            title={item.note || "Chưa có ghi chú"}
+          >
+            {item.note
+              ? item.note.length > 60
+                ? `${item.note.slice(0, 60)}…`
+                : item.note
+              : "—"}
+          </span>
+          <button
+            type="button"
+            onClick={() => openEditNote(item)}
+            title="Sửa ghi chú"
+            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex-shrink-0"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        </div>
       ),
+    },
+  ];
+
+  const leadFilters: TableFilter<LeadRecord>[] = [
+    {
+      id: "group",
+      label: "Loại lead",
+      getValue: (r) => LEAD_GROUP_LABEL[r.group] ?? r.group,
+    },
+    {
+      id: "channel",
+      label: "Kênh",
+      getValue: (r) => r.channel,
+    },
+    {
+      id: "status",
+      label: "Trạng thái",
+      getValue: (r) => r.status,
+    },
+    {
+      id: "staffName",
+      label: "Nhân viên phụ trách",
+      getValue: (r) => r.staffName,
+    },
+    {
+      id: "ward",
+      label: "Phường",
+      getValue: (r) => (r.territoryId ? wardNameById.get(r.territoryId) ?? "—" : "—"),
     },
   ];
 
@@ -354,6 +431,7 @@ export default function LeadsPage() {
           subtitle="Quản lý phễu khách hàng theo từng kênh và từng AM phụ trách"
           columns={columns}
           data={data}
+          filters={leadFilters}
           searchPlaceholder="Tìm theo tên Lead, SĐT, kênh phát triển..."
           exportFileName="vnpt_leads"
         />
@@ -402,12 +480,18 @@ export default function LeadsPage() {
                   <label className="mb-1 block text-xs font-semibold text-slate-600">
                     AM Phụ trách
                   </label>
-                  <input
-                    required
+                  <select
                     value={form.staffName}
                     onChange={(e) => setForm({ ...form, staffName: e.target.value })}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  />
+                  >
+                    <option value="__RANDOM__">🎲 Ngẫu nhiên</option>
+                    {activeAms.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -477,44 +561,27 @@ export default function LeadsPage() {
 
               <div>
                 <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Phường
+                  Nhu cầu
                 </label>
-                <select
-                  value={form.territoryId}
-                  onChange={(e) => setForm({ ...form, territoryId: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                >
-                  <option value="">— Chưa gán phường —</option>
-                  {territories.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.wardName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Giá trị dự kiến (₫)
-                </label>
-                <input
-                  required
-                  type="number"
-                  min={0}
-                  value={form.expectedValue}
-                  onChange={(e) => setForm({ ...form, expectedValue: e.target.value })}
+                <textarea
+                  value={form.demandDescription}
+                  onChange={(e) => setForm({ ...form, demandDescription: e.target.value })}
+                  rows={2}
+                  placeholder="Mô tả nhu cầu của khách hàng..."
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Nhu cầu / Ghi chú
+                  Ghi chú
                 </label>
                 <textarea
-                  value={form.demandDescription}
-                  onChange={(e) => setForm({ ...form, demandDescription: e.target.value })}
+                  maxLength={1000}
+                  value={form.note}
+                  onChange={(e) => setForm({ ...form, note: e.target.value })}
                   rows={2}
+                  placeholder="Ghi chú thêm về khách hàng (tùy chọn, tối đa 1000 ký tự)..."
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                 />
               </div>
@@ -621,6 +688,68 @@ export default function LeadsPage() {
                   className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {assigning ? "Đang lưu..." : "Lưu phân công"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Note Modal */}
+      {noteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Cập nhật Ghi chú Lead</h3>
+              <button
+                onClick={() => setNoteTarget(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="mb-3 text-xs text-slate-500">
+              Khách hàng: <span className="font-semibold text-slate-700">{noteTarget.customerName}</span> ({noteTarget.phone})
+            </p>
+
+            <form onSubmit={handleSaveNote} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Nội dung ghi chú
+                </label>
+                <textarea
+                  rows={4}
+                  maxLength={1000}
+                  value={noteInput}
+                  onChange={(e) => setNoteInput(e.target.value)}
+                  placeholder="Nhập nội dung ghi chú khi xử lý lead (tối đa 1000 ký tự)..."
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+                <div className="mt-1 text-right text-[11px] text-slate-400">
+                  {noteInput.length}/1000 ký tự
+                </div>
+              </div>
+
+              {noteError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {noteError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setNoteTarget(null)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingNote}
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {savingNote ? "Đang lưu..." : "Lưu ghi chú"}
                 </button>
               </div>
             </form>

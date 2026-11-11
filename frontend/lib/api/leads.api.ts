@@ -3,8 +3,9 @@ import { LeadRecord, LeadStatus } from "@/lib/crm/types/crm.types";
 
 export type CreateLeadInput = Omit<
   LeadRecord,
-  "id" | "referredByCtvName" | "territoryId" | "referredByCtvId"
+  "id" | "referredByCtvName" | "territoryId" | "referredByCtvId" | "expectedValue"
 > & {
+  expectedValue?: number;
   territoryId?: string | null;
   referredByCtvId?: string | null;
 };
@@ -46,5 +47,12 @@ export function assignLead(id: string, input: LeadAssignmentInput): Promise<Lead
   return apiFetch<LeadRecord>(`/leads/${id}/assignment`, {
     method: "PATCH",
     body: JSON.stringify(input),
+  });
+}
+
+export function updateLeadNote(id: string, note: string): Promise<LeadRecord> {
+  return apiFetch<LeadRecord>(`/leads/${id}/note`, {
+    method: "PATCH",
+    body: JSON.stringify({ note }),
   });
 }

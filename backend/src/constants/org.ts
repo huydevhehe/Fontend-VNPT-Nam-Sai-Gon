@@ -13,7 +13,17 @@ export const USER_STATUS = {
 
 export const LEAD_CHANNELS = ["Online", "CTV giới thiệu", "Khách hàng hiện hữu", "Đối tác", "Chiến dịch"] as const;
 
-export const LEAD_GROUPS = ["Khách hàng mới", "Khách hiện hữu mua thêm", "Gia hạn dịch vụ"] as const;
+export const LEAD_GROUPS = [
+  "Lead KH mới",
+  "Lead gia hạn",
+  "Lead bán chéo DV",
+] as const;
+
+export const LEAD_GROUP_RENAMES: Record<string, string> = {
+  "Khách hàng mới": "Lead KH mới",
+  "Gia hạn dịch vụ": "Lead gia hạn",
+  "Khách hiện hữu mua thêm": "Lead bán chéo DV",
+};
 
 export const CUSTOMER_GROUPS = ["Tự phát triển", "Tập hiện hữu"] as const;
 
@@ -27,3 +37,8 @@ export const WARD_UNITS: readonly { unit: string; positions: readonly string[] }
 export const CTV_COMMISSION_RATE = 0.1;
 
 export const UNASSIGNED_STAFF = "Chưa phân công";
+
+export const RANDOM_STAFF_TOKEN = "__RANDOM__";
+
+export const ACTIVE_AM_ROLES = [ROLES.AM, ROLES.AM_BAN_CHAM] as const;
+

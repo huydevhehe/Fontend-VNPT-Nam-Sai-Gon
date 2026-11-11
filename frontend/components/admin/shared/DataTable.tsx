@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Download } from "lucide-react";
+import { Search, Download, RotateCcw } from "lucide-react";
+import {
+  TableFilter,
+  FilterValues,
+  applyTableFilters,
+  distinctOptions,
+} from "@/lib/table-filters";
 
 export interface Column<T> {
   header: string;
@@ -15,6 +21,7 @@ interface DataTableProps<T> {
   subtitle?: string;
   columns: Column<T>[];
   data: T[];
+  filters?: TableFilter<T>[];
   searchPlaceholder?: string;
   exportFileName?: string;
   actionButton?: React.ReactNode;
@@ -25,13 +32,19 @@ export default function DataTable<T extends Record<string, any>>({
   subtitle,
   columns,
   data,
+  filters,
   searchPlaceholder = "Tìm kiếm trong bảng...",
   exportFileName = "vnpt_crm_export",
   actionButton,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterValues, setFilterValues] = useState<FilterValues>({});
 
-  const filteredData = data.filter((row) => {
+  const dataAfterFilters = filters
+    ? applyTableFilters(data, filters, filterValues)
+    : data;
+
+  const filteredData = dataAfterFilters.filter((row) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return Object.values(row).some((val) => {
@@ -41,8 +54,16 @@ export default function DataTable<T extends Record<string, any>>({
     });
   });
 
+  const hasActiveFilter = Object.values(filterValues).some(
+    (v) => v !== "" && v !== undefined
+  );
+
+  const handleClearFilters = () => {
+    setFilterValues({});
+  };
+
   const handleExportCsv = () => {
-    if (!data.length) return;
+    if (!filteredData.length) return;
 
     const headers = columns.map((col) => `"${col.header.replace(/"/g, '""')}"`);
     const rows = filteredData.map((row) =>
@@ -91,6 +112,42 @@ export default function DataTable<T extends Record<string, any>>({
               className="h-9 w-48 rounded-xl border border-slate-200 bg-slate-50/70 pr-3 pl-8 text-xs text-slate-800 transition-all focus:border-blue-500 focus:bg-white focus:outline-hidden sm:w-60"
             />
           </div>
+
+          {/* Filters */}
+          {filters &&
+            filters.map((f) => {
+              const options = distinctOptions(data, f);
+              return (
+                <select
+                  key={f.id}
+                  aria-label={f.label}
+                  value={filterValues[f.id] || ""}
+                  onChange={(e) =>
+                    setFilterValues((prev) => ({ ...prev, [f.id]: e.target.value }))
+                  }
+                  className="h-9 rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 text-xs text-slate-800 transition-all focus:border-blue-500 focus:bg-white focus:outline-hidden"
+                >
+                  <option value="">Tất cả {f.label}</option>
+                  {options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              );
+            })}
+
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="flex h-9 items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+              title="Xóa tất cả bộ lọc"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Xóa lọc</span>
+            </button>
+          )}
 
           {/* Export CSV button */}
           <button

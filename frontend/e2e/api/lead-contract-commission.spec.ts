@@ -32,7 +32,7 @@ test.describe("API Lead / Hợp đồng / Hoa hồng gắn CTV và Phường", (
     return {
       customerName: `KH Lead API ${uniq()}`,
       phone: "0912345678",
-      group: "Khách hàng mới",
+      group: "Lead KH mới",
       channel: "Online",
       staffName: STAFF_A,
       expectedValue: 1000000,

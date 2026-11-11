@@ -95,3 +95,22 @@ test("[am] không được phép tạo Nhân viên qua API (phân quyền 403)",
 
   expect(response.status()).toBe(403);
 });
+
+test("sidebar không có menu Import / Export; Quản lý nợ và Gia hạn trả trước vẫn có nút import", async ({
+  page,
+}) => {
+  await loginAs(page, "admin");
+  await page.goto("/admin/dashboard");
+
+  // Sidebar không có link text 'Import / Export'
+  const sidebar = page.locator("aside");
+  await expect(sidebar.getByText("Import / Export")).toHaveCount(0);
+
+  // Trang Quản lý nợ có nút import
+  await page.goto("/admin/debt-management");
+  await expect(page.getByRole("button", { name: "Import file nợ" })).toBeVisible();
+
+  // Trang Gia hạn trả trước có nút import
+  await page.goto("/admin/renewals");
+  await expect(page.getByRole("button", { name: "Import file gia hạn" })).toBeVisible();
+});

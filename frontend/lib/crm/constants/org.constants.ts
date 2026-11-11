@@ -6,9 +6,9 @@ export const CUSTOMER_GROUP_LABEL: Record<CustomerGroup, string> = {
 };
 
 export const LEAD_GROUP_LABEL: Record<LeadRecord["group"], string> = {
-  "Khách hàng mới": "Lead KH mới",
-  "Khách hiện hữu mua thêm": "Lead bán chéo",
-  "Gia hạn dịch vụ": "Lead gia hạn",
+  "Lead KH mới": "Lead KH mới",
+  "Lead bán chéo DV": "Lead bán chéo DV",
+  "Lead gia hạn": "Lead gia hạn",
 };
 
 export const LEAD_CHANNELS = ["Online", "CTV giới thiệu", "Khách hàng hiện hữu", "Đối tác", "Chiến dịch"] as const;

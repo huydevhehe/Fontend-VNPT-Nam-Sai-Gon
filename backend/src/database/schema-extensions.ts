@@ -1,4 +1,5 @@
 import { query, run } from "./db.js";
+import { LEAD_GROUP_RENAMES } from "../constants/org.js";
 
 const IDENTIFIER_PATTERN = /^[a-z_]+$/;
 
@@ -31,6 +32,7 @@ export async function applySchemaExtensions(): Promise<void> {
 
   await ensureColumn("leads", "territory_id", "TEXT");
   await ensureColumn("leads", "referred_by_ctv_id", "TEXT");
+  await ensureColumn("leads", "note", "TEXT");
 
   await ensureColumn("contracts", "territory_id", "TEXT");
   await ensureColumn("contracts", "referred_by_ctv_id", "TEXT");
@@ -80,6 +82,12 @@ export async function applySchemaExtensions(): Promise<void> {
       applied_at TEXT
     )
   `);
+
+  await runMigrationOnce("lead_group_rename_v1", async () => {
+    for (const [oldName, newName] of Object.entries(LEAD_GROUP_RENAMES)) {
+      await run("UPDATE leads SET group_name = ? WHERE group_name = ?", [newName, oldName]);
+    }
+  });
 }
 
 const TERRITORY_BACKFILL_KEY = "territory_backfill_v1";
@@ -99,39 +107,52 @@ async function markMigrationApplied(key: string): Promise<void> {
   ]);
 }
 
+/**
+ * Chạy một hàm migration duy nhất một lần dựa trên key.
+ * Trả về true nếu lần này có chạy fn, false nếu key đã được áp dụng trước đó.
+ * Chỉ đánh dấu thành công nếu fn chạy không ném lỗi.
+ */
+export async function runMigrationOnce(
+  key: string,
+  fn: () => Promise<void>
+): Promise<boolean> {
+  if (await isMigrationApplied(key)) {
+    return false;
+  }
+  await fn();
+  await markMigrationApplied(key);
+  return true;
+}
+
 // Chạy sau seed: chỉ điền các giá trị còn NULL, không ghi đè dữ liệu đã gán tay.
 // Chỉ chạy MỘT LẦN (đánh dấu bằng schema_migrations_state) để một giá trị
 // NULL mà admin chủ động gán (gỡ phường) không bị điền lại ở lần khởi động
 // server sau.
 export async function backfillRelations(): Promise<void> {
-  if (await isMigrationApplied(TERRITORY_BACKFILL_KEY)) {
-    return;
-  }
+  await runMigrationOnce(TERRITORY_BACKFILL_KEY, async () => {
+    await run(`
+      UPDATE leads
+      SET territory_id = (
+        SELECT t.id
+        FROM staff s
+        JOIN territories t ON t.ward_name = s.territory
+        WHERE s.name = leads.staff_name
+        LIMIT 1
+      )
+      WHERE territory_id IS NULL
+    `);
 
-  await run(`
-    UPDATE leads
-    SET territory_id = (
-      SELECT t.id
-      FROM staff s
-      JOIN territories t ON t.ward_name = s.territory
-      WHERE s.name = leads.staff_name
-      LIMIT 1
-    )
-    WHERE territory_id IS NULL
-  `);
-
-  await run(`
-    UPDATE contracts
-    SET territory_id = (
-      SELECT l.territory_id
-      FROM leads l
-      WHERE l.customer_name = contracts.customer_name
-        AND l.territory_id IS NOT NULL
-      ORDER BY l.id
-      LIMIT 1
-    )
-    WHERE territory_id IS NULL
-  `);
-
-  await markMigrationApplied(TERRITORY_BACKFILL_KEY);
+    await run(`
+      UPDATE contracts
+      SET territory_id = (
+        SELECT l.territory_id
+        FROM leads l
+        WHERE l.customer_name = contracts.customer_name
+          AND l.territory_id IS NOT NULL
+        ORDER BY l.id
+        LIMIT 1
+      )
+      WHERE territory_id IS NULL
+    `);
+  });
 }

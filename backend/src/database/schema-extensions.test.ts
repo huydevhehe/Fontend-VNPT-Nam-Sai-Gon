@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 const { initDatabase, query, run } = await import("./db.js");
-const { ensureColumn } = await import("./schema-extensions.js");
+const { ensureColumn, runMigrationOnce } = await import("./schema-extensions.js");
 
 async function columnExists(table: string, column: string): Promise<boolean> {
   const rows = await query(
@@ -106,4 +106,42 @@ test("backfill runs only once: a deliberately cleared territory_id stays NULL ac
   assert.equal(await leadTerritory("LEAD-01"), null);
 
   await run("UPDATE leads SET territory_id = 'TB-01' WHERE id = 'LEAD-01'");
+});
+
+test("runMigrationOnce runs fn only once per key", async () => {
+  await initDatabase();
+  const key = `test_once_${Date.now()}`;
+  let count = 0;
+  const fn = async () => {
+    count += 1;
+  };
+
+  const first = await runMigrationOnce(key, fn);
+  assert.equal(first, true);
+  assert.equal(count, 1);
+
+  const second = await runMigrationOnce(key, fn);
+  assert.equal(second, false);
+  assert.equal(count, 1);
+});
+
+test("runMigrationOnce does not mark key when fn throws", async () => {
+  await initDatabase();
+  const key = `test_fail_${Date.now()}`;
+  const failingFn = async () => {
+    throw new Error("migration failed");
+  };
+
+  await assert.rejects(async () => {
+    await runMigrationOnce(key, failingFn);
+  }, /migration failed/);
+
+  let executed = false;
+  const normalFn = async () => {
+    executed = true;
+  };
+
+  const retry = await runMigrationOnce(key, normalFn);
+  assert.equal(retry, true);
+  assert.equal(executed, true);
 });

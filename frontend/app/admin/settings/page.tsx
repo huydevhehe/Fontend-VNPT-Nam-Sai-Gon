@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck, UserCheck, Eye, History, Lock, AlertTriangle } from "lucide-react";
+import { ShieldCheck, UserCheck, Eye, AlertTriangle } from "lucide-react";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import { TableFilter } from "@/lib/table-filters";
 import { getAuditLogs } from "@/lib/api/reports.api";

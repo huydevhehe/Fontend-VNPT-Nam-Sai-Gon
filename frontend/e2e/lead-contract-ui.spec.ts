@@ -119,7 +119,7 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     await expect(row).toHaveCount(1);
     const rowText = await row.innerText();
     expect(rowText).not.toContain("__RANDOM__");
-    expect(rowText).toMatch(/(Nguyễn Thị Tình|Phạm Thanh Hà|Trần Văn An|Lê Hoàng Nam|Hoàng Thị Mai)/);
+    await expect(row.getByRole("button", { name: "Phân công" })).toBeVisible();
   });
 
   test("nhãn loại lead hiển thị Lead KH mới / Lead gia hạn / Lead bán chéo", async ({

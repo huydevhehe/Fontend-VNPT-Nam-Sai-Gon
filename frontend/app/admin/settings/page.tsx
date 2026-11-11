@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck, UserCheck, Eye, History, Lock, AlertTriangle } from "lucide-react";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
+import { TableFilter } from "@/lib/table-filters";
 import { getAuditLogs } from "@/lib/api/reports.api";
 import { AuditLogRecord } from "@/lib/crm/types/crm.types";
 
@@ -72,6 +73,19 @@ export default function SettingsPage() {
       header: "Chi tiết thay đổi",
       accessorKey: "details",
       cell: (item) => <span className="text-slate-600">{item.details}</span>,
+    },
+  ];
+
+  const logFilters: TableFilter<AuditLogRecord>[] = [
+    {
+      id: "user",
+      label: "Người dùng thao tác",
+      getValue: (r) => r.user,
+    },
+    {
+      id: "action",
+      label: "Hành động",
+      getValue: (r) => r.action,
     },
   ];
 
@@ -154,6 +168,7 @@ export default function SettingsPage() {
           subtitle="Lưu vết người thực hiện, thời điểm và giá trị trước/sau cho mọi biến động quan trọng"
           columns={columns}
           data={logs}
+          filters={logFilters}
           searchPlaceholder="Tìm theo người dùng, hành động..."
           exportFileName="vnpt_audit_log"
         />

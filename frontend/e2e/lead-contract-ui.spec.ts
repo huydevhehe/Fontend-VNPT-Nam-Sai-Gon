@@ -235,4 +235,49 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
       /\/admin\/contracts/
     );
   });
+
+  test("chọn bộ lọc Trạng thái = Chốt thành công thì mọi dòng hiển thị đều có trạng thái đó", async ({
+    page,
+    request,
+  }) => {
+    const suffix = Date.now();
+    const wonLeadRes = await request.post(`${API_URL}/leads`, {
+      headers: bearer(token),
+      data: {
+        customerName: `KH Won Filter ${suffix}`,
+        phone: `09${String(suffix).slice(-8)}`,
+        group: "Lead KH mới",
+        channel: "Online",
+        staffName: "Nguyễn Thị Tình",
+      },
+    });
+    expect(wonLeadRes.status()).toBe(201);
+    const wonLead = (await wonLeadRes.json()).data;
+    await request.patch(`${API_URL}/leads/${wonLead.id}/status`, {
+      headers: bearer(token),
+      data: { status: "Chốt thành công" },
+    });
+
+    await loginAs(page, "admin");
+    await page.goto("/admin/leads");
+
+    const statusFilter = page.locator("select[aria-label='Trạng thái']");
+    await expect(statusFilter).toBeVisible();
+    await statusFilter.selectOption("Chốt thành công");
+
+    // Nút xóa lọc xuất hiện
+    await expect(page.getByRole("button", { name: "Xóa lọc" })).toBeVisible();
+
+    // Mọi dòng hiển thị đều có trạng thái 'Chốt thành công'
+    const rows = page.locator("table tbody tr");
+    const count = await rows.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+    for (let i = 0; i < count; i++) {
+      await expect(rows.nth(i)).toContainText("Chốt thành công");
+    }
+
+    // Nhấn Xóa lọc -> filter về rỗng
+    await page.getByRole("button", { name: "Xóa lọc" }).click();
+    await expect(statusFilter).toHaveValue("");
+  });
 });

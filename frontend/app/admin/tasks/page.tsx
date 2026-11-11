@@ -5,6 +5,7 @@ import { CheckSquare, Plus, Clock, AlertTriangle, CheckCircle2, X } from "lucide
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { TableFilter } from "@/lib/table-filters";
 import { getTasks, createTask, updateTaskStatus } from "@/lib/api/tasks.api";
 import { TaskRecord, TaskPriority, TaskStatus } from "@/lib/crm/types/crm.types";
 
@@ -166,6 +167,24 @@ export default function TasksPage() {
     },
   ];
 
+  const taskFilters: TableFilter<TaskRecord>[] = [
+    {
+      id: "assignee",
+      label: "Người phụ trách",
+      getValue: (r) => r.assignee,
+    },
+    {
+      id: "priority",
+      label: "Mức ưu tiên",
+      getValue: (r) => r.priority,
+    },
+    {
+      id: "status",
+      label: "Trạng thái",
+      getValue: (r) => r.status,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -238,6 +257,7 @@ export default function TasksPage() {
           subtitle="Hiển thị theo thứ tự ưu tiên và hạn xử lý của từng nhân viên"
           columns={columns}
           data={data}
+          filters={taskFilters}
           searchPlaceholder="Tìm theo tên công việc, khách hàng, người xử lý..."
           exportFileName="vnpt_cong_viec"
         />

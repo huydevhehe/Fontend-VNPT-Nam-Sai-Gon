@@ -5,6 +5,7 @@ import { BellRing, CheckSquare, Settings2, Clock, AlertTriangle } from "lucide-r
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
+import { TableFilter } from "@/lib/table-filters";
 import { getServices } from "@/lib/api/services.api";
 import { createTask } from "@/lib/api/tasks.api";
 import { ServiceRecord } from "@/lib/crm/types/crm.types";
@@ -146,6 +147,19 @@ export default function ServicesPage() {
     },
   ];
 
+  const serviceFilters: TableFilter<ServiceRecord>[] = [
+    {
+      id: "serviceName",
+      label: "Dịch vụ",
+      getValue: (r) => r.serviceName,
+    },
+    {
+      id: "staffName",
+      label: "Nhân viên phụ trách",
+      getValue: (r) => r.staffName,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -214,6 +228,7 @@ export default function ServicesPage() {
           subtitle="Hiển thị số ngày còn lại và cho phép tạo việc chăm sóc tức thì"
           columns={columns}
           data={data}
+          filters={serviceFilters}
           searchPlaceholder="Tìm theo tên dịch vụ, khách hàng, mã thuê bao..."
           exportFileName="vnpt_dich_vu_canh_bao"
         />

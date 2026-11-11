@@ -5,6 +5,7 @@ import { Target, UserPlus, PhoneCall, CheckCircle2, TrendingUp, AlertTriangle, X
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { TableFilter } from "@/lib/table-filters";
 import {
   getLeads,
   createLead,
@@ -330,6 +331,34 @@ export default function LeadsPage() {
     },
   ];
 
+  const leadFilters: TableFilter<LeadRecord>[] = [
+    {
+      id: "group",
+      label: "Loại lead",
+      getValue: (r) => LEAD_GROUP_LABEL[r.group] ?? r.group,
+    },
+    {
+      id: "channel",
+      label: "Kênh",
+      getValue: (r) => r.channel,
+    },
+    {
+      id: "status",
+      label: "Trạng thái",
+      getValue: (r) => r.status,
+    },
+    {
+      id: "staffName",
+      label: "Nhân viên phụ trách",
+      getValue: (r) => r.staffName,
+    },
+    {
+      id: "ward",
+      label: "Phường",
+      getValue: (r) => (r.territoryId ? wardNameById.get(r.territoryId) ?? "—" : "—"),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -402,6 +431,7 @@ export default function LeadsPage() {
           subtitle="Quản lý phễu khách hàng theo từng kênh và từng AM phụ trách"
           columns={columns}
           data={data}
+          filters={leadFilters}
           searchPlaceholder="Tìm theo tên Lead, SĐT, kênh phát triển..."
           exportFileName="vnpt_leads"
         />

@@ -40,10 +40,8 @@ interface LeadFormState {
   group: LeadRecord["group"];
   channel: LeadRecord["channel"];
   staffName: string;
-  expectedValue: string;
   demandDescription: string;
   referredByCtvId: string;
-  territoryId: string;
 }
 
 interface AssignFormState {
@@ -56,11 +54,9 @@ const EMPTY_FORM: LeadFormState = {
   phone: "",
   group: GROUP_OPTIONS[0],
   channel: LEAD_CHANNELS[0],
-  staffName: "",
-  expectedValue: "",
+  staffName: "__RANDOM__",
   demandDescription: "",
   referredByCtvId: "",
-  territoryId: "",
 };
 
 export default function LeadsPage() {
@@ -83,6 +79,12 @@ export default function LeadsPage() {
   const [assigning, setAssigning] = useState(false);
 
   const wardNameById = new Map(territories.map((t) => [t.id, t.wardName]));
+
+  const activeAms = staffList.filter(
+    (s) =>
+      (s.role === "AM" || s.role === "AM Bán chăm") &&
+      s.status === "Đang hoạt động"
+  );
 
   // Danh mục phụ (CTV, Phường, Nhân viên): lỗi ở đây không được làm hỏng bảng Lead.
   useEffect(() => {
@@ -146,9 +148,7 @@ export default function LeadsPage() {
         channel: form.channel,
         staffName: form.staffName,
         status: "Mới tiếp nhận",
-        expectedValue: Number(form.expectedValue),
         demandDescription: form.demandDescription,
-        territoryId: form.territoryId || null,
         referredByCtvId: form.channel === CTV_CHANNEL ? form.referredByCtvId || null : null,
       });
 
@@ -269,15 +269,6 @@ export default function LeadsPage() {
             );
           }}
         />
-      ),
-    },
-    {
-      header: "Giá trị dự kiến",
-      accessorKey: "expectedValue",
-      cell: (item) => (
-        <span className="font-semibold text-slate-900">
-          {item.expectedValue.toLocaleString("vi-VN")} ₫
-        </span>
       ),
     },
   ];
@@ -402,12 +393,18 @@ export default function LeadsPage() {
                   <label className="mb-1 block text-xs font-semibold text-slate-600">
                     AM Phụ trách
                   </label>
-                  <input
-                    required
+                  <select
                     value={form.staffName}
                     onChange={(e) => setForm({ ...form, staffName: e.target.value })}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  />
+                  >
+                    <option value="__RANDOM__">🎲 Ngẫu nhiên</option>
+                    {activeAms.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -474,38 +471,6 @@ export default function LeadsPage() {
                   </select>
                 </div>
               )}
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Phường
-                </label>
-                <select
-                  value={form.territoryId}
-                  onChange={(e) => setForm({ ...form, territoryId: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                >
-                  <option value="">— Chưa gán phường —</option>
-                  {territories.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.wardName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Giá trị dự kiến (₫)
-                </label>
-                <input
-                  required
-                  type="number"
-                  min={0}
-                  value={form.expectedValue}
-                  onChange={(e) => setForm({ ...form, expectedValue: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
 
               <div>
                 <label className="mb-1 block text-xs font-semibold text-slate-600">

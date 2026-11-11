@@ -1,5 +1,13 @@
 import { query, run } from "../../database/db.js";
-import { LEAD_CHANNELS, LEAD_GROUPS, ROLES, USER_STATUS } from "../../constants/org.js";
+import {
+  ACTIVE_AM_ROLES,
+  LEAD_CHANNELS,
+  LEAD_GROUPS,
+  RANDOM_STAFF_TOKEN,
+  ROLES,
+  UNASSIGNED_STAFF,
+  USER_STATUS,
+} from "../../constants/org.js";
 
 export class LeadServiceError extends Error {
   constructor(
@@ -47,7 +55,7 @@ export interface CreateLeadInput {
   channel: string;
   staffName: string;
   status?: string;
-  expectedValue: number;
+  expectedValue?: number;
   demandDescription?: string;
   territoryId?: string | null;
   referredByCtvId?: string | null;
@@ -108,7 +116,17 @@ async function assertTerritoryExists(territoryId: string): Promise<void> {
   }
 }
 
+export interface LeadServiceOptions {
+  random?: () => number;
+}
+
 export class LeadService {
+  private readonly random: () => number;
+
+  constructor(options?: LeadServiceOptions) {
+    this.random = options?.random ?? Math.random;
+  }
+
   async getAll(): Promise<LeadRecordDto[]> {
     const rows = await query<LeadRow>(`${LEAD_SELECT} ORDER BY l.created_at DESC`);
     return rows.map(toLeadRecord);
@@ -135,16 +153,39 @@ export class LeadService {
       throw new LeadServiceError("Nhóm cơ hội không hợp lệ", 400);
     }
 
-    if (typeof data.expectedValue !== "number" || Number.isNaN(data.expectedValue)) {
+    const expectedValue = data.expectedValue === undefined ? 0 : Number(data.expectedValue);
+    if (typeof expectedValue !== "number" || Number.isNaN(expectedValue)) {
       throw new LeadServiceError("Giá trị dự kiến phải là một số hợp lệ", 400);
     }
 
-    if (data.expectedValue < 0) {
+    if (expectedValue < 0) {
       throw new LeadServiceError("Giá trị dự kiến không được âm", 400);
     }
 
     if (data.status !== undefined && !LEAD_STATUSES.includes(data.status as (typeof LEAD_STATUSES)[number])) {
       throw new LeadServiceError("Trạng thái không hợp lệ", 400);
+    }
+
+    let staffName = String(data.staffName).trim();
+    if (!staffName) {
+      throw new LeadServiceError("Thiếu thông tin bắt buộc để tạo Lead", 400);
+    }
+
+    if (staffName === RANDOM_STAFF_TOKEN) {
+      const amRows = await query<{ name: string }>(
+        `SELECT name FROM staff WHERE status = 'Đang hoạt động' AND role IN (?, ?) ORDER BY name`,
+        [ACTIVE_AM_ROLES[0], ACTIVE_AM_ROLES[1]]
+      );
+      if (!amRows.length) {
+        throw new LeadServiceError("Không có nhân viên AM đang hoạt động để chia ngẫu nhiên", 400);
+      }
+      const index = Math.floor(this.random() * amRows.length);
+      staffName = amRows[index].name;
+    } else if (staffName !== UNASSIGNED_STAFF) {
+      const staffRows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [staffName]);
+      if (!staffRows.length) {
+        throw new LeadServiceError("Nhân viên không tồn tại", 400);
+      }
     }
 
     const referredByCtvId = data.referredByCtvId ? String(data.referredByCtvId) : null;
@@ -180,9 +221,9 @@ export class LeadService {
         data.phone,
         data.group,
         data.channel,
-        data.staffName,
+        staffName,
         data.status || DEFAULT_LEAD_STATUS,
-        data.expectedValue,
+        expectedValue,
         data.demandDescription || "",
         territoryId,
         referredByCtvId,

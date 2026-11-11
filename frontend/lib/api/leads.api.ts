@@ -3,8 +3,9 @@ import { LeadRecord, LeadStatus } from "@/lib/crm/types/crm.types";
 
 export type CreateLeadInput = Omit<
   LeadRecord,
-  "id" | "referredByCtvName" | "territoryId" | "referredByCtvId"
+  "id" | "referredByCtvName" | "territoryId" | "referredByCtvId" | "expectedValue"
 > & {
+  expectedValue?: number;
   territoryId?: string | null;
   referredByCtvId?: string | null;
 };

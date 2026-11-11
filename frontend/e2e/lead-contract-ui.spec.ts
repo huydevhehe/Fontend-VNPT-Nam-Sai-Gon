@@ -42,21 +42,24 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     await page.getByRole("button", { name: "Tạo Lead mới" }).click();
     await expect(page.getByRole("heading", { name: "Tạo Lead mới" })).toBeVisible();
 
+    const createModal = page.locator("div.fixed:has(h3:text-is('Tạo Lead mới'))");
+    // Popup tạo lead không còn ô Phường và Giá trị dự kiến
+    await expect(createModal.locator("label:text-is('Phường')")).toHaveCount(0);
+    await expect(createModal.locator("label:text-is('Giá trị dự kiến (₫)')")).toHaveCount(0);
+
     // Ô chọn CTV chỉ hiện khi kênh = "CTV giới thiệu"
-    await expect(fieldByLabel(page, "Cộng tác viên giới thiệu")).toHaveCount(0);
+    await expect(fieldByLabel(createModal, "Cộng tác viên giới thiệu")).toHaveCount(0);
 
-    await fieldByLabel(page, "Tên khách hàng / Đầu mối").fill(customerName);
-    await fieldByLabel(page, "Số điện thoại").fill(phone);
-    await fieldByLabel(page, "AM Phụ trách").fill("Nguyễn Thị Tình");
-    await fieldByLabel(page, "Giá trị dự kiến (₫)").fill("7000000");
-    await fieldByLabel(page, "Kênh phát triển").selectOption("CTV giới thiệu");
+    await fieldByLabel(createModal, "Tên khách hàng / Đầu mối").fill(customerName);
+    await fieldByLabel(createModal, "Số điện thoại").fill(phone);
+    await fieldByLabel(createModal, "AM Phụ trách").selectOption("Nguyễn Thị Tình");
+    await fieldByLabel(createModal, "Kênh phát triển").selectOption("CTV giới thiệu");
 
-    const ctvSelect = fieldByLabel(page, "Cộng tác viên giới thiệu");
+    const ctvSelect = fieldByLabel(createModal, "Cộng tác viên giới thiệu");
     await expect(ctvSelect).toBeVisible();
     await ctvSelect.selectOption(ctv.id);
-    await fieldByLabel(page, "Phường").selectOption(wards[0].id);
 
-    await page.getByRole("button", { name: "Tạo Lead", exact: true }).click();
+    await createModal.getByRole("button", { name: "Tạo Lead", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Tạo Lead mới" })).not.toBeVisible({
       timeout: 10_000,
     });
@@ -65,7 +68,6 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     const row = page.locator("table tbody tr", { hasText: phone });
     await expect(row).toHaveCount(1);
     await expect(row).toContainText("CTV E2E Test");
-    await expect(row).toContainText(wards[0].ward_name);
     await expect(row).toContainText("Lead KH mới");
 
     // Phân công: đổi nhân viên và phường
@@ -88,6 +90,36 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     await expect(reloaded).toContainText(STAFF_B);
     await expect(reloaded).toContainText(wards[1].ward_name);
     await expect(reloaded).toContainText("CTV E2E Test");
+  });
+
+  test("tạo lead để AM Ngẫu nhiên thì bảng hiển thị một AM hợp lệ (không phải __RANDOM__)", async ({
+    page,
+  }) => {
+    const suffix = Date.now();
+    const customerName = `KH Random AM ${suffix}`;
+    const phone = `09${String(suffix).slice(-8)}`;
+
+    await loginAs(page, "admin");
+    await page.goto("/admin/leads");
+
+    await page.getByRole("button", { name: "Tạo Lead mới" }).click();
+    const createModal = page.locator("div.fixed:has(h3:text-is('Tạo Lead mới'))");
+    await expect(createModal).toBeVisible();
+
+    // AM Phụ trách mặc định là __RANDOM__
+    await expect(fieldByLabel(createModal, "AM Phụ trách")).toHaveValue("__RANDOM__");
+
+    await fieldByLabel(createModal, "Tên khách hàng / Đầu mối").fill(customerName);
+    await fieldByLabel(createModal, "Số điện thoại").fill(phone);
+    await createModal.getByRole("button", { name: "Tạo Lead", exact: true }).click();
+    await expect(createModal).not.toBeVisible({ timeout: 10_000 });
+
+    await page.getByPlaceholder("Tìm theo tên Lead, SĐT, kênh phát triển...").fill(phone);
+    const row = page.locator("table tbody tr", { hasText: phone });
+    await expect(row).toHaveCount(1);
+    const rowText = await row.innerText();
+    expect(rowText).not.toContain("__RANDOM__");
+    expect(rowText).toMatch(/(Nguyễn Thị Tình|Phạm Thanh Hà|Trần Văn An|Lê Hoàng Nam|Hoàng Thị Mai)/);
   });
 
   test("nhãn loại lead hiển thị Lead KH mới / Lead gia hạn / Lead bán chéo", async ({

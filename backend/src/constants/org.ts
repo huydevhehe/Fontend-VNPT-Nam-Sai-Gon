@@ -37,3 +37,8 @@ export const WARD_UNITS: readonly { unit: string; positions: readonly string[] }
 export const CTV_COMMISSION_RATE = 0.1;
 
 export const UNASSIGNED_STAFF = "Chưa phân công";
+
+export const RANDOM_STAFF_TOKEN = "__RANDOM__";
+
+export const ACTIVE_AM_ROLES = [ROLES.AM, ROLES.AM_BAN_CHAM] as const;
+

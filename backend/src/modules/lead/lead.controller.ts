@@ -53,7 +53,7 @@ leadRouter.post("/", requireAuth, async (req: Request, res: Response) => {
       channel,
       staffName,
       status,
-      expectedValue: Number(expectedValue),
+      expectedValue: expectedValue !== undefined ? Number(expectedValue) : undefined,
       demandDescription,
       territoryId,
       referredByCtvId,

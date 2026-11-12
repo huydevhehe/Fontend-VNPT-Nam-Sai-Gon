@@ -174,9 +174,10 @@ test.describe("Đăng ký, duyệt và đăng nhập CTV (API)", () => {
 });
 
 test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", () => {
-  test("tạo staff mới: đăng nhập được bằng <code>@Vnpt2026 và response có initialPassword", async ({ request }) => {
+  test("tạo staff mới với password hợp lệ: đăng nhập thành công", async ({ request }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
     const code = `NV-T4-${Date.now()}`;
+    const password = "Matkhau@HopLe1";
 
     const res = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
@@ -186,58 +187,47 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
         role: "AM",
         territory: "Khu vực T4",
         email: `${code.toLowerCase()}@example.com`,
+        password,
       },
     });
     expect(res.status()).toBe(201);
     const body = (await res.json()).data;
     expect(body.code).toBe(code);
-    expect(body.initialPassword).toBe(`${code}@Vnpt2026`);
 
-    const login = await rawLogin(request, code, `${code}@Vnpt2026`);
+    const login = await rawLogin(request, code, password);
     expect(login.status()).toBe(200);
     const user = (await login.json()).data.user;
     expect(user.role).toBe("AM");
     expect(user.name).toBe("NV T4 Mặc định");
   });
 
-  test("tạo staff với password tự đặt: không có initialPassword, đăng nhập bằng mật khẩu đó", async ({ request }) => {
-    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
-    const code = `NV-T4P-${Date.now()}`;
-
-    const res = await request.post(`${API_URL}/staff`, {
-      headers: bearer(adminToken),
-      data: {
-        code,
-        name: "NV T4 Tự đặt",
-        role: "AM Bán chăm",
-        territory: "Khu vực T4",
-        email: `${code.toLowerCase()}@example.com`,
-        password: "Matkhau@Rieng1",
-      },
-    });
-    expect(res.status()).toBe(201);
-    expect((await res.json()).data.initialPassword).toBeUndefined();
-
-    expect((await rawLogin(request, code, "Matkhau@Rieng1")).status()).toBe(200);
-    expect((await rawLogin(request, code, `${code}@Vnpt2026`)).status()).toBe(401);
-  });
-
-  test("password tự đặt quá ngắn: dùng mật khẩu mặc định", async ({ request }) => {
+  test("tạo staff thiếu password hoặc quá ngắn: trả về 400", async ({ request }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
     const code = `NV-T4S-${Date.now()}`;
-    const res = await request.post(`${API_URL}/staff`, {
+    const resNoPass = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
       data: {
         code,
-        name: "NV T4 Ngắn",
+        name: "NV Thiếu Pass",
         role: "AM",
         territory: "Khu vực T4",
         email: `${code.toLowerCase()}@example.com`,
+      },
+    });
+    expect(resNoPass.status()).toBe(400);
+
+    const resShort = await request.post(`${API_URL}/staff`, {
+      headers: bearer(adminToken),
+      data: {
+        code: `${code}-2`,
+        name: "NV Pass Ngắn",
+        role: "AM",
+        territory: "Khu vực T4",
+        email: `${code.toLowerCase()}2@example.com`,
         password: "abc",
       },
     });
-    expect(res.status()).toBe(201);
-    expect((await res.json()).data.initialPassword).toBe(`${code}@Vnpt2026`);
+    expect(resShort.status()).toBe(400);
   });
 
   test("trùng username trong users trả 409 và không tạo staff", async ({ request }) => {
@@ -253,6 +243,7 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
         role: "AM",
         territory: "Khu vực T4",
         email: "dup@example.com",
+        password: "Matkhau@Dup123",
       },
     });
     expect(dup.status()).toBe(409);
@@ -272,6 +263,7 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
         role: "AM",
         territory: "Khu vực T4",
         email: "am@example.com",
+        password: "Matkhau@Am123",
       },
     });
     expect(res.status()).toBe(403);
@@ -280,6 +272,7 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
   test("chuyển staff sang Ngừng hoạt động thì đăng nhập bị 403, bật lại thì vào được; vai trò và tên đồng bộ", async ({ request }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
     const code = `NV-T4D-${Date.now()}`;
+    const password = "Matkhau@DongBo1";
     const created = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
       data: {
@@ -288,11 +281,11 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
         role: "AM",
         territory: "Khu vực T4",
         email: `${code.toLowerCase()}@example.com`,
+        password,
       },
     });
     expect(created.status()).toBe(201);
     const staff = (await created.json()).data;
-    const password = `${code}@Vnpt2026`;
 
     const off = await request.patch(`${API_URL}/staff/${staff.id}`, {
       headers: bearer(adminToken),

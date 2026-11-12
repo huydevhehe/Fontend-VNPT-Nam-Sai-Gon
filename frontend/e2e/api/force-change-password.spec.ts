@@ -7,8 +7,9 @@ test.describe("Bắt đổi mật khẩu nhân viên mới (API)", () => {
   }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
 
-    // 1. Tạo NV dùng pass tự sinh
+    // 1. Tạo NV dùng pass do admin đặt, mustChangePassword = true
     const codeAuto = `NV-AUTO-${Date.now()}`;
+    const defaultPassword = `${codeAuto}@Vnpt2026`;
     const resAuto = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
       data: {
@@ -16,12 +17,13 @@ test.describe("Bắt đổi mật khẩu nhân viên mới (API)", () => {
         name: "Nhân viên Mật khẩu tự sinh",
         role: "AM",
         territory: "Phường 1",
+        password: defaultPassword,
+        mustChangePassword: true,
       },
     });
     expect(resAuto.status()).toBe(201);
-    const defaultPassword = `${codeAuto}@Vnpt2026`;
 
-    // Login bằng pass tự sinh -> mustChangePassword = true
+    // Login bằng pass -> mustChangePassword = true
     const loginAutoRes = await request.post(`${API_URL}/auth/login`, {
       data: { username: codeAuto, password: defaultPassword },
     });
@@ -29,7 +31,7 @@ test.describe("Bắt đổi mật khẩu nhân viên mới (API)", () => {
     const loginAutoData = await loginAutoRes.json();
     expect(loginAutoData.data.user.mustChangePassword).toBe(true);
 
-    // 2. Tạo NV tự đặt pass
+    // 2. Tạo NV tự đặt pass với mustChangePassword = false
     const codeCustom = `NV-CUST-${Date.now()}`;
     const customPass = "CustomPass@1234";
     const resCustom = await request.post(`${API_URL}/staff`, {
@@ -40,6 +42,7 @@ test.describe("Bắt đổi mật khẩu nhân viên mới (API)", () => {
         role: "AM",
         territory: "Phường 2",
         password: customPass,
+        mustChangePassword: false,
       },
     });
     expect(resCustom.status()).toBe(201);
@@ -59,6 +62,7 @@ test.describe("Bắt đổi mật khẩu nhân viên mới (API)", () => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
 
     const code = `NV-CHG-${Date.now()}`;
+    const defaultPassword = `${code}@Vnpt2026`;
     await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
       data: {
@@ -66,9 +70,9 @@ test.describe("Bắt đổi mật khẩu nhân viên mới (API)", () => {
         name: "Nhân viên Đổi pass",
         role: "AM",
         territory: "Phường 3",
+        password: defaultPassword,
       },
     });
-    const defaultPassword = `${code}@Vnpt2026`;
 
     const loginRes = await request.post(`${API_URL}/auth/login`, {
       data: { username: code, password: defaultPassword },

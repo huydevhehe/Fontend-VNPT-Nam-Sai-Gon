@@ -42,3 +42,12 @@ export const RANDOM_STAFF_TOKEN = "__RANDOM__";
 
 export const ACTIVE_AM_ROLES = [ROLES.AM, ROLES.AM_BAN_CHAM] as const;
 
+export const STAFF_TYPES = ["Chính thức", "Cộng tác viên"] as const;
+export type StaffType = (typeof STAFF_TYPES)[number];
+
+export const STAFF_STATUSES = ["Đang hoạt động", "Đình chỉ", "Ngừng hoạt động"] as const;
+export type StaffStatus = (typeof STAFF_STATUSES)[number];
+
+export const INACTIVE_USER_STATUS = "Ngừng hoạt động";
+
+

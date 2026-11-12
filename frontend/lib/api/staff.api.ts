@@ -1,23 +1,47 @@
 import { apiFetch } from "./client";
-import { StaffRecord } from "@/lib/crm/types/crm.types";
+import { StaffRecord, StaffType } from "@/lib/crm/types/crm.types";
 
 export type UpdateStaffInput = Partial<
-  Pick<StaffRecord, "name" | "role" | "territory" | "status" | "email">
+  Pick<
+    StaffRecord,
+    | "name"
+    | "role"
+    | "territory"
+    | "status"
+    | "email"
+    | "hrmCode"
+    | "staffType"
+    | "phone"
+    | "birthDate"
+    | "personalEmail"
+    | "shortName"
+    | "note"
+  >
 >;
 
 export type CreateStaffInput = Pick<
   StaffRecord,
-  "code" | "name" | "role" | "territory" | "email"
+  "code" | "name" | "role"
 > & {
-  /** Bỏ trống để hệ thống đặt mật khẩu mặc định `<mã NV>@Vnpt2026`. */
-  password?: string;
+  territory?: string;
+  email?: string;
+  hrmCode?: string;
+  staffType?: StaffType;
+  phone?: string;
+  birthDate?: string;
+  personalEmail?: string;
+  shortName?: string;
+  note?: string;
+  password: string;
+  mustChangePassword?: boolean;
 };
 
-/** Kết quả tạo nhân viên; `initialPassword` chỉ có khi dùng mật khẩu mặc định. */
+/** Kết quả tạo nhân viên; `initialPassword` chỉ có khi dùng mật khẩu mặc định (backward-compat). */
 export type CreatedStaffRecord = StaffRecord & { initialPassword?: string };
 
-export function getStaff(): Promise<StaffRecord[]> {
-  return apiFetch<StaffRecord[]>("/staff");
+export function getStaff(params?: { status?: string }): Promise<StaffRecord[]> {
+  const query = params?.status ? `?status=${encodeURIComponent(params.status)}` : "";
+  return apiFetch<StaffRecord[]>(`/staff${query}`);
 }
 
 export function createStaff(data: CreateStaffInput): Promise<CreatedStaffRecord> {

@@ -157,6 +157,9 @@ export interface WardContactRecord {
 }
 
 // 9. Staff
+export type StaffStatus = "Đang hoạt động" | "Đình chỉ" | "Ngừng hoạt động" | "Tạm nghỉ";
+export type StaffType = "Chính thức" | "Cộng tác viên";
+
 export interface StaffRecord {
   id: string;
   code: string;
@@ -169,8 +172,19 @@ export interface StaffRecord {
   revenueExecuted: number;
   collectionRate: number;
   renewalRate: number;
-  status: "Đang hoạt động" | "Tạm nghỉ";
+  status: StaffStatus;
   email: string;
+  username?: string;
+  hrmCode?: string | null;
+  staffType?: StaffType | null;
+  phone?: string | null;
+  birthDate?: string | null;
+  personalEmail?: string | null;
+  shortName?: string | null;
+  note?: string | null;
+  statusReason?: string | null;
+  statusChangedAt?: string | null;
+  statusChangedBy?: string | null;
 }
 
 // 10. Task

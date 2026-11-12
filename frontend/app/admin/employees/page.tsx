@@ -1,35 +1,70 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X, KeyRound } from "lucide-react";
+import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X, KeyRound, Phone } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
+import { TableFilter } from "@/lib/table-filters";
 import { getStaff, createStaff } from "@/lib/api/staff.api";
-import { StaffRecord } from "@/lib/crm/types/crm.types";
+import { getTerritories } from "@/lib/api/territories.api";
+import { StaffRecord, StaffType, TerritoryRecord } from "@/lib/crm/types/crm.types";
 
 const ROLE_OPTIONS: StaffRecord["role"][] = ["AM", "AM Bán chăm", "Admin"];
+const STAFF_TYPE_OPTIONS: StaffType[] = ["Chính thức", "Cộng tác viên"];
+
+function deriveShortNameClient(fullName: string): string {
+  const trimmed = (fullName || "").trim();
+  if (!trimmed) return "";
+  const words = trimmed.split(/\s+/);
+  const last = words[words.length - 1];
+  return last
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toUpperCase();
+}
 
 interface StaffFormState {
   code: string;
   name: string;
+  staffType: StaffType;
+  hrmCode: string;
   role: StaffRecord["role"];
   territory: string;
   email: string;
+  phone: string;
+  birthDate: string;
+  personalEmail: string;
+  shortName: string;
+  note: string;
   password: string;
+  confirmPassword: string;
+  mustChangePassword: boolean;
 }
 
 const EMPTY_FORM: StaffFormState = {
   code: "",
   name: "",
+  staffType: STAFF_TYPE_OPTIONS[0],
+  hrmCode: "",
   role: ROLE_OPTIONS[0],
   territory: "",
   email: "",
+  phone: "",
+  birthDate: "",
+  personalEmail: "",
+  shortName: "",
+  note: "",
   password: "",
+  confirmPassword: "",
+  mustChangePassword: true,
 };
 
 export default function EmployeesPage() {
   const [data, setData] = useState<StaffRecord[]>([]);
+  const [territories, setTerritories] = useState<TerritoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,22 +72,22 @@ export default function EmployeesPage() {
   const [form, setForm] = useState<StaffFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  // Mật khẩu mặc định chỉ hiển thị một lần ngay sau khi tạo nhân viên.
-  const [createdCredentials, setCreatedCredentials] = useState<{
-    username: string;
-    password: string;
-  } | null>(null);
+  const [createdUsername, setCreatedUsername] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadStaff() {
+    async function loadData() {
       setLoading(true);
       setError(null);
       try {
-        const staff = await getStaff();
+        const [staffRes, territoriesRes] = await Promise.allSettled([
+          getStaff(),
+          getTerritories(),
+        ]);
         if (isMounted) {
-          setData(staff);
+          if (staffRes.status === "fulfilled") setData(staffRes.value);
+          if (territoriesRes.status === "fulfilled") setTerritories(territoriesRes.value);
         }
       } catch (err) {
         if (isMounted) {
@@ -69,7 +104,7 @@ export default function EmployeesPage() {
       }
     }
 
-    loadStaff();
+    loadData();
 
     return () => {
       isMounted = false;
@@ -79,25 +114,41 @@ export default function EmployeesPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
+
+    if (form.password.length < 8 || form.password.length > 72) {
+      setFormError("Mật khẩu phải từ 8 đến 72 ký tự");
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setFormError("Mật khẩu nhập lại không khớp");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       const created = await createStaff({
-        code: form.code,
-        name: form.name,
+        code: form.code.trim(),
+        name: form.name.trim(),
+        staffType: form.staffType,
+        hrmCode: form.hrmCode.trim() || undefined,
         role: form.role,
-        territory: form.territory,
-        email: form.email,
-        password: form.password || undefined,
+        territory: form.territory.trim() || undefined,
+        email: form.email.trim() || undefined,
+        phone: form.phone.trim() || undefined,
+        birthDate: form.birthDate.trim() || undefined,
+        personalEmail: form.personalEmail.trim() || undefined,
+        shortName: form.shortName.trim() || undefined,
+        note: form.note.trim() || undefined,
+        password: form.password,
+        mustChangePassword: form.mustChangePassword,
       });
 
-      const { initialPassword, ...staffRecord } = created;
-      setData((prev) => [staffRecord, ...prev]);
+      setData((prev) => [created, ...prev]);
       setShowForm(false);
       setForm(EMPTY_FORM);
-      if (initialPassword) {
-        setCreatedCredentials({ username: staffRecord.code, password: initialPassword });
-      }
+      setCreatedUsername(created.code);
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "Không thể tạo Nhân viên. Vui lòng thử lại."
@@ -118,9 +169,19 @@ export default function EmployeesPage() {
           </div>
           <div>
             <div className="font-bold text-slate-900">{item.name}</div>
-            <div className="flex items-center gap-1 text-[11px] text-slate-400">
-              <Mail className="h-3 w-3" />
-              <span>{item.email}</span>
+            <div className="flex items-center gap-2 text-[11px] text-slate-400">
+              {item.email && (
+                <span className="flex items-center gap-0.5">
+                  <Mail className="h-3 w-3" />
+                  <span>{item.email}</span>
+                </span>
+              )}
+              {item.phone && (
+                <span className="flex items-center gap-0.5 font-mono text-slate-500">
+                  <Phone className="h-3 w-3" />
+                  <span>{item.phone}</span>
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -132,6 +193,24 @@ export default function EmployeesPage() {
       cell: (item) => <span className="font-mono text-slate-600">{item.code}</span>,
     },
     {
+      header: "Loại",
+      accessorKey: "staffType",
+      cell: (item) => (
+        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+          {item.staffType || "Chính thức"}
+        </span>
+      ),
+    },
+    {
+      header: "Mã HRM",
+      accessorKey: "hrmCode",
+      cell: (item) => (
+        <span className="font-mono text-xs text-slate-600">
+          {item.hrmCode || "—"}
+        </span>
+      ),
+    },
+    {
       header: "Vai trò",
       accessorKey: "role",
       cell: (item) => <StatusBadge status={item.role} />,
@@ -139,28 +218,29 @@ export default function EmployeesPage() {
     {
       header: "Địa bàn phụ trách",
       accessorKey: "territory",
-      cell: (item) => <span className="font-semibold text-vnpt">{item.territory}</span>,
+      cell: (item) => <span className="font-semibold text-vnpt">{item.territory || "—"}</span>,
     },
     {
       header: "Khách được giao",
       accessorKey: "assignedCustomers",
-      cell: (item) => <span className="font-bold">{item.assignedCustomers}</span>,
+      cell: (item) => <span className="font-bold">{item.assignedCustomers ?? 0}</span>,
     },
     {
       header: "Lead tháng",
       accessorKey: "monthlyLeads",
+      cell: (item) => <span>{item.monthlyLeads ?? 0}</span>,
     },
     {
       header: "Hợp đồng",
       accessorKey: "monthlyContracts",
-      cell: (item) => <span className="font-bold text-emerald-600">{item.monthlyContracts}</span>,
+      cell: (item) => <span className="font-bold text-emerald-600">{item.monthlyContracts ?? 0}</span>,
     },
     {
       header: "Doanh thu thực hiện",
       accessorKey: "revenueExecuted",
       cell: (item) => (
         <span className="font-bold text-slate-900">
-          {item.revenueExecuted.toLocaleString("vi-VN")} ₫
+          {(item.revenueExecuted ?? 0).toLocaleString("vi-VN")} ₫
         </span>
       ),
     },
@@ -170,6 +250,31 @@ export default function EmployeesPage() {
       cell: (item) => <StatusBadge status={item.status} />,
     },
   ];
+
+  const staffFilters: TableFilter<StaffRecord>[] = [
+    {
+      id: "role",
+      label: "Vai trò",
+      getValue: (r) => r.role,
+    },
+    {
+      id: "staffType",
+      label: "Loại",
+      getValue: (r) => r.staffType || "Chính thức",
+    },
+    {
+      id: "status",
+      label: "Trạng thái",
+      getValue: (r) => r.status,
+    },
+    {
+      id: "territory",
+      label: "Phường",
+      getValue: (r) => r.territory || "—",
+    },
+  ];
+
+  const derivedShortName = deriveShortNameClient(form.name);
 
   return (
     <div className="space-y-6">
@@ -200,7 +305,7 @@ export default function EmployeesPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="TỔNG NHÂN SỰ"
-          value="7"
+          value={String(data.length)}
           subtitle="AM & AM Bán chăm địa bàn"
           icon={UserCheck}
         />
@@ -243,18 +348,20 @@ export default function EmployeesPage() {
           subtitle="Chi tiết tỷ lệ hoàn thành thu nợ, gia hạn và doanh thu từng nhân viên"
           columns={columns}
           data={data}
-          searchPlaceholder="Tìm theo tên nhân viên, mã NV, địa bàn..."
+          filters={staffFilters}
+          searchPlaceholder="Tìm theo tên nhân viên, mã NV, SĐT, địa bàn..."
           exportFileName="vnpt_nhan_vien"
         />
       )}
 
       {/* Create Staff Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6 overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl my-auto">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-900">Thêm nhân viên</h3>
               <button
+                type="button"
                 onClick={() => setShowForm(false)}
                 className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               >
@@ -262,89 +369,266 @@ export default function EmployeesPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Mã nhân viên
-                </label>
-                <input
-                  required
-                  value={form.code}
-                  onChange={(e) => setForm({ ...form, code: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* KHỐI 1: Thông tin nhân viên */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  1. Thông tin nhân viên
+                </h4>
 
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Họ tên
-                </label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Mã nhân viên <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      placeholder="VD: NV009"
+                      value={form.code}
+                      onChange={(e) => setForm({ ...form, code: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Vai trò
-                  </label>
-                  <select
-                    value={form.role}
-                    onChange={(e) =>
-                      setForm({ ...form, role: e.target.value as StaffRecord["role"] })
-                    }
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  >
-                    {ROLE_OPTIONS.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Họ tên <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      placeholder="VD: Nguyễn Văn An"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Loại nhân viên
+                    </label>
+                    <select
+                      value={form.staffType}
+                      onChange={(e) =>
+                        setForm({ ...form, staffType: e.target.value as StaffType })
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    >
+                      {STAFF_TYPE_OPTIONS.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Mã HRM
+                    </label>
+                    <input
+                      placeholder="VD: HRM12345"
+                      value={form.hrmCode}
+                      onChange={(e) => setForm({ ...form, hrmCode: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Vai trò <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={form.role}
+                      onChange={(e) =>
+                        setForm({ ...form, role: e.target.value as StaffRecord["role"] })
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    >
+                      {ROLE_OPTIONS.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Phường phụ trách
+                    </label>
+                    {territories.length > 0 ? (
+                      <select
+                        value={form.territory}
+                        onChange={(e) => setForm({ ...form, territory: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                      >
+                        <option value="">— Chưa gắn địa bàn —</option>
+                        {territories.map((t) => (
+                          <option key={t.id} value={t.wardName}>
+                            {t.wardName}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        placeholder="VD: Phường Tân Phong"
+                        value={form.territory}
+                        onChange={(e) => setForm({ ...form, territory: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Email VNPT
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="VD: an.nv@vnpt.vn"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Số điện thoại
+                    </label>
+                    <input
+                      placeholder="VD: 0912345678"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Ngày sinh
+                    </label>
+                    <input
+                      type="date"
+                      value={form.birthDate}
+                      onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Gmail cá nhân
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="VD: an.nguyen@gmail.com"
+                      value={form.personalEmail}
+                      onChange={(e) => setForm({ ...form, personalEmail: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Địa bàn phụ trách
+                    Tên viết tắt (để trống tự sinh từ họ tên)
                   </label>
                   <input
-                    required
-                    value={form.territory}
-                    onChange={(e) => setForm({ ...form, territory: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    placeholder={derivedShortName ? `Gợi ý: ${derivedShortName}` : "VD: AN"}
+                    value={form.shortName}
+                    onChange={(e) => setForm({ ...form, shortName: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Ghi chú
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Ghi chú thêm về nhân sự..."
+                    value={form.note}
+                    onChange={(e) => setForm({ ...form, note: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Email
-                </label>
-                <input
-                  required
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
+              {/* KHỐI 2: Tài khoản đăng nhập */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-vnpt">
+                  2. Tài khoản đăng nhập
+                </h4>
 
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Mật khẩu (không bắt buộc)
-                </label>
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  minLength={8}
-                  placeholder="Bỏ trống để dùng mật khẩu mặc định"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
+                <div className="rounded-lg bg-white border border-blue-100 p-2.5 text-xs text-slate-700 flex items-center justify-between">
+                  <span className="font-medium text-slate-500">Tên đăng nhập (cố định theo Mã NV):</span>
+                  <span className="font-mono font-bold text-vnpt">
+                    {form.code.trim() || "(nhập mã nhân viên ở trên)"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Mật khẩu <span className="text-rose-500">*</span> (8–72 ký tự)
+                    </label>
+                    <input
+                      required
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      maxLength={72}
+                      placeholder="Mật khẩu ban đầu"
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Nhập lại mật khẩu <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      maxLength={72}
+                      placeholder="Nhập lại chính xác"
+                      value={form.confirmPassword}
+                      onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="mustChangePassword"
+                    checked={form.mustChangePassword}
+                    onChange={(e) =>
+                      setForm({ ...form, mustChangePassword: e.target.checked })
+                    }
+                    className="h-4 w-4 rounded border-slate-300 text-vnpt focus:ring-vnpt"
+                  />
+                  <label
+                    htmlFor="mustChangePassword"
+                    className="text-xs font-medium text-slate-700 select-none cursor-pointer"
+                  >
+                    Bắt đổi mật khẩu ở lần đăng nhập đầu
+                  </label>
+                </div>
               </div>
 
               {formError && (
@@ -364,7 +648,7 @@ export default function EmployeesPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                  className="btn-label rounded-xl bg-vnpt px-4 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {submitting ? "Đang tạo..." : "Tạo nhân viên"}
                 </button>
@@ -374,39 +658,30 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* Mật khẩu mặc định của nhân viên mới (chỉ hiện một lần) */}
-      {createdCredentials && (
+      {/* Hộp thông báo đã tạo tài khoản thành công */}
+      {createdUsername && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <div className="mb-3 flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-vnpt" />
+              <KeyRound className="h-5 w-5 text-emerald-600" />
               <h3 className="text-base font-bold text-slate-900">Đã tạo tài khoản nhân viên</h3>
             </div>
             <p className="text-xs text-slate-600">
-              Mật khẩu mặc định chỉ hiển thị một lần. Hãy gửi cho nhân viên và yêu cầu đổi sau khi
-              đăng nhập.
+              Đã tạo tài khoản đăng nhập thành công cho nhân viên mới. Mật khẩu được bảo mật theo giá trị Admin đã thiết lập.
             </p>
-            <dl className="mt-4 space-y-2 rounded-xl bg-slate-50 p-4 text-sm">
-              <div className="flex justify-between gap-3">
-                <dt className="text-slate-500">Tên đăng nhập</dt>
-                <dd className="font-mono font-semibold text-slate-900">
-                  {createdCredentials.username}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-slate-500">Mật khẩu</dt>
-                <dd className="font-mono font-semibold text-slate-900">
-                  {createdCredentials.password}
-                </dd>
-              </div>
-            </dl>
+            <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm flex items-center justify-between">
+              <span className="text-slate-500">Tên đăng nhập:</span>
+              <span className="font-mono font-bold text-vnpt text-base">
+                {createdUsername}
+              </span>
+            </div>
             <div className="mt-5 flex justify-end">
               <button
                 type="button"
-                onClick={() => setCreatedCredentials(null)}
-                className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark"
+                onClick={() => setCreatedUsername(null)}
+                className="btn-label rounded-xl bg-vnpt px-4 py-2 text-white hover:bg-vnpt-dark"
               >
-                Đã lưu mật khẩu
+                Đóng
               </button>
             </div>
           </div>
@@ -415,4 +690,5 @@ export default function EmployeesPage() {
     </div>
   );
 }
+
 

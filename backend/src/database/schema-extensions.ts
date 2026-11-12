@@ -46,6 +46,22 @@ export async function applySchemaExtensions(): Promise<void> {
      WHERE contract_id IS NOT NULL AND ctv_id IS NOT NULL`
   );
 
+  await ensureColumn("staff", "hrm_code", "TEXT");
+  await ensureColumn("staff", "staff_type", "TEXT");
+  await ensureColumn("staff", "phone", "TEXT");
+  await ensureColumn("staff", "birth_date", "TEXT");
+  await ensureColumn("staff", "personal_email", "TEXT");
+  await ensureColumn("staff", "short_name", "TEXT");
+  await ensureColumn("staff", "note", "TEXT");
+  await ensureColumn("staff", "status_reason", "TEXT");
+  await ensureColumn("staff", "status_changed_at", "TEXT");
+  await ensureColumn("staff", "status_changed_by", "TEXT");
+  await run(`
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_staff_hrm_code
+    ON staff(hrm_code)
+    WHERE hrm_code IS NOT NULL AND hrm_code <> ''
+  `);
+
   await run(`
     CREATE TABLE IF NOT EXISTS ward_officials (
       id TEXT PRIMARY KEY,

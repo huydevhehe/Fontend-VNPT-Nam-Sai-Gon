@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import { ADMIN, AM, API_URL, apiLogin, bearer } from "./helpers";
 
 test.describe("API Quản lý Nhân viên (POST /api/staff)", () => {
+  test.describe.configure({ mode: "serial" });
+
   let adminToken: string;
   let amToken: string;
 
@@ -201,5 +203,110 @@ test.describe("API Quản lý Nhân viên (POST /api/staff)", () => {
     expect(newLogin.status()).toBe(200);
     const body = await newLogin.json();
     expect(body.data.user.mustChangePassword).toBe(true);
+  });
+
+  test("đăng nhập bằng NV test lấy token → admin đình chỉ → token cũ trả 401; admin mở lại → đăng nhập lại được", async ({
+    request,
+  }) => {
+    const suffix = Date.now();
+    const code = `NV-STAT-${suffix}`;
+    const password = "Password@123";
+
+    const createStaffRes = await request.post(`${API_URL}/staff`, {
+      headers: bearer(adminToken),
+      data: {
+        code,
+        name: `NV Status Test ${suffix}`,
+        role: "AM",
+        territory: "Phường Tân Phong",
+        email: `stat_${suffix}@vnpt.vn`,
+        password,
+      },
+    });
+    expect(createStaffRes.status()).toBe(201);
+    const staffId = (await createStaffRes.json()).data.id;
+
+    // Staff đăng nhập lấy token
+    const loginRes = await request.post(`${API_URL}/auth/login`, {
+      data: { username: code, password },
+    });
+    expect(loginRes.status()).toBe(200);
+    const staffToken = (await loginRes.json()).data.token;
+
+    // Token hợp lệ
+    const meBefore = await request.get(`${API_URL}/auth/me`, {
+      headers: bearer(staffToken),
+    });
+    expect(meBefore.status()).toBe(200);
+
+    // Admin đình chỉ nhân viên
+    const suspendRes = await request.patch(`${API_URL}/staff/${staffId}/status`, {
+      headers: bearer(adminToken),
+      data: { status: "Đình chỉ", reason: "Tạm đình chỉ công tác để thanh tra" },
+    });
+    expect(suspendRes.status()).toBe(200);
+
+    // Request kế tiếp bằng token cũ bị từ chối 401
+    const meAfter = await request.get(`${API_URL}/auth/me`, {
+      headers: bearer(staffToken),
+    });
+    expect(meAfter.status()).toBe(401);
+
+    // Đăng nhập lại bị 403
+    const loginBlocked = await request.post(`${API_URL}/auth/login`, {
+      data: { username: code, password },
+    });
+    expect(loginBlocked.status()).toBe(403);
+
+    // GET /api/staff?status=active không chứa nhân viên bị đình chỉ
+    const activeStaffRes = await request.get(`${API_URL}/staff?status=active`, {
+      headers: bearer(adminToken),
+    });
+    expect(activeStaffRes.status()).toBe(200);
+    const activeList: Array<{ id: string; status: string }> = (await activeStaffRes.json()).data;
+    expect(activeList.some((s) => s.id === staffId)).toBe(false);
+
+    // Admin mở lại nhân viên
+    const reactivateRes = await request.patch(`${API_URL}/staff/${staffId}/status`, {
+      headers: bearer(adminToken),
+      data: { status: "Đang hoạt động" },
+    });
+    expect(reactivateRes.status()).toBe(200);
+
+    // Đăng nhập lại được với mật khẩu cũ
+    const loginRestored = await request.post(`${API_URL}/auth/login`, {
+      data: { username: code, password },
+    });
+    expect(loginRestored.status()).toBe(200);
+  });
+
+  test("AM gọi PATCH /api/staff/:id/status bị từ chối 403", async ({ request }) => {
+    const suffix = Date.now();
+    const createStaffRes = await request.post(`${API_URL}/staff`, {
+      headers: bearer(adminToken),
+      data: {
+        code: `NV-STAT-AM-${suffix}`,
+        name: `NV Status AM ${suffix}`,
+        role: "AM",
+        territory: "Phường Tân Phong",
+        email: `stat_am_${suffix}@vnpt.vn`,
+        password: "Password@123",
+      },
+    });
+    expect(createStaffRes.status()).toBe(201);
+    const staffId = (await createStaffRes.json()).data.id;
+
+    const res = await request.patch(`${API_URL}/staff/${staffId}/status`, {
+      headers: bearer(amToken),
+      data: { status: "Đình chỉ", reason: "AM không có quyền" },
+    });
+    expect(res.status()).toBe(403);
+  });
+
+  test("DELETE /api/staff/:id trả về 404 (không hỗ trợ xóa cứng)", async ({ request }) => {
+    const res = await request.delete(`${API_URL}/staff/fake-id-123`, {
+      headers: bearer(adminToken),
+    });
+    expect(res.status()).toBe(404);
   });
 });

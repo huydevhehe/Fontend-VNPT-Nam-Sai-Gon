@@ -71,3 +71,18 @@ export function resetStaffPassword(
   });
 }
 
+export function changeStaffStatus(
+  id: string,
+  data: { status: StaffRecord["status"]; reason?: string }
+): Promise<StaffRecord> {
+  return apiFetch<StaffRecord>(`/staff/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function getStaffReferences(id: string): Promise<Record<string, number>> {
+  return apiFetch<Record<string, number>>(`/staff/${id}/references`);
+}
+
+

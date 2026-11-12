@@ -8,9 +8,10 @@ export const staffRouter = Router();
 const staffService = new StaffService();
 
 // GET /api/staff — dữ liệu nhân sự/doanh thu từng người, yêu cầu đăng nhập
-staffRouter.get("/", requireAuth, async (_req: Request, res: Response) => {
+staffRouter.get("/", requireAuth, async (req: Request, res: Response) => {
   try {
-    const staff = await staffService.getAll();
+    const status = req.query.status as string | undefined;
+    const staff = await staffService.getAll({ status });
     res.json({ success: true, data: staff });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -60,6 +61,44 @@ staffRouter.post("/", requireAuth, requireAdmin, async (req: Request, res: Respo
   }
 });
 
+// GET /api/staff/:id/references — chỉ Admin được xem số bản ghi tham chiếu
+staffRouter.get("/:id/references", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const staff = await staffService.getById(id);
+    if (!staff) {
+      throw new HttpError(404, "Không tìm thấy Nhân viên");
+    }
+    const references = await staffService.countReferences(staff.name);
+    res.json({ success: true, data: references });
+  } catch (error: any) {
+    const statusCode = error instanceof HttpError ? error.status : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// PATCH /api/staff/:id/status — chỉ Admin được đình chỉ / ngừng / mở lại
+staffRouter.patch("/:id/status", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status, reason } = req.body ?? {};
+    const updated = await staffService.changeStatus(
+      id,
+      { status, reason },
+      (req as any).user?.name || "Admin"
+    );
+    res.json({ success: true, data: updated });
+  } catch (error: any) {
+    const statusCode =
+      error instanceof HttpError
+        ? error.status
+        : error.message === "Không tìm thấy Nhân viên"
+        ? 404
+        : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
 // PATCH /api/staff/:id — chỉ Admin được cập nhật
 staffRouter.patch("/:id", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
@@ -94,7 +133,7 @@ staffRouter.patch("/:id", requireAuth, requireAdmin, async (req: Request, res: R
         personalEmail,
         shortName,
         note,
-      },
+      } as any,
       (req as any).user?.name
     );
     res.json({ success: true, data: staff });

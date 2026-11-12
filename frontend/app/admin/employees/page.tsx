@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X, KeyRound, Phone, Pencil } from "lucide-react";
+import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X, KeyRound, Phone, Pencil, PauseCircle, Ban, RotateCcw, Info } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
 import { TableFilter } from "@/lib/table-filters";
-import { getStaff, createStaff, updateStaff, resetStaffPassword } from "@/lib/api/staff.api";
+import { getStaff, createStaff, updateStaff, resetStaffPassword, changeStaffStatus, getStaffReferences } from "@/lib/api/staff.api";
 import { getTerritories } from "@/lib/api/territories.api";
 import { StaffRecord, StaffType, TerritoryRecord } from "@/lib/crm/types/crm.types";
 
@@ -114,6 +114,63 @@ export default function EmployeesPage() {
   const [resetError, setResetError] = useState<string | null>(null);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetSubmitting, setResetSubmitting] = useState(false);
+
+  // Modal Đổi trạng thái (Đình chỉ / Ngừng hoạt động / Mở lại)
+  const [statusStaff, setStatusStaff] = useState<StaffRecord | null>(null);
+  const [targetStatus, setTargetStatus] = useState<"Đang hoạt động" | "Đình chỉ" | "Ngừng hoạt động">("Đình chỉ");
+  const [statusReason, setStatusReason] = useState("");
+  const [statusRefs, setStatusRefs] = useState<Record<string, number> | null>(null);
+  const [statusLoadingRefs, setStatusLoadingRefs] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [statusSubmitting, setStatusSubmitting] = useState(false);
+
+  async function handleOpenStatusModal(
+    staff: StaffRecord,
+    target: "Đang hoạt động" | "Đình chỉ" | "Ngừng hoạt động"
+  ) {
+    setStatusStaff(staff);
+    setTargetStatus(target);
+    setStatusReason("");
+    setStatusError(null);
+    setStatusRefs(null);
+
+    if (target !== "Đang hoạt động") {
+      setStatusLoadingRefs(true);
+      try {
+        const refs = await getStaffReferences(staff.id);
+        setStatusRefs(refs);
+      } catch {
+        setStatusRefs(null);
+      } finally {
+        setStatusLoadingRefs(false);
+      }
+    }
+  }
+
+  async function handleStatusSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!statusStaff) return;
+    setStatusError(null);
+
+    if (targetStatus !== "Đang hoạt động" && !statusReason.trim()) {
+      setStatusError("Vui lòng nhập lý do thay đổi trạng thái (tối thiểu 1 ký tự)");
+      return;
+    }
+
+    setStatusSubmitting(true);
+    try {
+      const updated = await changeStaffStatus(statusStaff.id, {
+        status: targetStatus,
+        reason: statusReason.trim() || undefined,
+      });
+      setData((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
+      setStatusStaff(null);
+    } catch (err) {
+      setStatusError(err instanceof Error ? err.message : "Không thể thay đổi trạng thái nhân viên");
+    } finally {
+      setStatusSubmitting(false);
+    }
+  }
 
   function handleOpenEdit(staff: StaffRecord) {
     setEditingStaff(staff);
@@ -375,30 +432,69 @@ export default function EmployeesPage() {
     {
       header: "Trạng thái",
       accessorKey: "status",
-      cell: (item) => <StatusBadge status={item.status} />,
+      cell: (item) => {
+        const tooltip = [
+          item.statusReason ? `Lý do: ${item.statusReason}` : "",
+          item.statusChangedBy ? `Người đổi: ${item.statusChangedBy}` : "",
+          item.statusChangedAt ? `Thời gian: ${new Date(item.statusChangedAt).toLocaleString("vi-VN")}` : "",
+        ].filter(Boolean).join(" • ");
+        return <StatusBadge status={item.status} title={tooltip || undefined} />;
+      },
     },
     {
       header: "Thao tác",
-      cell: (item) => (
-        <div className="flex items-center gap-1.5 whitespace-nowrap">
-          <button
-            type="button"
-            onClick={() => handleOpenEdit(item)}
-            className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-          >
-            <Pencil className="h-3 w-3 text-slate-500" />
-            <span>Sửa</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleOpenReset(item)}
-            className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/60 px-2 py-1 text-xs font-semibold text-vnpt hover:bg-blue-100/70"
-          >
-            <KeyRound className="h-3 w-3" />
-            <span>Đổi mật khẩu</span>
-          </button>
-        </div>
-      ),
+      cell: (item) => {
+        const isActive = item.status === "Đang hoạt động";
+        return (
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <button
+              type="button"
+              onClick={() => handleOpenEdit(item)}
+              className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+            >
+              <Pencil className="h-3 w-3 text-slate-500" />
+              <span>Sửa</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenReset(item)}
+              className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/60 px-2 py-1 text-xs font-semibold text-vnpt hover:bg-blue-100/70"
+            >
+              <KeyRound className="h-3 w-3" />
+              <span>Đổi mật khẩu</span>
+            </button>
+            {isActive ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleOpenStatusModal(item, "Đình chỉ")}
+                  className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50/60 px-2 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100/70"
+                >
+                  <PauseCircle className="h-3 w-3" />
+                  <span>Đình chỉ</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOpenStatusModal(item, "Ngừng hoạt động")}
+                  className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+                >
+                  <Ban className="h-3 w-3" />
+                  <span>Ngừng</span>
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleOpenStatusModal(item, "Đang hoạt động")}
+                className="flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+              >
+                <RotateCcw className="h-3 w-3" />
+                <span>Mở lại</span>
+              </button>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -1217,6 +1313,144 @@ export default function EmployeesPage() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Đổi trạng thái (Đình chỉ / Ngừng hoạt động / Mở lại) */}
+      {statusStaff && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  {targetStatus === "Đang hoạt động"
+                    ? "Mở lại nhân viên"
+                    : targetStatus === "Đình chỉ"
+                    ? "Đình chỉ nhân viên"
+                    : "Ngừng hoạt động nhân viên"}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {statusStaff.name} ({statusStaff.code}) — {statusStaff.role}
+                </p>
+              </div>
+              <button
+                onClick={() => setStatusStaff(null)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleStatusSubmit} className="mt-4 space-y-4">
+              {targetStatus !== "Đang hoạt động" && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+                    <div className="space-y-1.5">
+                      <p className="font-semibold text-amber-950">
+                        Lưu ý khi {targetStatus.toLowerCase()}:
+                      </p>
+                      <p>
+                        Tài khoản đăng nhập của nhân viên sẽ bị khóa ngay lập tức và các phiên đăng nhập hiện tại sẽ bị thu hồi.
+                      </p>
+                      {statusLoadingRefs ? (
+                        <p className="text-slate-500 italic">Đang kiểm tra dữ liệu phụ trách...</p>
+                      ) : statusRefs && Object.keys(statusRefs).length > 0 ? (
+                        <div className="mt-2 rounded-lg bg-white/80 p-2.5 border border-amber-200/60">
+                          <p className="font-medium text-amber-900 mb-1">
+                            Nhân viên hiện đang phụ trách:
+                          </p>
+                          <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-amber-800">
+                            {Object.entries(statusRefs).map(([k, v]) => (
+                              <li key={k}>
+                                <span className="font-medium">{k}</span>: {v} bản ghi
+                              </li>
+                            ))}
+                          </ul>
+                          <p className="mt-1.5 text-[11px] text-slate-600 italic">
+                            Dữ liệu cũ được giữ nguyên; nên chuyển khách hàng sang người khác bằng chức năng điều chuyển.
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-slate-600">
+                          Nhân viên hiện không phụ trách trực tiếp bản ghi nào.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {targetStatus === "Đang hoạt động" && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 text-xs text-emerald-900">
+                  <div className="flex items-start gap-2">
+                    <Info className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                    <p>
+                      Mở lại tài khoản sẽ khôi phục quyền đăng nhập và nhân viên sẽ xuất hiện trở lại trong danh sách phân công.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-700">
+                  {targetStatus === "Đang hoạt động" ? (
+                    "Lý do mở lại (tùy chọn)"
+                  ) : (
+                    <>
+                      Lý do {targetStatus.toLowerCase()} <span className="text-rose-500">*</span>
+                    </>
+                  )}
+                </label>
+                <textarea
+                  required={targetStatus !== "Đang hoạt động"}
+                  rows={3}
+                  maxLength={500}
+                  placeholder={
+                    targetStatus === "Đang hoạt động"
+                      ? "Nhập ghi chú lý do mở lại nếu có..."
+                      : "Nhập lý do chi tiết (bắt buộc, tối đa 500 ký tự)..."
+                  }
+                  value={statusReason}
+                  onChange={(e) => setStatusReason(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              {statusError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {statusError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStatusStaff(null)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={statusSubmitting}
+                  className={`btn-label rounded-xl px-4 py-2 text-white font-bold disabled:opacity-60 ${
+                    targetStatus === "Đang hoạt động"
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : targetStatus === "Đình chỉ"
+                      ? "bg-amber-600 hover:bg-amber-700"
+                      : "bg-slate-700 hover:bg-slate-800"
+                  }`}
+                >
+                  {statusSubmitting
+                    ? "Đang xử lý..."
+                    : targetStatus === "Đang hoạt động"
+                    ? "Xác nhận mở lại"
+                    : `Xác nhận ${targetStatus.toLowerCase()}`}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

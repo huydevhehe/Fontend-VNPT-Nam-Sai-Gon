@@ -289,9 +289,12 @@ export class LeadService {
       if (!staffName) {
         throw new LeadServiceError("Tên nhân viên không được để trống", 400);
       }
-      const staff = await query("SELECT id FROM staff WHERE name = ?", [staffName]);
+      const staff = await query<{ id: string; status: string }>("SELECT id, status FROM staff WHERE name = ?", [staffName]);
       if (!staff.length) {
         throw new LeadServiceError("Nhân viên không tồn tại", 400);
+      }
+      if (staff[0].status && staff[0].status !== "Đang hoạt động") {
+        throw new LeadServiceError("Nhân viên đang bị đình chỉ hoặc đã ngừng hoạt động", 400);
       }
       sets.push("staff_name = ?");
       params.push(staffName);

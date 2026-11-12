@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 const { initDatabase, query, run } = await import("../../database/db.js");
 const { applySchemaExtensions } = await import("../../database/schema-extensions.js");
 const { StaffService, deriveShortName } = await import("./staff.service.js");
-const { HttpError } = await import("../auth/auth.service.js");
+const { AuthService, HttpError } = await import("../auth/auth.service.js");
+const { LeadService } = await import("../lead/lead.service.js");
+const { CustomerService } = await import("../customer/customer.service.js");
 const bcrypt = (await import("bcryptjs")).default;
 
 await initDatabase();
@@ -310,4 +312,197 @@ test("resetPassword lets user login with new password and sets must_change_passw
   assert.ok(await bcrypt.compare("NewPassword@Rst2", user.password_hash));
   assert.equal(Boolean(user.must_change_password), true);
 });
+
+test("changeStatus suspend requires reason", async () => {
+  const service = new StaffService();
+  const suffix = Date.now();
+  const staff = await service.create({
+    code: `NV-SUS-REQ-${suffix}`,
+    name: `NV Đình chỉ Thiếu Lý Do ${suffix}`,
+    role: "AM",
+    territory: "Phường Tân Phong",
+    email: `susreq_${suffix}@vnpt.vn`,
+    password: "Password@123",
+  });
+
+  await assert.rejects(
+    async () => {
+      await service.changeStatus(staff.id, { status: "Đình chỉ", reason: "" }, "Admin");
+    },
+    (err: any) => {
+      assert.ok(err instanceof HttpError);
+      assert.equal(err.status, 400);
+      assert.equal(err.message, "Vui lòng nhập lý do (tối đa 500 ký tự)");
+      return true;
+    }
+  );
+});
+
+test("changeStatus suspend blocks login and keeps data; reactivate restores login", async () => {
+  const service = new StaffService();
+  const authService = new AuthService();
+  const suffix = Date.now();
+  const code = `NV-SUS-LOGIN-${suffix}`;
+  const password = "Password@123";
+  const name = `NV Đình chỉ Test ${suffix}`;
+
+  const staff = await service.create({
+    code,
+    name,
+    role: "AM",
+    territory: "Phường Tân Phong",
+    email: `suslogin_${suffix}@vnpt.vn`,
+    password,
+  });
+
+  // Tạo lead gán cho nhân viên này
+  await run(
+    `INSERT INTO leads (id, customer_name, phone, group_name, channel, staff_name) VALUES (?, ?, ?, ?, ?, ?)`,
+    [`LEAD-SUS-${suffix}`, "KH Lead Suspend", "0901234567", "Lead KH mới", "Online", name]
+  );
+
+  // Trước khi đình chỉ: login thành công
+  const loginBefore = await authService.login(code, password);
+  assert.ok(loginBefore.token);
+
+  // Đình chỉ
+  const reason = "Tạm dừng công tác để điều tra sai phạm";
+  const updated = await service.changeStatus(staff.id, { status: "Đình chỉ", reason }, "Admin");
+  assert.equal(updated.status, "Đình chỉ");
+  assert.equal(updated.statusReason, reason);
+
+  // Đăng nhập bị chặn 403
+  await assert.rejects(
+    async () => {
+      await authService.login(code, password);
+    },
+    (err: any) => {
+      assert.ok(err instanceof HttpError);
+      assert.equal(err.status, 403);
+      return true;
+    }
+  );
+
+  // Dữ liệu lead vẫn nguyên vẹn
+  const [lead] = await query<{ staff_name: string }>(`SELECT staff_name FROM leads WHERE id = ?`, [`LEAD-SUS-${suffix}`]);
+  assert.equal(lead.staff_name, name);
+
+  // Audit log có bản ghi Đình chỉ nhân viên
+  const logs = await query<{ action: string; details: string }>(
+    `SELECT action, details FROM audit_logs WHERE action = 'Đình chỉ nhân viên' AND details LIKE ?`,
+    [`%${code}%`]
+  );
+  assert.ok(logs.length > 0);
+  assert.ok(logs[0].details.includes(reason));
+
+  // Mở lại nhân viên ("Đang hoạt động")
+  const reactivated = await service.changeStatus(staff.id, { status: "Đang hoạt động" }, "Admin");
+  assert.equal(reactivated.status, "Đang hoạt động");
+
+  // Đăng nhập lại được với mật khẩu cũ
+  const loginAfter = await authService.login(code, password);
+  assert.ok(loginAfter.token);
+});
+
+test("countReferences returns counts across references", async () => {
+  const service = new StaffService();
+  const suffix = Date.now();
+  const name = `NV Count Ref ${suffix}`;
+
+  const staff = await service.create({
+    code: `NV-REF-${suffix}`,
+    name,
+    role: "AM",
+    territory: "Phường Tân Phong",
+    email: `ref_${suffix}@vnpt.vn`,
+    password: "Password@123",
+  });
+
+  await run(
+    `INSERT INTO leads (id, customer_name, phone, group_name, channel, staff_name) VALUES (?, ?, ?, ?, ?, ?)`,
+    [`LEAD-CNT-${suffix}`, "KH Lead Count", "0901234567", "Lead KH mới", "Online", name]
+  );
+
+  const refs = await service.countReferences(name);
+  assert.equal(refs["leads.staff_name"], 1);
+});
+
+test("update rejects status field (must use changeStatus)", async () => {
+  const service = new StaffService();
+  const suffix = Date.now();
+  const staff = await service.create({
+    code: `NV-NO-STAT-${suffix}`,
+    name: `NV No Direct Stat ${suffix}`,
+    role: "AM",
+    territory: "Phường Tân Phong",
+    email: `nostat_${suffix}@vnpt.vn`,
+    password: "Password@123",
+  });
+
+  await assert.rejects(
+    async () => {
+      await service.update(staff.id, { status: "Ngừng hoạt động" } as any);
+    },
+    (err: any) => {
+      assert.ok(err instanceof HttpError);
+      assert.equal(err.status, 400);
+      assert.equal(err.message, "Đổi trạng thái qua chức năng Đình chỉ/Ngừng hoạt động");
+      return true;
+    }
+  );
+});
+
+test("assign lead to suspended staff returns 400 and transfer customer to inactive staff returns 400", async () => {
+  const staffService = new StaffService();
+  const leadService = new LeadService();
+  const customerService = new CustomerService();
+  const suffix = Date.now();
+  const name = `NV Đình Chỉ Phân Công ${suffix}`;
+
+  const staff = await staffService.create({
+    code: `NV-INACT-ASSIGN-${suffix}`,
+    name,
+    role: "AM",
+    territory: "Phường Tân Phong",
+    email: `inactassign_${suffix}@vnpt.vn`,
+    password: "Password@123",
+  });
+
+  await staffService.changeStatus(staff.id, { status: "Đình chỉ", reason: "Tạm khóa" }, "Admin");
+
+  // Lead
+  const leadRes = await run(
+    `INSERT INTO leads (id, customer_name, phone, group_name, channel, staff_name) VALUES (?, ?, ?, ?, ?, ?)`,
+    [`LEAD-ASSIGN-${suffix}`, "KH Lead Assign", "0901234567", "Lead KH mới", "Online", "Nguyễn Thị Tình"]
+  );
+
+  await assert.rejects(
+    async () => {
+      await leadService.assign(`LEAD-ASSIGN-${suffix}`, { staffName: name });
+    },
+    (err: any) => {
+      assert.equal(err.status, 400);
+      assert.equal(err.message, "Nhân viên đang bị đình chỉ hoặc đã ngừng hoạt động");
+      return true;
+    }
+  );
+
+  // Customer transfer
+  await run(
+    `INSERT INTO customers (id, name, type, customer_group, am_staff, am_caring_staff) VALUES (?, ?, ?, ?, ?, ?)`,
+    [`CUST-TRANS-${suffix}`, "KH Transfer", "Doanh nghiệp", "Tập hiện hữu", "Nguyễn Thị Tình", "Nguyễn Thị Tình"]
+  );
+
+  await assert.rejects(
+    async () => {
+      await customerService.transfer(`CUST-TRANS-${suffix}`, name, "Admin");
+    },
+    (err: any) => {
+      assert.equal(err.status, 400);
+      assert.equal(err.message, "Nhân viên đang bị đình chỉ hoặc đã ngừng hoạt động");
+      return true;
+    }
+  );
+});
+
 

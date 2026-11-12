@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { query, run, transaction } from "../../database/db.js";
-import { ROLES, USER_STATUS, STAFF_TYPES, INACTIVE_USER_STATUS, STAFF_NAME_REFERENCES } from "../../constants/org.js";
+import { ROLES, USER_STATUS, STAFF_TYPES, STAFF_STATUSES, INACTIVE_USER_STATUS, STAFF_NAME_REFERENCES } from "../../constants/org.js";
 import { HttpError } from "../auth/auth.service.js";
 
 export function deriveShortName(fullName: string): string {
@@ -73,7 +73,6 @@ export interface StaffUpdateInput {
   name?: string;
   role?: string;
   territory?: string;
-  status?: string;
   email?: string;
   hrmCode?: string | null;
   staffType?: string | null;
@@ -141,9 +140,20 @@ const MAX_PASSWORD_LENGTH = 72;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class StaffService {
-  async getAll(): Promise<StaffRecordDto[]> {
+  async getAll(params?: { status?: string }): Promise<StaffRecordDto[]> {
+    if (params?.status === "active") {
+      const rows = await query<StaffRow>(
+        "SELECT * FROM staff WHERE status = 'Đang hoạt động' ORDER BY code ASC"
+      );
+      return rows.map(toStaffRecord);
+    }
     const rows = await query<StaffRow>("SELECT * FROM staff ORDER BY code ASC");
     return rows.map(toStaffRecord);
+  }
+
+  async getById(id: string): Promise<StaffRecordDto | null> {
+    const rows = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
+    return rows.length ? toStaffRecord(rows[0]) : null;
   }
 
   async create(data: StaffCreateInput): Promise<StaffCreatedDto> {
@@ -278,6 +288,10 @@ export class StaffService {
   }
 
   async update(id: string, patch: StaffUpdateInput, actor?: string): Promise<StaffRecordDto> {
+    if ((patch as any).status !== undefined) {
+      throw new HttpError(400, "Đổi trạng thái qua chức năng Đình chỉ/Ngừng hoạt động");
+    }
+
     const existing = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
     if (!existing.length) {
       throw new HttpError(404, "Không tìm thấy Nhân viên");
@@ -319,10 +333,6 @@ export class StaffService {
     if (patch.territory !== undefined) {
       fields.push("territory = ?");
       values.push(patch.territory);
-    }
-    if (patch.status !== undefined) {
-      fields.push("status = ?");
-      values.push(patch.status);
     }
     if (patch.email !== undefined) {
       fields.push("email = ?");
@@ -424,16 +434,85 @@ export class StaffService {
         userFields.push("email = ?");
         userValues.push(patch.email || null);
       }
-      if (patch.status !== undefined) {
-        userFields.push("status = ?");
-        userValues.push(patch.status === USER_STATUS.ACTIVE ? USER_STATUS.ACTIVE : INACTIVE_USER_STATUS);
-      }
       if (userFields.length) {
         await tx.run(
           `UPDATE users SET ${userFields.join(", ")} WHERE username = ? AND role IN (?, ?, ?)`,
           [...userValues, existing[0].code, ...STAFF_ROLES]
         );
       }
+    });
+
+    const updated = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
+    return toStaffRecord(updated[0]);
+  }
+
+  async countReferences(name: string): Promise<Record<string, number>> {
+    const trimmed = (name || "").trim();
+    if (!trimmed) return {};
+    const result: Record<string, number> = {};
+    for (const [table, column] of STAFF_NAME_REFERENCES) {
+      const rows = await query<{ count: number | string }>(
+        `SELECT COUNT(*) as count FROM ${table} WHERE ${column} = ?`,
+        [trimmed]
+      );
+      const count = Number(rows[0]?.count ?? 0);
+      if (count > 0) {
+        result[`${table}.${column}`] = count;
+      }
+    }
+    return result;
+  }
+
+  async changeStatus(
+    id: string,
+    input: { status: (typeof STAFF_STATUSES)[number]; reason?: string },
+    adminName: string = "Admin"
+  ): Promise<StaffRecordDto> {
+    if (!(STAFF_STATUSES as readonly string[]).includes(input.status)) {
+      throw new HttpError(400, "Trạng thái không hợp lệ");
+    }
+
+    const existing = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
+    if (!existing.length) {
+      throw new HttpError(404, "Không tìm thấy Nhân viên");
+    }
+
+    const reason = input.reason ? String(input.reason).trim() : "";
+    if (input.status === "Đình chỉ" || input.status === "Ngừng hoạt động") {
+      if (!reason || reason.length > 500) {
+        throw new HttpError(400, "Vui lòng nhập lý do (tối đa 500 ký tự)");
+      }
+    }
+
+    const now = new Date().toISOString();
+
+    await transaction(async (tx) => {
+      await tx.run(
+        `UPDATE staff SET status = ?, status_reason = ?, status_changed_at = ?, status_changed_by = ? WHERE id = ?`,
+        [input.status, reason || null, now, adminName, id]
+      );
+
+      await tx.run(
+        `UPDATE users SET status = ? WHERE username = ? AND role IN (?, ?, ?)`,
+        [input.status, existing[0].code, ...STAFF_ROLES]
+      );
+
+      const action =
+        input.status === "Đang hoạt động"
+          ? "Mở lại nhân viên"
+          : input.status === "Đình chỉ"
+          ? "Đình chỉ nhân viên"
+          : "Ngừng hoạt động nhân viên";
+
+      await tx.run(
+        'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+        [
+          `LOG-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          adminName,
+          action,
+          `${action} ${existing[0].name} (${existing[0].code})${reason ? `: ${reason}` : ""}`,
+        ]
+      );
     });
 
     const updated = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);

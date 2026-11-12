@@ -134,9 +134,12 @@ export class CustomerService {
       throw new CustomerServiceError("Không tìm thấy Khách hàng", 404);
     }
 
-    const staffRows = await query<any>("SELECT id FROM staff WHERE name = ?", [staffName]);
+    const staffRows = await query<any>("SELECT id, status FROM staff WHERE name = ?", [staffName]);
     if (staffRows.length === 0) {
       throw new CustomerServiceError("Nhân viên phụ trách mới không tồn tại", 400);
+    }
+    if (staffRows[0].status && staffRows[0].status !== "Đang hoạt động") {
+      throw new CustomerServiceError("Nhân viên đang bị đình chỉ hoặc đã ngừng hoạt động", 400);
     }
 
     return { customer, staffName };
@@ -219,9 +222,12 @@ export class CustomerService {
     if (!amCaringStaff || typeof amCaringStaff !== "string") {
       throw new CustomerServiceError("Vui lòng chọn AM chăm sóc (CSKH)", 400);
     }
-    const staffRows = await query("SELECT id FROM staff WHERE name = ?", [amCaringStaff.trim()]);
+    const staffRows = await query<any>("SELECT id, status FROM staff WHERE name = ?", [amCaringStaff.trim()]);
     if (staffRows.length === 0) {
       throw new CustomerServiceError("Nhân viên phụ trách chăm sóc không tồn tại", 400);
+    }
+    if (staffRows[0].status && staffRows[0].status !== "Đang hoạt động") {
+      throw new CustomerServiceError("Nhân viên đang bị đình chỉ hoặc đã ngừng hoạt động", 400);
     }
 
     const batch = typeof handoverBatch === "string" ? handoverBatch.trim() : "";

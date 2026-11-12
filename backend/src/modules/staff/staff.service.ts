@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { query, run } from "../../database/db.js";
-import { ROLES, USER_STATUS, STAFF_TYPES, INACTIVE_USER_STATUS } from "../../constants/org.js";
+import { query, run, transaction } from "../../database/db.js";
+import { ROLES, USER_STATUS, STAFF_TYPES, INACTIVE_USER_STATUS, STAFF_NAME_REFERENCES } from "../../constants/org.js";
 import { HttpError } from "../auth/auth.service.js";
 
 export function deriveShortName(fullName: string): string {
@@ -277,22 +277,40 @@ export class StaffService {
     return toStaffRecord(created[0]);
   }
 
-  async update(id: string, patch: StaffUpdateInput): Promise<StaffRecordDto> {
+  async update(id: string, patch: StaffUpdateInput, actor?: string): Promise<StaffRecordDto> {
     const existing = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
     if (!existing.length) {
-      throw new Error("Không tìm thấy Nhân viên");
+      throw new HttpError(404, "Không tìm thấy Nhân viên");
     }
 
     if (patch.role !== undefined && !STAFF_ROLES.includes(patch.role as (typeof STAFF_ROLES)[number])) {
-      throw new Error("Vai trò không hợp lệ");
+      throw new HttpError(400, "Vai trò không hợp lệ");
     }
 
     const fields: string[] = [];
     const values: any[] = [];
 
+    const oldName = existing[0].name;
+    let isRename = false;
+    let finalNewName = oldName;
+
     if (patch.name !== undefined) {
+      finalNewName = String(patch.name).trim();
+      if (!finalNewName) {
+        throw new HttpError(400, "Họ tên không được để trống");
+      }
+      if (finalNewName !== oldName) {
+        const dup = await query<{ id: string }>(
+          "SELECT id FROM staff WHERE name = ? AND id <> ?",
+          [finalNewName, id]
+        );
+        if (dup.length) {
+          throw new HttpError(409, "Tên nhân viên đã tồn tại");
+        }
+        isRename = true;
+      }
       fields.push("name = ?");
-      values.push(patch.name);
+      values.push(finalNewName);
     }
     if (patch.role !== undefined) {
       fields.push("role = ?");
@@ -369,40 +387,88 @@ export class StaffService {
     }
 
     if (!fields.length) {
-      throw new Error("Không có dữ liệu cần cập nhật");
+      throw new HttpError(400, "Không có dữ liệu cần cập nhật");
     }
 
-    values.push(id);
-    await run(`UPDATE staff SET ${fields.join(", ")} WHERE id = ?`, values);
+    await transaction(async (tx) => {
+      values.push(id);
+      await tx.run(`UPDATE staff SET ${fields.join(", ")} WHERE id = ?`, values);
 
-    // Đồng bộ sang tài khoản đăng nhập (username = mã nhân viên)
-    const userFields: string[] = [];
-    const userValues: any[] = [];
-    if (patch.name !== undefined) {
-      userFields.push("name = ?");
-      userValues.push(patch.name);
-    }
-    if (patch.role !== undefined) {
-      userFields.push("role = ?");
-      userValues.push(patch.role);
-    }
-    if (patch.email !== undefined) {
-      userFields.push("email = ?");
-      userValues.push(patch.email || null);
-    }
-    if (patch.status !== undefined) {
-      userFields.push("status = ?");
-      userValues.push(patch.status === USER_STATUS.ACTIVE ? USER_STATUS.ACTIVE : INACTIVE_USER_STATUS);
-    }
-    if (userFields.length) {
-      await run(
-        `UPDATE users SET ${userFields.join(", ")} WHERE username = ? AND role IN (?, ?, ?)`,
-        [...userValues, existing[0].code, ...STAFF_ROLES]
-      );
-    }
+      if (isRename) {
+        for (const [table, column] of STAFF_NAME_REFERENCES) {
+          await tx.run(`UPDATE ${table} SET ${column} = ? WHERE ${column} = ?`, [finalNewName, oldName]);
+        }
+        await tx.run(
+          'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+          [
+            `LOG-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            actor || "Admin",
+            "Đổi tên nhân viên",
+            `Đổi tên nhân viên từ "${oldName}" thành "${finalNewName}" (mã: ${existing[0].code})`,
+          ]
+        );
+      }
+
+      // Đồng bộ sang tài khoản đăng nhập (username = mã nhân viên)
+      const userFields: string[] = [];
+      const userValues: any[] = [];
+      if (patch.name !== undefined) {
+        userFields.push("name = ?");
+        userValues.push(finalNewName);
+      }
+      if (patch.role !== undefined) {
+        userFields.push("role = ?");
+        userValues.push(patch.role);
+      }
+      if (patch.email !== undefined) {
+        userFields.push("email = ?");
+        userValues.push(patch.email || null);
+      }
+      if (patch.status !== undefined) {
+        userFields.push("status = ?");
+        userValues.push(patch.status === USER_STATUS.ACTIVE ? USER_STATUS.ACTIVE : INACTIVE_USER_STATUS);
+      }
+      if (userFields.length) {
+        await tx.run(
+          `UPDATE users SET ${userFields.join(", ")} WHERE username = ? AND role IN (?, ?, ?)`,
+          [...userValues, existing[0].code, ...STAFF_ROLES]
+        );
+      }
+    });
 
     const updated = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
     return toStaffRecord(updated[0]);
+  }
+
+  async resetPassword(
+    id: string,
+    password: string,
+    mustChangePassword: boolean = true,
+    actor?: string
+  ): Promise<void> {
+    const existing = await query<StaffRow>("SELECT * FROM staff WHERE id = ?", [id]);
+    if (!existing.length) {
+      throw new HttpError(404, "Không tìm thấy Nhân viên");
+    }
+    if (!password || typeof password !== "string" || password.trim().length < 8 || password.length > 72) {
+      throw new HttpError(400, "Mật khẩu phải từ 8 đến 72 ký tự");
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    await run(
+      "UPDATE users SET password_hash = ?, must_change_password = ? WHERE username = ? AND role IN (?, ?, ?)",
+      [hash, mustChangePassword ? 1 : 0, existing[0].code, ...STAFF_ROLES]
+    );
+
+    await run(
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+      [
+        `LOG-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        actor || "Admin",
+        "Đặt lại mật khẩu nhân viên",
+        `Đặt lại mật khẩu cho nhân viên ${existing[0].name} (${existing[0].code})`,
+      ]
+    );
   }
 }
 

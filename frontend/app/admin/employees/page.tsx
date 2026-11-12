@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X, KeyRound, Phone } from "lucide-react";
+import { UserCheck, UserPlus, Mail, Award, TrendingUp, Users, AlertTriangle, X, KeyRound, Phone, Pencil } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
 import { TableFilter } from "@/lib/table-filters";
-import { getStaff, createStaff } from "@/lib/api/staff.api";
+import { getStaff, createStaff, updateStaff, resetStaffPassword } from "@/lib/api/staff.api";
 import { getTerritories } from "@/lib/api/territories.api";
 import { StaffRecord, StaffType, TerritoryRecord } from "@/lib/crm/types/crm.types";
 
@@ -73,6 +73,134 @@ export default function EmployeesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [createdUsername, setCreatedUsername] = useState<string | null>(null);
+
+  // Modal Sửa nhân viên
+  const [editingStaff, setEditingStaff] = useState<StaffRecord | null>(null);
+  const [editForm, setEditForm] = useState<{
+    name: string;
+    staffType: StaffType;
+    hrmCode: string;
+    role: StaffRecord["role"];
+    territory: string;
+    email: string;
+    phone: string;
+    birthDate: string;
+    personalEmail: string;
+    shortName: string;
+    note: string;
+  }>({
+    name: "",
+    staffType: "Chính thức",
+    hrmCode: "",
+    role: "AM",
+    territory: "",
+    email: "",
+    phone: "",
+    birthDate: "",
+    personalEmail: "",
+    shortName: "",
+    note: "",
+  });
+  const [editError, setEditError] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Modal Đặt lại mật khẩu
+  const [resetStaff, setResetStaff] = useState<StaffRecord | null>(null);
+  const [resetForm, setResetForm] = useState({
+    password: "",
+    confirmPassword: "",
+    mustChangePassword: true,
+  });
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+
+  function handleOpenEdit(staff: StaffRecord) {
+    setEditingStaff(staff);
+    setEditForm({
+      name: staff.name,
+      staffType: (staff.staffType as StaffType) || "Chính thức",
+      hrmCode: staff.hrmCode || "",
+      role: staff.role,
+      territory: staff.territory || "",
+      email: staff.email || "",
+      phone: staff.phone || "",
+      birthDate: staff.birthDate || "",
+      personalEmail: staff.personalEmail || "",
+      shortName: staff.shortName || "",
+      note: staff.note || "",
+    });
+    setEditError(null);
+  }
+
+  async function handleEditSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!editingStaff) return;
+    setEditError(null);
+    setSavingEdit(true);
+
+    try {
+      const updated = await updateStaff(editingStaff.id, {
+        name: editForm.name.trim(),
+        staffType: editForm.staffType,
+        hrmCode: editForm.hrmCode.trim() || undefined,
+        role: editForm.role,
+        territory: editForm.territory.trim() || undefined,
+        email: editForm.email.trim() || undefined,
+        phone: editForm.phone.trim() || undefined,
+        birthDate: editForm.birthDate.trim() || undefined,
+        personalEmail: editForm.personalEmail.trim() || undefined,
+        shortName: editForm.shortName.trim() || undefined,
+        note: editForm.note.trim() || undefined,
+      });
+
+      setData((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
+      setEditingStaff(null);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Không thể cập nhật nhân viên");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  function handleOpenReset(staff: StaffRecord) {
+    setResetStaff(staff);
+    setResetForm({
+      password: "",
+      confirmPassword: "",
+      mustChangePassword: true,
+    });
+    setResetError(null);
+    setResetSuccess(false);
+  }
+
+  async function handleResetSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!resetStaff) return;
+    setResetError(null);
+
+    if (resetForm.password.length < 8 || resetForm.password.length > 72) {
+      setResetError("Mật khẩu phải từ 8 đến 72 ký tự");
+      return;
+    }
+    if (resetForm.password !== resetForm.confirmPassword) {
+      setResetError("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    setResetSubmitting(true);
+    try {
+      await resetStaffPassword(resetStaff.id, {
+        password: resetForm.password,
+        mustChangePassword: resetForm.mustChangePassword,
+      });
+      setResetSuccess(true);
+    } catch (err) {
+      setResetError(err instanceof Error ? err.message : "Không thể đặt lại mật khẩu");
+    } finally {
+      setResetSubmitting(false);
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -248,6 +376,29 @@ export default function EmployeesPage() {
       header: "Trạng thái",
       accessorKey: "status",
       cell: (item) => <StatusBadge status={item.status} />,
+    },
+    {
+      header: "Thao tác",
+      cell: (item) => (
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <button
+            type="button"
+            onClick={() => handleOpenEdit(item)}
+            className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+          >
+            <Pencil className="h-3 w-3 text-slate-500" />
+            <span>Sửa</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOpenReset(item)}
+            className="flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50/60 px-2 py-1 text-xs font-semibold text-vnpt hover:bg-blue-100/70"
+          >
+            <KeyRound className="h-3 w-3" />
+            <span>Đổi mật khẩu</span>
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -684,6 +835,388 @@ export default function EmployeesPage() {
                 Đóng
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Staff Modal */}
+      {editingStaff && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6 overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl my-auto">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Sửa thông tin nhân viên</h3>
+                <p className="text-xs text-slate-500">
+                  Mã nhân viên: <span className="font-mono font-bold text-vnpt">{editingStaff.code}</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingStaff(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              {editingStaff.name !== editForm.name.trim() && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800 flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold">Cảnh báo đổi tên dây chuyền:</p>
+                    <p>Đổi tên sẽ cập nhật tên này ở Lead, Đơn hàng, Khách hàng, Công nợ, Gia hạn…</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Họ và tên <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      required
+                      placeholder="VD: Nguyễn Văn An"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Loại nhân viên
+                    </label>
+                    <select
+                      value={editForm.staffType}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, staffType: e.target.value as StaffType })
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    >
+                      {STAFF_TYPE_OPTIONS.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Mã HRM
+                    </label>
+                    <input
+                      placeholder="VD: HRM-0123"
+                      value={editForm.hrmCode}
+                      onChange={(e) => setEditForm({ ...editForm, hrmCode: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Vai trò <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={editForm.role}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, role: e.target.value as StaffRecord["role"] })
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    >
+                      {ROLE_OPTIONS.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Phường phụ trách
+                    </label>
+                    {territories.length > 0 ? (
+                      <select
+                        value={editForm.territory}
+                        onChange={(e) => setEditForm({ ...editForm, territory: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                      >
+                        <option value="">— Chưa gắn địa bàn —</option>
+                        {territories.map((t) => (
+                          <option key={t.id} value={t.wardName}>
+                            {t.wardName}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        placeholder="VD: Phường Tân Phong"
+                        value={editForm.territory}
+                        onChange={(e) => setEditForm({ ...editForm, territory: e.target.value })}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Email VNPT
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="VD: an.nv@vnpt.vn"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Số điện thoại
+                    </label>
+                    <input
+                      placeholder="VD: 0912345678"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Ngày sinh
+                    </label>
+                    <input
+                      type="date"
+                      value={editForm.birthDate}
+                      onChange={(e) => setEditForm({ ...editForm, birthDate: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-600">
+                      Gmail cá nhân
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="VD: an.nguyen@gmail.com"
+                      value={editForm.personalEmail}
+                      onChange={(e) => setEditForm({ ...editForm, personalEmail: e.target.value })}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Tên viết tắt
+                  </label>
+                  <input
+                    placeholder="VD: AN"
+                    value={editForm.shortName}
+                    onChange={(e) => setEditForm({ ...editForm, shortName: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Ghi chú
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Ghi chú thêm về nhân sự..."
+                    value={editForm.note}
+                    onChange={(e) => setEditForm({ ...editForm, note: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Khối tài khoản trong form sửa: có nút Đặt lại mật khẩu */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-vnpt">
+                    Tài khoản đăng nhập
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Tên đăng nhập: <span className="font-mono font-bold text-slate-800">{editingStaff.code}</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleOpenReset(editingStaff);
+                  }}
+                  className="flex items-center gap-1.5 rounded-xl border border-blue-300 bg-white px-3 py-1.5 text-xs font-bold text-vnpt hover:bg-blue-50 shadow-xs"
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  <span>Đặt lại mật khẩu</span>
+                </button>
+              </div>
+
+              {editError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {editError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingStaff(null)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEdit}
+                  className="btn-label rounded-xl bg-vnpt px-4 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {savingEdit ? "Đang lưu..." : "Lưu thay đổi"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {resetStaff && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <KeyRound className="h-5 w-5 text-vnpt" />
+                <h3 className="text-base font-bold text-slate-900">Đặt lại mật khẩu</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setResetStaff(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mb-4 rounded-xl bg-slate-50 p-3 text-xs text-slate-700 space-y-1">
+              <div>
+                <span className="text-slate-500">Nhân viên: </span>
+                <span className="font-semibold text-slate-900">{resetStaff.name}</span>
+              </div>
+              <div>
+                <span className="text-slate-500">Tên đăng nhập: </span>
+                <span className="font-mono font-bold text-vnpt">{resetStaff.code}</span>
+              </div>
+            </div>
+
+            {resetSuccess ? (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center text-xs text-emerald-800">
+                  <p className="font-bold text-sm">Đặt lại mật khẩu thành công!</p>
+                  <p className="mt-1">Nhân viên có thể sử dụng mật khẩu mới để đăng nhập.</p>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setResetStaff(null)}
+                    className="btn-label rounded-xl bg-vnpt px-4 py-2 text-white hover:bg-vnpt-dark"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleResetSubmit} className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Mật khẩu mới <span className="text-rose-500">*</span> (8–72 ký tự)
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={8}
+                    maxLength={72}
+                    placeholder="Nhập mật khẩu mới"
+                    value={resetForm.password}
+                    onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Nhập lại mật khẩu mới <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={8}
+                    maxLength={72}
+                    placeholder="Xác nhận mật khẩu mới"
+                    value={resetForm.confirmPassword}
+                    onChange={(e) => setResetForm({ ...resetForm, confirmPassword: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="resetMustChangePassword"
+                    checked={resetForm.mustChangePassword}
+                    onChange={(e) =>
+                      setResetForm({ ...resetForm, mustChangePassword: e.target.checked })
+                    }
+                    className="h-4 w-4 rounded border-slate-300 text-vnpt focus:ring-vnpt"
+                  />
+                  <label
+                    htmlFor="resetMustChangePassword"
+                    className="text-xs font-medium text-slate-700 select-none cursor-pointer"
+                  >
+                    Bắt đổi mật khẩu ở lần đăng nhập tiếp theo
+                  </label>
+                </div>
+
+                {resetError && (
+                  <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                    {resetError}
+                  </p>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setResetStaff(null)}
+                    className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetSubmitting}
+                    className="btn-label rounded-xl bg-vnpt px-4 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                  >
+                    {resetSubmitting ? "Đang xử lý..." : "Cập nhật mật khẩu"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

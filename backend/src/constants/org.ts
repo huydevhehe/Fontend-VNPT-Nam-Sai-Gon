@@ -50,4 +50,16 @@ export type StaffStatus = (typeof STAFF_STATUSES)[number];
 
 export const INACTIVE_USER_STATUS = "Ngừng hoạt động";
 
+export const STAFF_NAME_REFERENCES: ReadonlyArray<readonly [table: string, column: string]> = [
+  ["leads", "staff_name"],
+  ["debts", "staff_name"],
+  ["renewals", "staff_name"],
+  ["customers", "am_staff"],
+  ["customers", "am_caring_staff"],
+  ["services", "staff_name"],
+  ["tasks", "assignee"],
+  ["territories", "staff_name"],
+  ["ward_contacts", "am_in_charge"],
+];
+
 

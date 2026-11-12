@@ -273,11 +273,14 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
     const code = `NV-T4D-${Date.now()}`;
     const password = "Matkhau@DongBo1";
+    const initialName = `NV T4 Ngừng ${code}`;
+    const updatedName = `NV T4 Đổi tên ${code}`;
+
     const created = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
       data: {
         code,
-        name: "NV T4 Ngừng",
+        name: initialName,
         role: "AM",
         territory: "Khu vực T4",
         email: `${code.toLowerCase()}@example.com`,
@@ -300,7 +303,7 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
 
     const on = await request.patch(`${API_URL}/staff/${staff.id}`, {
       headers: bearer(adminToken),
-      data: { status: "Đang hoạt động", role: "AM Bán chăm", name: "NV T4 Đổi tên" },
+      data: { status: "Đang hoạt động", role: "AM Bán chăm", name: updatedName },
     });
     expect(on.status()).toBe(200);
 
@@ -308,6 +311,6 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
     expect(ok.status()).toBe(200);
     const user = (await ok.json()).data.user;
     expect(user.role).toBe("AM Bán chăm");
-    expect(user.name).toBe("NV T4 Đổi tên");
+    expect(user.name).toBe(updatedName);
   });
 });

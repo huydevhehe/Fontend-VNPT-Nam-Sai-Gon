@@ -60,3 +60,14 @@ export function updateStaff(
     body: JSON.stringify(patch),
   });
 }
+
+export function resetStaffPassword(
+  id: string,
+  data: { password: string; mustChangePassword?: boolean }
+): Promise<{ success: boolean; message: string }> {
+  return apiFetch<{ success: boolean; message: string }>(`/staff/${id}/password`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+

@@ -79,21 +79,48 @@ staffRouter.patch("/:id", requireAuth, requireAdmin, async (req: Request, res: R
       note,
     } = req.body ?? {};
 
-    const staff = await staffService.update(id, {
-      name,
-      role,
-      territory,
-      status,
-      email,
-      hrmCode,
-      staffType,
-      phone,
-      birthDate,
-      personalEmail,
-      shortName,
-      note,
-    });
+    const staff = await staffService.update(
+      id,
+      {
+        name,
+        role,
+        territory,
+        status,
+        email,
+        hrmCode,
+        staffType,
+        phone,
+        birthDate,
+        personalEmail,
+        shortName,
+        note,
+      },
+      (req as any).user?.name
+    );
     res.json({ success: true, data: staff });
+  } catch (error: any) {
+    const statusCode =
+      error instanceof HttpError
+        ? error.status
+        : error.message === "Không tìm thấy Nhân viên"
+        ? 404
+        : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// PATCH /api/staff/:id/password — chỉ Admin được đặt lại mật khẩu
+staffRouter.patch("/:id/password", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { password, mustChangePassword } = req.body ?? {};
+    await staffService.resetPassword(
+      id,
+      password,
+      mustChangePassword !== undefined ? Boolean(mustChangePassword) : true,
+      (req as any).user?.name
+    );
+    res.json({ success: true, message: "Đặt lại mật khẩu thành công" });
   } catch (error: any) {
     const statusCode =
       error instanceof HttpError

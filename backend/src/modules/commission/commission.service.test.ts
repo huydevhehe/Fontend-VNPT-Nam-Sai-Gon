@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 const { initDatabase, query, run } = await import("../../database/db.js");
 const { CommissionService } = await import("./commission.service.js");
 const { ContractService } = await import("../contract/contract.service.js");
+const { todayVn } = await import("../../utils/date-vn.js");
 
 await initDatabase();
 
@@ -220,4 +221,83 @@ test("customerPaid follows new payments until overridden", async () => {
   row = all.find((c) => c.id === created!.id);
   assert.equal(row!.customerPaidAuto, 3000000);
   assert.equal(row!.customerPaid, 1000000);
+});
+
+test("updatePayout sets paid out amount and default date", async () => {
+  const service = new CommissionService();
+  const id = `HH-TEST-PAYOUT-${Date.now()}`;
+  await run(
+    `INSERT INTO commissions (id, recipient_name, type, transaction_code, amount, status, date)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [id, "CTV Payout", "Hoa hồng CTV", "GD-PAYOUT-1", 1000000, "Chờ chi", "2026-11-08"]
+  );
+
+  const updated = await service.updatePayout(id, { paidOutAmount: 500000 });
+  assert.equal(updated.paidOutAmount, 500000);
+  assert.equal(updated.paidOutDate, todayVn());
+  assert.equal(updated.remaining, 500000);
+});
+
+test("updatePayout null override restores auto value", async () => {
+  const suffix = Date.now();
+  const ctv = await createTestCtv(`PAYOUT-${suffix}`);
+  const contractId = `CTR-PAYOUT-${suffix}`;
+  await createTestContract({
+    id: contractId,
+    transactionCode: `GD-PAYOUT-${suffix}`,
+    customerName: `Khách Payout ${suffix}`,
+    totalValue: 5000000,
+    referredByCtvId: ctv.id,
+  });
+  await contractService.addPayment(contractId, { amount: 4000000 }, "Admin Test");
+
+  const service = new CommissionService();
+  const created = await service.createForContract({
+    id: contractId,
+    transaction_code: `GD-PAYOUT-${suffix}`,
+    total_value: 5000000,
+    referred_by_ctv_id: ctv.id,
+  });
+  assert.ok(created);
+
+  const overridden = await service.updatePayout(created!.id, { customerPaidOverride: 1000000 });
+  assert.equal(overridden.customerPaid, 1000000);
+
+  const restored = await service.updatePayout(created!.id, { customerPaidOverride: null });
+  assert.equal(restored.customerPaidOverride, null);
+  assert.equal(restored.customerPaid, 4000000);
+});
+
+test("updatePayout rejects negative amounts", async () => {
+  const service = new CommissionService();
+  const id = `HH-TEST-NEG-${Date.now()}`;
+  await run(
+    `INSERT INTO commissions (id, recipient_name, type, transaction_code, amount, status, date)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [id, "CTV Neg", "Hoa hồng CTV", "GD-NEG-1", 1000000, "Chờ chi", "2026-11-08"]
+  );
+
+  await assert.rejects(() => service.updatePayout(id, { paidOutAmount: -100 }), /hợp lệ/);
+  await assert.rejects(() => service.updatePayout(id, { customerPaidOverride: -100 }), /hợp lệ/);
+});
+
+test("updatePayout remaining can be negative when overpaid", async () => {
+  const service = new CommissionService();
+  const id = `HH-TEST-OVERPAID-${Date.now()}`;
+  await run(
+    `INSERT INTO commissions (id, recipient_name, type, transaction_code, amount, status, date)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [id, "CTV Overpaid", "Hoa hồng CTV", "GD-OVERPAID-1", 1000000, "Chờ chi", "2026-11-08"]
+  );
+
+  const updated = await service.updatePayout(id, { paidOutAmount: 1500000 });
+  assert.equal(updated.remaining, -500000);
+});
+
+test("updatePayout throws not found when id does not exist", async () => {
+  const service = new CommissionService();
+  await assert.rejects(
+    () => service.updatePayout("HH-NONEXISTENT-PAYOUT", { paidOutAmount: 1000 }),
+    /Không tìm thấy Hoa hồng/
+  );
 });

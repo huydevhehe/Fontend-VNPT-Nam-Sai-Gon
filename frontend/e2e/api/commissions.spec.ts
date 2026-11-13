@@ -85,3 +85,71 @@ test.describe("API Quản lý số tiền hoa hồng (PATCH /commissions/:id/amo
     expect(notFoundRes.status()).toBe(404);
   });
 });
+
+test.describe("API Chi hoa hồng & ghi đè khách đã chi (PATCH /commissions/:id/payout)", () => {
+  test("Admin ghi nhận đã chi hoa hồng và ghi đè khách đã chi thành công (200)", async ({ request }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+
+    const listRes = await request.get(`${API_URL}/commissions`, {
+      headers: bearer(adminToken),
+    });
+    const list = (await listRes.json()).data as { id: string }[];
+    expect(list.length).toBeGreaterThan(0);
+    const target = list[0];
+
+    const patchRes = await request.patch(`${API_URL}/commissions/${target.id}/payout`, {
+      headers: bearer(adminToken),
+      data: { paidOutAmount: 500000, customerPaidOverride: 1000000 },
+    });
+    expect(patchRes.status()).toBe(200);
+    const body = await patchRes.json();
+    expect(body.success).toBe(true);
+    expect(body.data.paidOutAmount).toBe(500000);
+    expect(body.data.customerPaidOverride).toBe(1000000);
+    expect(body.data.customerPaid).toBe(1000000);
+    expect(body.data.remaining).toBe(body.data.amount - 500000);
+  });
+
+  test("AM (không phải Admin) gọi PATCH /payout bị từ chối 403", async ({ request }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+    const amToken = await apiLogin(request, AM.username, AM.password);
+
+    const listRes = await request.get(`${API_URL}/commissions`, {
+      headers: bearer(adminToken),
+    });
+    const list = (await listRes.json()).data as { id: string }[];
+    const target = list[0];
+
+    const patchRes = await request.patch(`${API_URL}/commissions/${target.id}/payout`, {
+      headers: bearer(amToken),
+      data: { paidOutAmount: 100000 },
+    });
+    expect(patchRes.status()).toBe(403);
+  });
+
+  test("Số tiền đã chi âm trả 400", async ({ request }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+
+    const listRes = await request.get(`${API_URL}/commissions`, {
+      headers: bearer(adminToken),
+    });
+    const list = (await listRes.json()).data as { id: string }[];
+    const target = list[0];
+
+    const negativeRes = await request.patch(`${API_URL}/commissions/${target.id}/payout`, {
+      headers: bearer(adminToken),
+      data: { paidOutAmount: -1000 },
+    });
+    expect(negativeRes.status()).toBe(400);
+  });
+
+  test("ID không tồn tại trả 404", async ({ request }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+
+    const notFoundRes = await request.patch(`${API_URL}/commissions/HH-KHONG-TON-TAI/payout`, {
+      headers: bearer(adminToken),
+      data: { paidOutAmount: 200000 },
+    });
+    expect(notFoundRes.status()).toBe(404);
+  });
+});

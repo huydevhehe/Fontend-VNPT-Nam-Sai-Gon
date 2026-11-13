@@ -2,13 +2,19 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock, AlertTriangle, Edit3, X } from "lucide-react";
+import { Percent, ShieldAlert, ArrowDownLeft, ArrowUpRight, Clock, AlertTriangle, Edit3, Wallet, X } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
 import { useAuth } from "@/lib/auth/auth-context";
-import { getCommissions, updateCommissionStatus, updateCommissionAmount } from "@/lib/api/commissions.api";
+import {
+  getCommissions,
+  updateCommissionStatus,
+  updateCommissionAmount,
+  updateCommissionPayout,
+} from "@/lib/api/commissions.api";
 import { CommissionRecord } from "@/lib/crm/types/crm.types";
+import { TableFilter } from "@/lib/table-filters";
 
 const COMMISSION_STATUSES: CommissionRecord["status"][] = [
   "Đã nhận",
@@ -16,6 +22,11 @@ const COMMISSION_STATUSES: CommissionRecord["status"][] = [
   "Đã chi",
   "Chờ chi",
 ];
+
+function formatMoney(value: number | null): string {
+  if (value === null || value === undefined) return "—";
+  return `${value.toLocaleString("vi-VN")} ₫`;
+}
 
 export default function CommissionsPage() {
   const { user } = useAuth();
@@ -30,6 +41,13 @@ export default function CommissionsPage() {
   const [noteInput, setNoteInput] = useState<string>("");
   const [modalError, setModalError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const [payoutItem, setPayoutItem] = useState<CommissionRecord | null>(null);
+  const [payoutOverrideInput, setPayoutOverrideInput] = useState<string>("");
+  const [payoutAmountInput, setPayoutAmountInput] = useState<string>("");
+  const [payoutDateInput, setPayoutDateInput] = useState<string>("");
+  const [payoutError, setPayoutError] = useState<string | null>(null);
+  const [payoutSaving, setPayoutSaving] = useState(false);
 
   function openEditModal(item: CommissionRecord) {
     setEditingItem(item);
@@ -57,6 +75,55 @@ export default function CommissionsPage() {
       setModalError(err.message || "Không thể cập nhật số tiền hoa hồng");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function openPayoutModal(item: CommissionRecord) {
+    setPayoutItem(item);
+    setPayoutOverrideInput(
+      item.customerPaidOverride !== null && item.customerPaidOverride !== undefined
+        ? String(item.customerPaidOverride)
+        : ""
+    );
+    setPayoutAmountInput(String(item.paidOutAmount ?? 0));
+    setPayoutDateInput(item.paidOutDate ?? "");
+    setPayoutError(null);
+  }
+
+  async function handleSavePayout(e: FormEvent) {
+    e.preventDefault();
+    if (!payoutItem) return;
+
+    const overrideTrimmed = payoutOverrideInput.trim();
+    let overrideVal: number | null = null;
+    if (overrideTrimmed !== "") {
+      overrideVal = Number(overrideTrimmed);
+      if (isNaN(overrideVal) || overrideVal < 0) {
+        setPayoutError("Số tiền \"Khách đã chi\" phải là số lớn hơn hoặc bằng 0");
+        return;
+      }
+    }
+
+    const amountVal = Number(payoutAmountInput);
+    if (isNaN(amountVal) || amountVal < 0) {
+      setPayoutError("Số tiền đã chi hoa hồng phải là số lớn hơn hoặc bằng 0");
+      return;
+    }
+
+    setPayoutSaving(true);
+    setPayoutError(null);
+    try {
+      const updated = await updateCommissionPayout(payoutItem.id, {
+        customerPaidOverride: overrideVal,
+        paidOutAmount: amountVal,
+        paidOutDate: payoutDateInput.trim() || null,
+      });
+      setData((prev) => prev.map((row) => (row.id === payoutItem.id ? updated : row)));
+      setPayoutItem(null);
+    } catch (err) {
+      setPayoutError(err instanceof Error ? err.message : "Không thể cập nhật chi hoa hồng");
+    } finally {
+      setPayoutSaving(false);
     }
   }
 
@@ -93,31 +160,12 @@ export default function CommissionsPage() {
     };
   }, []);
 
+  // Thứ tự cột theo Global Constraints đợt 4: Mã giao dịch → Người giới thiệu →
+  // Khách hàng → Loại → Khách đã chi → Hoa hồng phải chi → Đã chi hoa hồng →
+  // Còn lại → Trạng thái → Ngày.
   const columns: Column<CommissionRecord>[] = [
     {
-      header: "Đối tượng thụ hưởng",
-      accessorKey: "recipientName",
-      cell: (item) => (
-        <span className="font-bold text-slate-900">{item.recipientName}</span>
-      ),
-    },
-    {
-      header: "Loại hoa hồng",
-      accessorKey: "type",
-      cell: (item) => (
-        <span
-          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold ${
-            item.type === "Hoa hồng nội bộ"
-              ? "bg-blue-50 text-blue-700"
-              : "bg-purple-50 text-purple-700"
-          }`}
-        >
-          {item.type}
-        </span>
-      ),
-    },
-    {
-      header: "Hợp đồng / Mã GD",
+      header: "Mã giao dịch",
       accessorKey: "transactionCode",
       cell: (item) =>
         item.contractId ? (
@@ -134,13 +182,55 @@ export default function CommissionsPage() {
         ),
     },
     {
-      header: "Số tiền hoa hồng",
+      header: "Người giới thiệu",
+      accessorKey: "referrerName",
+      cell: (item) => (
+        <div>
+          <span className="font-bold text-slate-900">{item.referrerName ?? "—"}</span>
+          {item.referrerCode && (
+            <p className="text-[11px] font-mono text-slate-400">{item.referrerCode}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Khách hàng",
+      accessorKey: "customerName",
+      cell: (item) => <span className="text-slate-700">{item.customerName ?? "—"}</span>,
+    },
+    {
+      header: "Loại",
+      accessorKey: "type",
+      cell: (item) => (
+        <span
+          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold ${
+            item.type === "Hoa hồng nội bộ"
+              ? "bg-blue-50 text-blue-700"
+              : "bg-purple-50 text-purple-700"
+          }`}
+        >
+          {item.type}
+        </span>
+      ),
+    },
+    {
+      header: "Khách đã chi",
+      accessorKey: "customerPaid",
+      cell: (item) => (
+        <div>
+          <span className="font-semibold text-slate-800">{formatMoney(item.customerPaid)}</span>
+          {item.customerPaidOverride !== null && item.customerPaidOverride !== undefined && (
+            <p className="text-[11px] text-amber-600">Đã sửa tay</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Hoa hồng phải chi",
       accessorKey: "amount",
       cell: (item) => (
         <div>
-          <span className="font-bold text-slate-900">
-            {item.amount.toLocaleString("vi-VN")} ₫
-          </span>
+          <span className="font-bold text-slate-900">{formatMoney(item.amount)}</span>
           {item.note && (
             <p className="text-[11px] text-slate-500 italic mt-0.5">{item.note}</p>
           )}
@@ -148,8 +238,25 @@ export default function CommissionsPage() {
       ),
     },
     {
-      header: "Ngày ghi nhận",
-      accessorKey: "date",
+      header: "Đã chi hoa hồng",
+      accessorKey: "paidOutAmount",
+      cell: (item) => (
+        <div>
+          <span className="font-semibold text-slate-800">{formatMoney(item.paidOutAmount)}</span>
+          {item.paidOutDate && (
+            <p className="text-[11px] text-slate-400">{item.paidOutDate}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Còn lại",
+      accessorKey: "remaining",
+      cell: (item) => (
+        <span className={`font-bold ${item.remaining < 0 ? "text-rose-600" : "text-emerald-700"}`}>
+          {formatMoney(item.remaining)}
+        </span>
+      ),
     },
     {
       header: "Trạng thái",
@@ -167,23 +274,43 @@ export default function CommissionsPage() {
         />
       ),
     },
+    {
+      header: "Ngày",
+      accessorKey: "date",
+    },
     ...(isAdmin
       ? [
           {
             header: "Thao tác",
             cell: (item: CommissionRecord) => (
-              <button
-                type="button"
-                onClick={() => openEditModal(item)}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
-              >
-                <Edit3 className="h-3 w-3" />
-                Sửa số tiền
-              </button>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => openEditModal(item)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
+                >
+                  <Edit3 className="h-3 w-3" />
+                  Sửa số tiền
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openPayoutModal(item)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
+                >
+                  <Wallet className="h-3 w-3" />
+                  Chi hoa hồng
+                </button>
+              </div>
             ),
           },
         ]
       : []),
+  ];
+
+  const filters: TableFilter<CommissionRecord>[] = [
+    { id: "referrerName", label: "Người giới thiệu", getValue: (row) => row.referrerName },
+    { id: "type", label: "Loại", getValue: (row) => row.type },
+    { id: "status", label: "Trạng thái", getValue: (row) => row.status },
   ];
 
   return (
@@ -252,7 +379,8 @@ export default function CommissionsPage() {
           subtitle="Chi tiết từng giao dịch nhận từ Sales và lệnh chi cho đối tác"
           columns={columns}
           data={data}
-          searchPlaceholder="Tìm theo đối tượng thụ hưởng, mã giao dịch..."
+          filters={filters}
+          searchPlaceholder="Tìm theo người giới thiệu, khách hàng, mã giao dịch..."
           exportFileName="vnpt_hoa_hong"
         />
       )}
@@ -332,6 +460,99 @@ export default function CommissionsPage() {
                   className="rounded-xl bg-vnpt px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-vnpt-darker"
                 >
                   {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Chi Hoa Hồng (Chỉ dành cho Admin): ghi nhận đã chi + ghi đè khách đã chi */}
+      {payoutItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">Chi hoa hồng</h3>
+              <button
+                type="button"
+                onClick={() => setPayoutItem(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePayout} className="mt-4 space-y-4">
+              <div>
+                <p className="text-xs text-slate-500 mb-1">
+                  Người giới thiệu: <strong className="text-slate-800">{payoutItem.referrerName ?? "—"}</strong>
+                </p>
+                <p className="text-xs text-slate-500 mb-2">
+                  Mã GD: <strong className="font-mono text-slate-800">{payoutItem.transactionCode}</strong>
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+                <label className="text-form-label mb-1.5 block text-slate-700">Khách đã chi</label>
+                <p className="text-xs text-slate-500 mb-2">
+                  Tự tính từ đơn hàng: <strong>{formatMoney(payoutItem.customerPaidAuto)}</strong>
+                </p>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={payoutOverrideInput}
+                  onChange={(e) => setPayoutOverrideInput(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-vnpt focus:outline-hidden"
+                  placeholder="Sửa tay (để trống = dùng số tự tính)"
+                />
+              </div>
+
+              <div>
+                <label className="text-form-label mb-1.5 block text-slate-700">
+                  Đã chi hoa hồng (VNĐ) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  required
+                  value={payoutAmountInput}
+                  onChange={(e) => setPayoutAmountInput(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm text-slate-800 focus:border-vnpt focus:bg-white focus:outline-hidden"
+                  placeholder="Nhập số tiền đã chi..."
+                />
+              </div>
+
+              <div>
+                <label className="text-form-label mb-1.5 block text-slate-700">Ngày chi</label>
+                <input
+                  type="date"
+                  value={payoutDateInput}
+                  onChange={(e) => setPayoutDateInput(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm text-slate-800 focus:border-vnpt focus:bg-white focus:outline-hidden"
+                />
+              </div>
+
+              {payoutError && (
+                <p className="text-xs font-semibold text-rose-600">{payoutError}</p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPayoutItem(null)}
+                  disabled={payoutSaving}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={payoutSaving}
+                  className="rounded-xl bg-vnpt px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-vnpt-darker"
+                >
+                  {payoutSaving ? "Đang lưu..." : "Lưu thay đổi"}
                 </button>
               </div>
             </form>

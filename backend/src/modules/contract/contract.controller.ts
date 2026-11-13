@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { requireAuth } from "../../middleware/require-auth.js";
+import { requireAdmin } from "../../middleware/require-role.js";
 import { ContractService } from "./contract.service.js";
 
 export const contractRouter = Router();
@@ -122,6 +123,53 @@ contractRouter.patch("/:id", requireAuth, async (req: Request, res: Response) =>
   }
 });
 
+// POST /api/contracts/:id/payments
+contractRouter.post("/:id/payments", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { amount, paidDate, note } = req.body;
+    const actorName = (req as any).user?.name || (req as any).user?.username || "Admin";
+
+    const contract = await contractService.addPayment(
+      id,
+      {
+        amount: Number(amount),
+        paidDate,
+        note,
+      },
+      actorName
+    );
+
+    res.status(201).json({ success: true, data: contract });
+  } catch (error: any) {
+    const statusCode = error.message === "Không tìm thấy Hợp đồng" ? 404 : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// GET /api/contracts/:id/payments
+contractRouter.get("/:id/payments", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const payments = await contractService.listPayments(id);
+    res.json({ success: true, data: payments });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/contracts/payments/:paymentId
+contractRouter.delete("/payments/:paymentId", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { paymentId } = req.params;
+    const contract = await contractService.deletePayment(paymentId);
+    res.json({ success: true, data: contract });
+  } catch (error: any) {
+    const statusCode = error.message === "Không tìm thấy lần thu tiền" ? 404 : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
 // PATCH /api/contracts/:id/status
 contractRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {
@@ -138,6 +186,53 @@ contractRouter.patch("/:id/status", requireAuth, async (req: Request, res: Respo
     res.json({ success: true, data: contract });
   } catch (error: any) {
     const statusCode = error.message === "Không tìm thấy Hợp đồng" ? 404 : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/contracts/:id/payments
+contractRouter.post("/:id/payments", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { amount, paidDate, note } = req.body;
+    const actorName = (req as any).user?.name || (req as any).user?.username || "Admin";
+
+    const contract = await contractService.addPayment(
+      id,
+      {
+        amount: Number(amount),
+        paidDate,
+        note,
+      },
+      actorName
+    );
+
+    res.status(201).json({ success: true, data: contract });
+  } catch (error: any) {
+    const statusCode = error.message === "Không tìm thấy Hợp đồng" ? 404 : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// GET /api/contracts/:id/payments
+contractRouter.get("/:id/payments", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const payments = await contractService.listPayments(id);
+    res.json({ success: true, data: payments });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/contracts/payments/:paymentId
+contractRouter.delete("/payments/:paymentId", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { paymentId } = req.params;
+    const contract = await contractService.deletePayment(paymentId);
+    res.json({ success: true, data: contract });
+  } catch (error: any) {
+    const statusCode = error.message === "Không tìm thấy lần thu tiền" ? 404 : 400;
     res.status(statusCode).json({ success: false, message: error.message });
   }
 });

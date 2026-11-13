@@ -21,6 +21,10 @@ import {
   createContract,
   updateContractInfo,
   updateContractStatus,
+  getContractPayments,
+  addContractPayment,
+  deleteContractPayment,
+  ContractPaymentDto,
 } from "@/lib/api/contracts.api";
 import { getLeads, getCtvOptions, CtvOption } from "@/lib/api/leads.api";
 import { getTerritories } from "@/lib/api/territories.api";
@@ -106,6 +110,16 @@ export default function ContractsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Payment Modal state
+  const [payingOrder, setPayingOrder] = useState<ContractRecord | null>(null);
+  const [payments, setPayments] = useState<ContractPaymentDto[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDate, setPaymentDate] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [addingPayment, setAddingPayment] = useState(false);
 
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [territories, setTerritories] = useState<TerritoryRecord[]>([]);
@@ -223,6 +237,73 @@ export default function ContractsPage() {
     setForm(EMPTY_FORM);
     setFormError(null);
     setShowForm(true);
+  }
+
+  async function handleOpenPaymentModal(order: ContractRecord) {
+    setPayingOrder(order);
+    setPaymentAmount("");
+    setPaymentDate(new Date().toLocaleDateString("en-CA"));
+    setPaymentNote("");
+    setPaymentError(null);
+    setLoadingPayments(true);
+    try {
+      const list = await getContractPayments(order.id);
+      setPayments(list);
+    } catch (err) {
+      setPaymentError(err instanceof Error ? err.message : "Không thể tải lịch sử thu tiền");
+    } finally {
+      setLoadingPayments(false);
+    }
+  }
+
+  async function handleAddPayment(e: FormEvent) {
+    e.preventDefault();
+    if (!payingOrder) return;
+    const num = Number(paymentAmount);
+    if (!num || num <= 0) {
+      setPaymentError("Số tiền phải lớn hơn 0");
+      return;
+    }
+
+    setAddingPayment(true);
+    setPaymentError(null);
+    try {
+      const updated = await addContractPayment(payingOrder.id, {
+        amount: num,
+        paidDate: paymentDate || undefined,
+        note: paymentNote || undefined,
+      });
+
+      // Update in data table
+      setData((prev) => prev.map((row) => (row.id === updated.id ? updated : row)));
+      setPayingOrder(updated);
+
+      // Reload payments list
+      const list = await getContractPayments(updated.id);
+      setPayments(list);
+      setPaymentAmount("");
+      setPaymentNote("");
+    } catch (err) {
+      setPaymentError(err instanceof Error ? err.message : "Không thể ghi nhận thu tiền");
+    } finally {
+      setAddingPayment(false);
+    }
+  }
+
+  async function handleDeletePayment(paymentId: string) {
+    if (!payingOrder) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa lần thu tiền này?")) return;
+
+    try {
+      const updated = await deleteContractPayment(paymentId);
+      setData((prev) => prev.map((row) => (row.id === updated.id ? updated : row)));
+      setPayingOrder(updated);
+
+      const list = await getContractPayments(updated.id);
+      setPayments(list);
+    } catch (err) {
+      setPaymentError(err instanceof Error ? err.message : "Không thể xóa lần thu tiền");
+    }
   }
 
   function handleOpenEdit(order: ContractRecord) {
@@ -475,6 +556,15 @@ export default function ContractsPage() {
       accessorKey: "id",
       cell: (item) => (
         <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => handleOpenPaymentModal(item)}
+            className="flex h-7 items-center gap-1 rounded-lg bg-emerald-50 px-2 text-xs font-semibold text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+            title="Thu tiền đơn hàng"
+          >
+            <Banknote className="h-3.5 w-3.5" />
+            <span>Thu tiền</span>
+          </button>
           <button
             type="button"
             onClick={() => handleOpenEdit(item)}
@@ -960,6 +1050,180 @@ export default function ContractsPage() {
                   className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {submitting ? "Đang lưu..." : editingId ? "Lưu thay đổi" : "Tạo đơn hàng"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {payingOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between border-b pb-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Ghi nhận thu tiền — {payingOrder.transactionCode}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Khách hàng: <span className="font-semibold text-slate-800">{payingOrder.customerName}</span> · Giá trị:{" "}
+                  <span className="font-semibold text-slate-800">
+                    {payingOrder.totalValue.toLocaleString("vi-VN")} ₫
+                  </span>
+                </p>
+              </div>
+              <button
+                onClick={() => setPayingOrder(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Warning if over-collected */}
+            {Number(payingOrder.collectedAmount || 0) > payingOrder.totalValue && (
+              <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  Cảnh báo: Tổng tiền đã thu vượt quá giá trị đơn hàng!
+                </div>
+                <div className="mt-1">
+                  Đã thu:{" "}
+                  <b>{Number(payingOrder.collectedAmount || 0).toLocaleString("vi-VN")} ₫</b> / Giá trị đơn:{" "}
+                  <b>{payingOrder.totalValue.toLocaleString("vi-VN")} ₫</b> (Dư:{" "}
+                  <b>
+                    {(
+                      Number(payingOrder.collectedAmount || 0) - payingOrder.totalValue
+                    ).toLocaleString("vi-VN")}{" "}
+                    ₫
+                  </b>
+                  )
+                </div>
+              </div>
+            )}
+
+            {/* Status summary */}
+            <div className="mb-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-3 text-center">
+              <div>
+                <span className="block text-[11px] text-slate-500">Giá trị đơn</span>
+                <span className="text-sm font-bold text-slate-900">
+                  {payingOrder.totalValue.toLocaleString("vi-VN")} ₫
+                </span>
+              </div>
+              <div>
+                <span className="block text-[11px] text-slate-500">Đã thu</span>
+                <span className="text-sm font-bold text-emerald-600">
+                  {Number(payingOrder.collectedAmount || 0).toLocaleString("vi-VN")} ₫
+                </span>
+              </div>
+              <div>
+                <span className="block text-[11px] text-slate-500">Còn lại</span>
+                <span className="text-sm font-bold text-rose-600">
+                  {Math.max(
+                    0,
+                    payingOrder.totalValue - Number(payingOrder.collectedAmount || 0)
+                  ).toLocaleString("vi-VN")}{" "}
+                  ₫
+                </span>
+              </div>
+            </div>
+
+            {/* Payments List */}
+            <div className="mb-4">
+              <h4 className="mb-2 text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Lịch sử các lần thu ({payments.length})
+              </h4>
+              {loadingPayments ? (
+                <div className="py-4 text-center text-xs text-slate-400">Đang tải lịch sử thu tiền...</div>
+              ) : payments.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400 italic">
+                  Chưa có lần thu tiền nào được ghi nhận.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                  {payments.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between p-3 text-xs">
+                      <div>
+                        <div className="font-bold text-slate-900">
+                          {p.amount.toLocaleString("vi-VN")} ₫
+                        </div>
+                        <div className="text-[11px] text-slate-500">
+                          Ngày thu: {p.paidDate} {p.createdBy ? `· Thu bởi: ${p.createdBy}` : ""}
+                        </div>
+                        {p.note && <div className="text-[11px] text-slate-600 italic">"{p.note}"</div>}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePayment(p.id)}
+                        className="rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                        title="Xóa lần thu này"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Add Payment Form */}
+            <form onSubmit={handleAddPayment} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Thêm lần thu tiền mới
+              </h4>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Số tiền thu (₫) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    min={1}
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    placeholder="VD: 2000000"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Ngày thu
+                  </label>
+                  <input
+                    type="date"
+                    value={paymentDate}
+                    onChange={(e) => setPaymentDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Ghi chú
+                </label>
+                <input
+                  value={paymentNote}
+                  onChange={(e) => setPaymentNote(e.target.value)}
+                  placeholder="VD: Thu chuyển khoản đợt 1..."
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              {paymentError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {paymentError}
+                </p>
+              )}
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  disabled={addingPayment}
+                  className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+                >
+                  {addingPayment ? "Đang lưu..." : "Ghi nhận thu tiền"}
                 </button>
               </div>
             </form>

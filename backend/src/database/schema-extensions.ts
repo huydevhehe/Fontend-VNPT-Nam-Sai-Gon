@@ -98,6 +98,23 @@ export async function applySchemaExtensions(): Promise<void> {
     )
   `);
 
+  await run(`
+    CREATE TABLE IF NOT EXISTS contract_payments (
+      id TEXT PRIMARY KEY,
+      contract_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      paid_date TEXT NOT NULL,
+      note TEXT,
+      created_by TEXT,
+      created_at TEXT
+    )
+  `);
+
+  await ensureColumn("system_settings", "payment_beneficiary", "TEXT DEFAULT 'VNPT thành phố Hồ Chí Minh'");
+  await ensureColumn("system_settings", "payment_account_no", "TEXT DEFAULT '1058561111'");
+  await ensureColumn("system_settings", "payment_bank_name", "TEXT DEFAULT 'TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)'");
+  await ensureColumn("system_settings", "payment_signer_name", "TEXT DEFAULT 'Lê Văn Thuần'");
+
   // Bảng đánh dấu migration một-lần, do file này sở hữu. Dùng để tránh
   // backfillRelations() chạy lại mỗi lần khởi động server và điền lại giá trị
   // territory_id mà admin đã chủ động gỡ (PATCH /leads/:id/assignment với
@@ -193,5 +210,32 @@ export async function backfillRelations(): Promise<void> {
       )
       WHERE lead_id IS NOT NULL AND am_staff IS NULL
     `);
+  });
+
+  await runMigrationOnce("contract_payments_backfill_v1", async () => {
+    const paidContracts = await query<{
+      id: string;
+      total_value: number;
+      updated_at: string;
+      created_at: string;
+    }>(
+      `SELECT c.id, c.total_value, c.updated_at, c.created_at
+       FROM contracts c
+       LEFT JOIN contract_payments p ON p.contract_id = c.id
+       WHERE c.payment_status = 'Đã thanh toán' AND p.id IS NULL`
+    );
+
+    for (const c of paidContracts) {
+      const paymentId = `PAY-BF-${c.id}`;
+      const rawDate: any = c.updated_at || c.created_at || new Date().toISOString();
+      const dateStr = (rawDate instanceof Date ? rawDate.toISOString() : String(rawDate)).slice(0, 10);
+      const nowStr = new Date().toISOString();
+      await run(
+        `INSERT INTO contract_payments (id, contract_id, amount, paid_date, note, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [paymentId, c.id, c.total_value, dateStr, "Backfill thanh toán tự động", "System Backfill", nowStr]
+      );
+      await run("UPDATE contracts SET collected_amount = ? WHERE id = ?", [c.total_value, c.id]);
+    }
   });
 }

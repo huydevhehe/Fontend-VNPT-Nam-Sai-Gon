@@ -206,3 +206,116 @@ test("backfill sets am_staff from lead for contracts having lead_id but am_staff
   const rows = await query<{ am_staff: string }>("SELECT am_staff FROM contracts WHERE id = ?", [id]);
   assert.equal(rows[0].am_staff, "AM Lan");
 });
+
+test("addPayment accumulates collected amount and marks paid when reaching total", async () => {
+  await resetTestData();
+  const order = await service.create({
+    transactionCode: "GD-PAY-1",
+    customerName: "Khách Thu Tiền",
+    subscriberCodes: ["TB-PAY-1"],
+    totalValue: 5000000,
+    channel: "Trực tiếp",
+  });
+
+  // Lần 1: thu 2.000.000
+  const after1 = await service.addPayment(
+    order.id,
+    { amount: 2000000, paidDate: "2026-11-13", note: "Thu đợt 1" },
+    "Admin Test"
+  );
+  assert.equal(after1.collectedAmount, 2000000);
+  assert.equal(after1.paymentStatus, "Chưa thanh toán");
+
+  // Lần 2: thu thêm 3.000.000 -> đủ 5.000.000 -> tự thành Đã thanh toán
+  const after2 = await service.addPayment(
+    order.id,
+    { amount: 3000000, paidDate: "2026-11-14", note: "Thu đợt 2 đủ tiền" },
+    "Admin Test"
+  );
+  assert.equal(after2.collectedAmount, 5000000);
+  assert.equal(after2.paymentStatus, "Đã thanh toán");
+
+  const payments = await service.listPayments(order.id);
+  assert.equal(payments.length, 2);
+  assert.equal(payments[0].amount, 2000000);
+  assert.equal(payments[1].amount, 3000000);
+});
+
+test("addPayment rejects zero or negative amount", async () => {
+  await resetTestData();
+  const order = await service.create({
+    transactionCode: "GD-PAY-2",
+    customerName: "Khách Zero",
+    subscriberCodes: ["TB-PAY-2"],
+    totalValue: 1000000,
+    channel: "Trực tiếp",
+  });
+
+  await assert.rejects(
+    async () => {
+      await service.addPayment(order.id, { amount: 0 }, "Admin Test");
+    },
+    { message: "Số tiền thu phải lớn hơn 0" }
+  );
+
+  await assert.rejects(
+    async () => {
+      await service.addPayment(order.id, { amount: -500000 }, "Admin Test");
+    },
+    { message: "Số tiền thu phải lớn hơn 0" }
+  );
+});
+
+test("deletePayment recomputes collected amount and updates payment status", async () => {
+  await resetTestData();
+  const order = await service.create({
+    transactionCode: "GD-PAY-3",
+    customerName: "Khách Xóa Thu",
+    subscriberCodes: ["TB-PAY-3"],
+    totalValue: 3000000,
+    channel: "Trực tiếp",
+  });
+
+  await service.addPayment(order.id, { amount: 3000000 }, "Admin Test");
+  const list = await service.listPayments(order.id);
+  assert.equal(list.length, 1);
+
+  const afterDelete = await service.deletePayment(list[0].id);
+  assert.equal(afterDelete.collectedAmount, 0);
+  assert.equal(afterDelete.paymentStatus, "Chưa thanh toán");
+});
+
+test("backfill creates payment for paid orders without existing payments", async () => {
+  await resetTestData();
+  const id = "HD-PAID-BF-1";
+  await run(
+    `INSERT INTO contracts (
+      id, transaction_code, customer_name, subscriber_codes, total_value, channel,
+      deployment_status, payment_status, document_status, has_revenue, collected_amount
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      "GD-PAID-BF",
+      "Khách Đã Trả",
+      JSON.stringify(["TB-PAID"]),
+      4500000,
+      "Trực tiếp",
+      "Hoàn tất",
+      "Đã thanh toán",
+      "Hoàn thiện bàn giao",
+      1,
+      0,
+    ]
+  );
+
+  await run("DELETE FROM schema_migrations_state WHERE key = 'contract_payments_backfill_v1'");
+  await run("DELETE FROM contract_payments");
+  await backfillRelations();
+
+  const payments = await service.listPayments(id);
+  assert.equal(payments.length, 1);
+  assert.equal(payments[0].amount, 4500000);
+
+  const orderRows = await query<{ collected_amount: number }>("SELECT collected_amount FROM contracts WHERE id = ?", [id]);
+  assert.equal(Number(orderRows[0].collected_amount), 4500000);
+});

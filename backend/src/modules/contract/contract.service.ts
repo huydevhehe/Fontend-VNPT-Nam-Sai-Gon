@@ -98,6 +98,32 @@ export interface UpdateContractInfoInput {
   signedDate?: string | null;
 }
 
+export interface ContractPaymentRow {
+  id: string;
+  contract_id: string;
+  amount: number;
+  paid_date: string;
+  note: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface ContractPaymentDto {
+  id: string;
+  contractId: string;
+  amount: number;
+  paidDate: string;
+  note: string | null;
+  createdBy: string | null;
+  createdAt: string;
+}
+
+export interface AddPaymentInput {
+  amount: number;
+  paidDate?: string;
+  note?: string;
+}
+
 const DEPLOYMENT_STATUSES = [
   "Chưa triển khai",
   "Đang triển khai",
@@ -467,6 +493,99 @@ export class ContractService {
     }
 
     const updated = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [id]);
+    return toContractRecord(updated[0]);
+  }
+
+  async addPayment(
+    contractId: string,
+    input: AddPaymentInput,
+    actorName: string
+  ): Promise<ContractRecordDto> {
+    const existing = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [contractId]);
+    if (!existing.length) {
+      throw new Error("Không tìm thấy Hợp đồng");
+    }
+
+    if (typeof input.amount !== "number" || Number.isNaN(input.amount) || input.amount <= 0) {
+      throw new Error("Số tiền thu phải lớn hơn 0");
+    }
+
+    const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+    const paidDate = input.paidDate ? input.paidDate.trim() : todayStr;
+    const paymentId = `PAY-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const nowIso = new Date().toISOString();
+
+    await run(
+      `INSERT INTO contract_payments (id, contract_id, amount, paid_date, note, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [paymentId, contractId, input.amount, paidDate, input.note ?? null, actorName, nowIso]
+    );
+
+    // Sum all payments
+    const sumRows = await query<{ total: number }>(
+      "SELECT COALESCE(SUM(amount), 0) as total FROM contract_payments WHERE contract_id = ?",
+      [contractId]
+    );
+    const collectedAmount = Number(sumRows[0]?.total ?? 0);
+    const contract = existing[0];
+
+    const nextPaymentStatus =
+      collectedAmount >= contract.total_value ? "Đã thanh toán" : contract.payment_status;
+
+    await run(
+      `UPDATE contracts SET collected_amount = ?, payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [collectedAmount, nextPaymentStatus, contractId]
+    );
+
+    const updated = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [contractId]);
+    return toContractRecord(updated[0]);
+  }
+
+  async listPayments(contractId: string): Promise<ContractPaymentDto[]> {
+    const rows = await query<ContractPaymentRow>(
+      "SELECT * FROM contract_payments WHERE contract_id = ? ORDER BY paid_date ASC, created_at ASC",
+      [contractId]
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      contractId: r.contract_id,
+      amount: Number(r.amount),
+      paidDate: r.paid_date,
+      note: r.note ?? null,
+      createdBy: r.created_by ?? null,
+      createdAt: r.created_at,
+    }));
+  }
+
+  async deletePayment(paymentId: string): Promise<ContractRecordDto> {
+    const paymentRows = await query<ContractPaymentRow>(
+      "SELECT * FROM contract_payments WHERE id = ?",
+      [paymentId]
+    );
+    if (!paymentRows.length) {
+      throw new Error("Không tìm thấy lần thu tiền");
+    }
+
+    const contractId = paymentRows[0].contract_id;
+    await run("DELETE FROM contract_payments WHERE id = ?", [paymentId]);
+
+    const sumRows = await query<{ total: number }>(
+      "SELECT COALESCE(SUM(amount), 0) as total FROM contract_payments WHERE contract_id = ?",
+      [contractId]
+    );
+    const collectedAmount = Number(sumRows[0]?.total ?? 0);
+
+    const contractRows = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [contractId]);
+    const contract = contractRows[0];
+    const nextPaymentStatus =
+      collectedAmount >= contract.total_value ? "Đã thanh toán" : "Chưa thanh toán";
+
+    await run(
+      `UPDATE contracts SET collected_amount = ?, payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [collectedAmount, nextPaymentStatus, contractId]
+    );
+
+    const updated = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [contractId]);
     return toContractRecord(updated[0]);
   }
 }

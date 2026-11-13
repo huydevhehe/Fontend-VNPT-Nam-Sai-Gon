@@ -54,3 +54,39 @@ export function updateContractStatus(
     body: JSON.stringify(patch),
   });
 }
+
+export interface ContractPaymentDto {
+  id: string;
+  contractId: string;
+  amount: number;
+  paidDate: string;
+  note: string | null;
+  createdBy: string | null;
+  createdAt: string;
+}
+
+export interface AddPaymentInput {
+  amount: number;
+  paidDate?: string;
+  note?: string;
+}
+
+export function getContractPayments(contractId: string): Promise<ContractPaymentDto[]> {
+  return apiFetch<ContractPaymentDto[]>(`/contracts/${contractId}/payments`);
+}
+
+export function addContractPayment(
+  contractId: string,
+  data: AddPaymentInput
+): Promise<ContractRecord> {
+  return apiFetch<ContractRecord>(`/contracts/${contractId}/payments`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteContractPayment(paymentId: string): Promise<ContractRecord> {
+  return apiFetch<ContractRecord>(`/contracts/payments/${paymentId}`, {
+    method: "DELETE",
+  });
+}

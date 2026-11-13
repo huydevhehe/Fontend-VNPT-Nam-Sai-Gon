@@ -50,6 +50,12 @@ export type StaffStatus = (typeof STAFF_STATUSES)[number];
 
 export const INACTIVE_USER_STATUS = "Ngừng hoạt động";
 
+export const SERVICE_GROUPS = ["BRCĐ", "CNTT", "Di động"] as const;
+export type ServiceGroup = (typeof SERVICE_GROUPS)[number];
+
+export const PAYMENT_METHODS = ["Trả trước", "Trả hàng tháng"] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
 export const STAFF_NAME_REFERENCES: ReadonlyArray<readonly [table: string, column: string]> = [
   ["leads", "staff_name"],
   ["debts", "staff_name"],
@@ -60,6 +66,7 @@ export const STAFF_NAME_REFERENCES: ReadonlyArray<readonly [table: string, colum
   ["tasks", "assignee"],
   ["territories", "staff_name"],
   ["ward_contacts", "am_in_charge"],
+  ["contracts", "am_staff"],
 ];
 
 

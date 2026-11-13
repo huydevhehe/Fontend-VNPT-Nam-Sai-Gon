@@ -110,6 +110,16 @@ export interface ContractRecord {
   leadId?: string;
   territoryId?: string;
   referredByCtvId?: string;
+  amStaff?: string | null;
+  serviceGroup?: string | null;
+  serviceName?: string | null;
+  packageName?: string | null;
+  paymentMethod?: string | null;
+  customerId?: string | null;
+  taxCode?: string | null;
+  contractNumber?: string | null;
+  signedDate?: string | null;
+  collectedAmount?: number;
 }
 
 // 7. Commission

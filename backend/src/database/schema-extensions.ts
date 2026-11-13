@@ -37,6 +37,16 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("contracts", "territory_id", "TEXT");
   await ensureColumn("contracts", "referred_by_ctv_id", "TEXT");
   await ensureColumn("contracts", "lead_id", "TEXT");
+  await ensureColumn("contracts", "am_staff", "TEXT");
+  await ensureColumn("contracts", "service_group", "TEXT");
+  await ensureColumn("contracts", "service_name", "TEXT");
+  await ensureColumn("contracts", "package_name", "TEXT");
+  await ensureColumn("contracts", "payment_method", "TEXT");
+  await ensureColumn("contracts", "customer_id", "TEXT");
+  await ensureColumn("contracts", "tax_code", "TEXT");
+  await ensureColumn("contracts", "contract_number", "TEXT");
+  await ensureColumn("contracts", "signed_date", "TEXT");
+  await ensureColumn("contracts", "collected_amount", "REAL DEFAULT 0");
 
   await ensureColumn("commissions", "contract_id", "TEXT");
   await ensureColumn("commissions", "ctv_id", "TEXT");
@@ -169,6 +179,19 @@ export async function backfillRelations(): Promise<void> {
         LIMIT 1
       )
       WHERE territory_id IS NULL
+    `);
+  });
+
+  await runMigrationOnce("contracts_am_staff_backfill_v1", async () => {
+    await run(`
+      UPDATE contracts
+      SET am_staff = (
+        SELECT l.staff_name
+        FROM leads l
+        WHERE l.id = contracts.lead_id
+        LIMIT 1
+      )
+      WHERE lead_id IS NOT NULL AND am_staff IS NULL
     `);
   });
 }

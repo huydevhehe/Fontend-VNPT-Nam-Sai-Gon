@@ -45,7 +45,7 @@ const NAV_SECTIONS = [
         icon: Target,
       },
       {
-        name: "Hợp đồng & Giao dịch",
+        name: "Đơn hàng",
         href: "/admin/contracts",
         icon: FileText,
       },

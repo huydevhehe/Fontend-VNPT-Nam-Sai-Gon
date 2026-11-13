@@ -1,5 +1,6 @@
 import { query, run } from "../../database/db.js";
 import { CommissionService } from "../commission/commission.service.js";
+import { SERVICE_GROUPS, PAYMENT_METHODS } from "../../constants/org.js";
 
 export interface ContractRow {
   id: string;
@@ -15,6 +16,16 @@ export interface ContractRow {
   lead_id: string | null;
   territory_id: string | null;
   referred_by_ctv_id: string | null;
+  am_staff: string | null;
+  service_group: string | null;
+  service_name: string | null;
+  package_name: string | null;
+  payment_method: string | null;
+  customer_id: string | null;
+  tax_code: string | null;
+  contract_number: string | null;
+  signed_date: string | null;
+  collected_amount: number | null;
 }
 
 export interface ContractRecordDto {
@@ -31,6 +42,16 @@ export interface ContractRecordDto {
   leadId: string | null;
   territoryId: string | null;
   referredByCtvId: string | null;
+  amStaff: string | null;
+  serviceGroup: string | null;
+  serviceName: string | null;
+  packageName: string | null;
+  paymentMethod: string | null;
+  customerId: string | null;
+  taxCode: string | null;
+  contractNumber: string | null;
+  signedDate: string | null;
+  collectedAmount: number;
 }
 
 export interface UpdateContractStatusInput {
@@ -48,6 +69,33 @@ export interface CreateContractInput {
   channel: string;
   leadId?: string | null;
   territoryId?: string | null;
+  amStaff?: string | null;
+  serviceGroup?: string | null;
+  serviceName?: string | null;
+  packageName?: string | null;
+  paymentMethod?: string | null;
+  customerId?: string | null;
+  taxCode?: string | null;
+  contractNumber?: string | null;
+  signedDate?: string | null;
+}
+
+export interface UpdateContractInfoInput {
+  customerName?: string;
+  subscriberCodes?: string[];
+  totalValue?: number;
+  channel?: string;
+  leadId?: string | null;
+  territoryId?: string | null;
+  amStaff?: string | null;
+  serviceGroup?: string | null;
+  serviceName?: string | null;
+  packageName?: string | null;
+  paymentMethod?: string | null;
+  customerId?: string | null;
+  taxCode?: string | null;
+  contractNumber?: string | null;
+  signedDate?: string | null;
 }
 
 const DEPLOYMENT_STATUSES = [
@@ -83,6 +131,16 @@ function toContractRecord(row: ContractRow): ContractRecordDto {
     leadId: row.lead_id ?? null,
     territoryId: row.territory_id ?? null,
     referredByCtvId: row.referred_by_ctv_id ?? null,
+    amStaff: row.am_staff ?? null,
+    serviceGroup: row.service_group ?? null,
+    serviceName: row.service_name ?? null,
+    packageName: row.package_name ?? null,
+    paymentMethod: row.payment_method ?? null,
+    customerId: row.customer_id ?? null,
+    taxCode: row.tax_code ?? null,
+    contractNumber: row.contract_number ?? null,
+    signedDate: row.signed_date ?? null,
+    collectedAmount: Number(row.collected_amount ?? 0),
   };
 }
 
@@ -113,13 +171,28 @@ export class ContractService {
       throw new Error("Giá trị hợp đồng không được âm");
     }
 
+    if (
+      data.serviceGroup &&
+      !SERVICE_GROUPS.includes(data.serviceGroup as (typeof SERVICE_GROUPS)[number])
+    ) {
+      throw new Error("Nhóm dịch vụ không hợp lệ");
+    }
+
+    if (
+      data.paymentMethod &&
+      !PAYMENT_METHODS.includes(data.paymentMethod as (typeof PAYMENT_METHODS)[number])
+    ) {
+      throw new Error("Hình thức thanh toán không hợp lệ");
+    }
+
     let territoryId: string | null = null;
     let referredByCtvId: string | null = null;
+    let amStaff: string | null = data.amStaff ? String(data.amStaff).trim() : null;
     const leadId = data.leadId ? String(data.leadId) : null;
 
     if (leadId) {
-      const lead = await query<{ territory_id: string | null; referred_by_ctv_id: string | null }>(
-        "SELECT territory_id, referred_by_ctv_id FROM leads WHERE id = ?",
+      const lead = await query<{ territory_id: string | null; referred_by_ctv_id: string | null; staff_name: string | null }>(
+        "SELECT territory_id, referred_by_ctv_id, staff_name FROM leads WHERE id = ?",
         [leadId]
       );
       if (!lead.length) {
@@ -127,6 +200,32 @@ export class ContractService {
       }
       territoryId = lead[0].territory_id ?? null;
       referredByCtvId = lead[0].referred_by_ctv_id ?? null;
+      if (!amStaff && lead[0].staff_name) {
+        amStaff = lead[0].staff_name;
+      }
+    }
+
+    if (amStaff) {
+      const staffRows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [amStaff]);
+      if (!staffRows.length) {
+        throw new Error("Nhân viên AM không tồn tại");
+      }
+    }
+
+    let customerId: string | null = data.customerId ? String(data.customerId) : null;
+    let taxCode: string | null = data.taxCode ? String(data.taxCode).trim() : null;
+
+    if (customerId) {
+      const customerRows = await query<{ id: string; identity_code: string | null }>(
+        "SELECT id, identity_code FROM customers WHERE id = ?",
+        [customerId]
+      );
+      if (!customerRows.length) {
+        throw new Error("Khách hàng không tồn tại");
+      }
+      if (!taxCode && customerRows[0].identity_code) {
+        taxCode = customerRows[0].identity_code;
+      }
     }
 
     if (data.territoryId) {
@@ -142,8 +241,10 @@ export class ContractService {
       `INSERT INTO contracts (
         id, transaction_code, customer_name, subscriber_codes, total_value, channel,
         deployment_status, payment_status, document_status, has_revenue,
-        lead_id, territory_id, referred_by_ctv_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        lead_id, territory_id, referred_by_ctv_id,
+        am_staff, service_group, service_name, package_name, payment_method,
+        customer_id, tax_code, contract_number, signed_date, collected_amount
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.transactionCode,
@@ -158,6 +259,16 @@ export class ContractService {
         leadId,
         territoryId,
         referredByCtvId,
+        amStaff,
+        data.serviceGroup ?? null,
+        data.serviceName ?? null,
+        data.packageName ?? null,
+        data.paymentMethod ?? null,
+        customerId,
+        taxCode,
+        data.contractNumber ?? null,
+        data.signedDate ?? null,
+        0,
       ]
     );
 
@@ -235,6 +346,127 @@ export class ContractService {
     if (patch.deploymentStatus === "Hoàn tất" && updated[0].referred_by_ctv_id) {
       await commissionService.createForContract(updated[0]);
     }
+    return toContractRecord(updated[0]);
+  }
+
+  async updateInfo(
+    id: string,
+    patch: UpdateContractInfoInput,
+    actor: { role: string; name?: string }
+  ): Promise<ContractRecordDto> {
+    const existing = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [id]);
+    if (!existing.length) {
+      throw new Error("Không tìm thấy Hợp đồng");
+    }
+
+    const current = existing[0];
+    const isAdmin = actor.role?.toLowerCase() === "admin";
+    const isOwner = Boolean(actor.name && current.am_staff && actor.name === current.am_staff);
+
+    if (!isAdmin && !isOwner) {
+      throw new Error("Không có quyền chỉnh sửa đơn hàng này");
+    }
+
+    if (
+      patch.serviceGroup &&
+      !SERVICE_GROUPS.includes(patch.serviceGroup as (typeof SERVICE_GROUPS)[number])
+    ) {
+      throw new Error("Nhóm dịch vụ không hợp lệ");
+    }
+
+    if (
+      patch.paymentMethod &&
+      !PAYMENT_METHODS.includes(patch.paymentMethod as (typeof PAYMENT_METHODS)[number])
+    ) {
+      throw new Error("Hình thức thanh toán không hợp lệ");
+    }
+
+    if (patch.totalValue !== undefined) {
+      if (typeof patch.totalValue !== "number" || Number.isNaN(patch.totalValue)) {
+        throw new Error("Giá trị hợp đồng phải là một số hợp lệ");
+      }
+      if (patch.totalValue < 0) {
+        throw new Error("Giá trị hợp đồng không được âm");
+      }
+    }
+
+    let amStaff = patch.amStaff !== undefined ? patch.amStaff : current.am_staff;
+    if (amStaff) {
+      const staffRows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [amStaff]);
+      if (!staffRows.length) {
+        throw new Error("Nhân viên AM không tồn tại");
+      }
+    }
+
+    let customerId = patch.customerId !== undefined ? patch.customerId : current.customer_id;
+    let taxCode = patch.taxCode !== undefined ? patch.taxCode : current.tax_code;
+
+    if (customerId) {
+      const customerRows = await query<{ id: string; identity_code: string | null }>(
+        "SELECT id, identity_code FROM customers WHERE id = ?",
+        [customerId]
+      );
+      if (!customerRows.length) {
+        throw new Error("Khách hàng không tồn tại");
+      }
+      if (!taxCode && customerRows[0].identity_code) {
+        taxCode = customerRows[0].identity_code;
+      }
+    }
+
+    const nextCustomerName = patch.customerName ?? current.customer_name;
+    const nextSubscriberCodes = patch.subscriberCodes
+      ? JSON.stringify(patch.subscriberCodes)
+      : current.subscriber_codes;
+    const nextTotalValue = patch.totalValue ?? current.total_value;
+    const nextChannel = patch.channel ?? current.channel;
+    const nextServiceGroup = patch.serviceGroup !== undefined ? patch.serviceGroup : current.service_group;
+    const nextServiceName = patch.serviceName !== undefined ? patch.serviceName : current.service_name;
+    const nextPackageName = patch.packageName !== undefined ? patch.packageName : current.package_name;
+    const nextPaymentMethod = patch.paymentMethod !== undefined ? patch.paymentMethod : current.payment_method;
+    const nextContractNumber = patch.contractNumber !== undefined ? patch.contractNumber : current.contract_number;
+    const nextSignedDate = patch.signedDate !== undefined ? patch.signedDate : current.signed_date;
+
+    await run(
+      `UPDATE contracts SET
+        customer_name = ?,
+        subscriber_codes = ?,
+        total_value = ?,
+        channel = ?,
+        am_staff = ?,
+        service_group = ?,
+        service_name = ?,
+        package_name = ?,
+        payment_method = ?,
+        customer_id = ?,
+        tax_code = ?,
+        contract_number = ?,
+        signed_date = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?`,
+      [
+        nextCustomerName,
+        nextSubscriberCodes,
+        nextTotalValue,
+        nextChannel,
+        amStaff,
+        nextServiceGroup,
+        nextServiceName,
+        nextPackageName,
+        nextPaymentMethod,
+        customerId,
+        taxCode,
+        nextContractNumber,
+        nextSignedDate,
+        id,
+      ]
+    );
+
+    if (patch.totalValue !== undefined) {
+      await commissionService.recalculateForContract(id, nextTotalValue);
+    }
+
+    const updated = await query<ContractRow>("SELECT * FROM contracts WHERE id = ?", [id]);
     return toContractRecord(updated[0]);
   }
 }

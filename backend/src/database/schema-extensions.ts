@@ -121,6 +121,16 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("system_settings", "payment_bank_name", "TEXT DEFAULT 'TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)'");
   await ensureColumn("system_settings", "payment_signer_name", "TEXT DEFAULT 'Lê Văn Thuần'");
 
+  await ensureColumn("system_settings", "smtp_mode", "TEXT DEFAULT 'domain'");
+  await ensureColumn("system_settings", "smtp_from_name", "TEXT DEFAULT 'VNPT Nam Sài Gòn'");
+  await ensureColumn("system_settings", "smtp_from_email", "TEXT DEFAULT ''");
+
+  // 2 cột khách hàng do Đợt 7 (hồ sơ khách hàng + team) thêm — tự thêm tạm ở
+  // đây để Đợt 10 dùng cho "Gửi cho khách hàng" của nhắc hết hạn; ensureColumn
+  // không lỗi nếu cột đã tồn tại khi 2 đợt merge với nhau.
+  await ensureColumn("customers", "contact_email", "TEXT");
+  await ensureColumn("customers", "billing_email", "TEXT");
+
   await run(`
     CREATE TABLE IF NOT EXISTS kpi_formulas (
       kpi_key TEXT PRIMARY KEY,

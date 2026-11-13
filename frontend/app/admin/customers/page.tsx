@@ -676,6 +676,8 @@ export default function CustomersPage() {
           error={formError}
           onSubmit={handleEditSubmit}
           onCancel={() => setEditTarget(null)}
+          customerId={editTarget.id}
+          canDeleteDocuments={isAdmin}
         />
       )}
 

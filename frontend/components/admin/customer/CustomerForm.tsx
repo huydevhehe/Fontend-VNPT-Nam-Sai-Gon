@@ -11,6 +11,7 @@ import {
 import { CustomerTeamRecord } from "@/lib/api/customer-teams.api";
 import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 import { LEAD_CHANNELS } from "@/lib/crm/constants/org.constants";
+import CustomerDocuments from "./CustomerDocuments";
 
 const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
 const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu", "PTM địa bàn"];
@@ -87,6 +88,10 @@ interface CustomerFormProps {
   onSubmit: (values: CustomerFormValues) => void | Promise<void>;
   onCancel: () => void;
   title?: string;
+  /** Sửa khách (mode "edit") mới có id thật -> cho tải lên giấy tờ ngay trong form. */
+  customerId?: string;
+  /** Giấy tờ chỉ Admin được xóa, theo quyền route backend. */
+  canDeleteDocuments?: boolean;
 }
 
 const inputClass =
@@ -103,6 +108,8 @@ export default function CustomerForm({
   onSubmit,
   onCancel,
   title,
+  customerId,
+  canDeleteDocuments,
 }: CustomerFormProps) {
   const [values, setValues] = useState<CustomerFormValues>(initialValues ?? EMPTY_CUSTOMER_FORM);
 
@@ -405,6 +412,17 @@ export default function CustomerForm({
               </div>
             </div>
           </div>
+
+          {/* Giấy tờ đính kèm — chỉ hiện khi đã có customerId thật (sửa khách),
+              vì tạo khách mới chưa có id để gắn file lên. */}
+          {customerId && (
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                Giấy tờ đính kèm
+              </h4>
+              <CustomerDocuments customerId={customerId} canDelete={canDeleteDocuments} />
+            </div>
+          )}
 
           {error && (
             <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">

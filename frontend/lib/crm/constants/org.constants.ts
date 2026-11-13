@@ -6,6 +6,8 @@ export const CUSTOMER_GROUP_LABEL: Record<CustomerGroup, string> = {
   "PTM địa bàn": "PTM địa bàn",
 };
 
+export const DOCUMENT_TYPES: readonly DocumentType[] = ["GPKD", "CCCD", "KHAC"];
+
 export const DOCUMENT_TYPE_LABEL: Record<DocumentType, string> = {
   GPKD: "GPKD/QĐ thành lập",
   CCCD: "CCCD người đại diện PL",

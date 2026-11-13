@@ -52,6 +52,20 @@ export async function applySchemaExtensions(): Promise<void> {
     "CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_teams_name ON customer_teams(LOWER(name))"
   );
 
+  await run(`
+    CREATE TABLE IF NOT EXISTS customer_documents (
+      id TEXT PRIMARY KEY,
+      customer_id TEXT NOT NULL,
+      doc_type TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      stored_name TEXT NOT NULL,
+      mime TEXT,
+      size INTEGER,
+      uploaded_by TEXT,
+      created_at TEXT
+    )
+  `);
+
   await ensureColumn("leads", "territory_id", "TEXT");
   await ensureColumn("leads", "referred_by_ctv_id", "TEXT");
   await ensureColumn("leads", "note", "TEXT");

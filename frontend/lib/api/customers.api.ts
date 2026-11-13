@@ -1,8 +1,9 @@
-import { apiFetch, apiFetchRaw } from "./client";
+import { apiFetch, apiFetchRaw, API_BASE_URL, getToken } from "./client";
 import {
   CustomerRecord,
   CustomerType,
   CustomerGroup,
+  DocumentType,
 } from "@/lib/crm/types/crm.types";
 
 /**
@@ -227,4 +228,86 @@ export async function importCustomerBatchExcel(
   }
 
   return payload.data;
+}
+
+export interface CustomerDocumentRecord {
+  id: string;
+  customerId: string;
+  docType: DocumentType;
+  originalName: string;
+  mime: string | null;
+  size: number | null;
+  uploadedBy: string | null;
+  createdAt: string | null;
+}
+
+export async function getCustomerDocuments(customerId: string): Promise<CustomerDocumentRecord[]> {
+  return apiFetch<CustomerDocumentRecord[]>(`/customers/${encodeURIComponent(customerId)}/documents`);
+}
+
+export async function uploadCustomerDocument(
+  customerId: string,
+  docType: DocumentType,
+  file: File
+): Promise<CustomerDocumentRecord> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("docType", docType);
+
+  const payload = await apiFetchRaw<{
+    success: boolean;
+    data: CustomerDocumentRecord;
+    message?: string;
+  }>(`/customers/${encodeURIComponent(customerId)}/documents`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!payload || !payload.success) {
+    throw new Error(payload?.message || "Tải lên giấy tờ thất bại");
+  }
+
+  return payload.data;
+}
+
+export async function deleteCustomerDocument(documentId: string): Promise<void> {
+  await apiFetch<{ message: string }>(`/customers/documents/${encodeURIComponent(documentId)}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Tải file giấy tờ về máy người dùng. Route tải về cần header Authorization
+ * (không phải public), nên không thể dùng thẳng `<a href>` — phải `fetch`
+ * kèm token rồi tạo Blob URL tạm để trigger download.
+ */
+export async function downloadCustomerDocument(
+  documentId: string,
+  fallbackName: string
+): Promise<void> {
+  const token = getToken();
+  const res = await fetch(
+    `${API_BASE_URL}/customers/documents/${encodeURIComponent(documentId)}/download`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  );
+  if (!res.ok) {
+    let message = `Tải file thất bại (mã lỗi ${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.message) message = body.message;
+    } catch {
+      // body không phải JSON (vd lỗi mạng) — giữ message mặc định.
+    }
+    throw new Error(message);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fallbackName;
+  link.click();
+  URL.revokeObjectURL(url);
 }

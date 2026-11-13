@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import path from "path";
 dotenv.config();
 
 export const config = {
@@ -6,6 +7,9 @@ export const config = {
   corsOrigin: process.env.CORS_ORIGIN || "*",
   jwtSecret: process.env.JWT_SECRET || "vnpt-crm-nam-sai-gon-dev-secret-key",
   databaseUrl: process.env.DATABASE_URL || "",
+  // Thư mục lưu giấy tờ đính kèm khách hàng; mặc định "<backend>/uploads"
+  // (process.cwd() khi chạy từ thư mục backend/, giống cách script dev khởi chạy).
+  uploadDir: process.env.UPLOAD_DIR || path.resolve(process.cwd(), "uploads"),
   smtp: {
     host: process.env.SMTP_HOST || "",
     port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,

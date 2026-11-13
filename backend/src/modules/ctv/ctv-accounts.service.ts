@@ -1,6 +1,6 @@
 import { query, run } from "../../database/db.js";
 import { ROLES, USER_STATUS } from "../../constants/org.js";
-import { HttpError } from "../auth/auth.service.js";
+import { HttpError, AuthService, validateCtvInput, RegisterCtvInput } from "../auth/auth.service.js";
 
 interface CtvAccountRow {
   id: string;
@@ -47,6 +47,19 @@ function toDto(row: CtvAccountRow): CtvAccountDto {
 }
 
 export class CtvAccountsService {
+  async createByAdmin(
+    input: RegisterCtvInput & { mustChangePassword?: boolean },
+    adminName: string
+  ): Promise<CtvAccountDto> {
+    const v = validateCtvInput(input);
+    const authService = new AuthService();
+    const { id } = await authService.insertCtvUser(v, {
+      status: USER_STATUS.ACTIVE,
+      mustChangePassword: input.mustChangePassword !== false,
+      approvedBy: adminName,
+    });
+    return this.requireCtv(id);
+  }
   async list(status?: string): Promise<CtvAccountDto[]> {
     const params: unknown[] = [ROLES.CTV];
     let sql = `SELECT ${SELECT_COLUMNS} FROM users WHERE role = ?`;

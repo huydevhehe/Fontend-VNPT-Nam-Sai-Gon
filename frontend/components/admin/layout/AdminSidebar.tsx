@@ -101,7 +101,7 @@ const NAV_SECTIONS = [
         icon: UserCheck,
       },
       {
-        name: "Duyệt CTV",
+        name: "Cộng tác viên",
         href: "/admin/ctv-accounts",
         icon: UserRoundCheck,
         badge: "Admin",

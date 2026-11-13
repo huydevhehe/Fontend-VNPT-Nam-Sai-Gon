@@ -37,7 +37,17 @@ const app = express();
 // tra mã giới thiệu, và login) — xem Task 10 ở plan để xác nhận trên server.
 app.set("trust proxy", 1);
 
-app.use(cors({ origin: config.corsOrigin }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, config.corsOrigin === "*" ? true : origin === config.corsOrigin);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -83,6 +93,15 @@ async function start() {
     app.listen(config.port, () => {
       console.log(`[VNPT CRM Backend] Server is running on http://localhost:${config.port}`);
     });
+    if (Number(config.port) !== 8087) {
+      try {
+        app.listen(8087, () => {
+          console.log("[VNPT CRM Backend] Also listening on http://localhost:8087");
+        });
+      } catch {
+        // Port 8087 might be busy, ignore
+      }
+    }
   } catch (error) {
     console.error("[VNPT CRM Backend] Failed to start server:", error);
     process.exit(1);

@@ -290,9 +290,9 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
     expect(created.status()).toBe(201);
     const staff = (await created.json()).data;
 
-    const off = await request.patch(`${API_URL}/staff/${staff.id}`, {
+    const off = await request.patch(`${API_URL}/staff/${staff.id}/status`, {
       headers: bearer(adminToken),
-      data: { status: "Ngừng hoạt động" },
+      data: { status: "Ngừng hoạt động", reason: "Ngừng hoạt động để test" },
     });
     expect(off.status()).toBe(200);
 
@@ -301,16 +301,69 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
     // sai mật khẩu vẫn 401, không lộ trạng thái
     expect((await rawLogin(request, code, "Sai-mat-khau-1")).status()).toBe(401);
 
-    const on = await request.patch(`${API_URL}/staff/${staff.id}`, {
+    const on = await request.patch(`${API_URL}/staff/${staff.id}/status`, {
       headers: bearer(adminToken),
-      data: { status: "Đang hoạt động", role: "AM Bán chăm", name: updatedName },
+      data: { status: "Đang hoạt động" },
     });
     expect(on.status()).toBe(200);
+
+    const rename = await request.patch(`${API_URL}/staff/${staff.id}`, {
+      headers: bearer(adminToken),
+      data: { role: "AM Bán chăm", name: updatedName },
+    });
+    expect(rename.status()).toBe(200);
 
     const ok = await rawLogin(request, code, password);
     expect(ok.status()).toBe(200);
     const user = (await ok.json()).data.user;
     expect(user.role).toBe("AM Bán chăm");
     expect(user.name).toBe(updatedName);
+  });
+
+  test("admin tạo trực tiếp CTV → 201, CTV đăng nhập được ngay (không cần duyệt) và bắt buộc đổi mật khẩu", async ({
+    request,
+  }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+    const suffix = Date.now();
+    const username = `ctv_direct_${suffix}`;
+    const password = "DirectPassword@123";
+    const phone = `09${String(suffix).slice(-8)}`;
+
+    const createRes = await request.post(`${API_URL}/ctv-accounts`, {
+      headers: bearer(adminToken),
+      data: {
+        username,
+        password,
+        name: `CTV Tạo Trực Tiếp ${suffix}`,
+        phone,
+        email: `direct_${suffix}@vnpt.vn`,
+        mustChangePassword: true,
+      },
+    });
+    expect(createRes.status()).toBe(201);
+    const created = (await createRes.json()).data;
+    expect(created.username).toBe(username);
+    expect(created.status).toBe("Đang hoạt động");
+    expect(created.referralCode).toBeTruthy();
+
+    // CTV đăng nhập được ngay mà không cần qua duyệt
+    const loginRes = await rawLogin(request, username, password);
+    expect(loginRes.status()).toBe(200);
+    const loginData = (await loginRes.json()).data;
+    expect(loginData.user.role).toBe("CTV");
+    expect(loginData.user.mustChangePassword).toBe(true);
+
+    // AM gọi POST /api/ctv-accounts bị từ chối 403
+    const amToken = await apiLogin(request, AM.username, AM.password);
+    const amRes = await request.post(`${API_URL}/ctv-accounts`, {
+      headers: bearer(amToken),
+      data: {
+        username: `ctv_am_forbid_${suffix}`,
+        password: "Password@123",
+        name: "CTV AM Forbid",
+        phone: `08${String(suffix).slice(-8)}`,
+      },
+    });
+    expect(amRes.status()).toBe(403);
   });
 });

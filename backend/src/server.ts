@@ -19,6 +19,7 @@ import { settingsRouter } from "./modules/settings/settings.controller.js";
 import { ctvRouter } from "./modules/ctv/ctv.controller.js";
 import { ctvAccountsRouter } from "./modules/ctv/ctv-accounts.controller.js";
 import { publicRouter } from "./modules/public/public.controller.js";
+import { kpiRouter } from "./modules/kpi/kpi.controller.js";
 import { requireAuth } from "./middleware/require-auth.js";
 import { requireAdmin, requireCtv, requireStaff } from "./middleware/require-role.js";
 
@@ -81,6 +82,7 @@ app.use("/api/staff", requireAuth, requireStaff, staffRouter);
 app.use("/api/tasks", requireAuth, requireStaff, taskRouter);
 app.use("/api/reports", requireAuth, requireStaff, reportRouter);
 app.use("/api/settings", requireAuth, requireStaff, settingsRouter);
+app.use("/api/kpi", requireAuth, requireStaff, kpiRouter);
 
 // Khu vực CTV và quản lý tài khoản CTV.
 app.use("/api/ctv", requireAuth, requireCtv, ctvRouter);

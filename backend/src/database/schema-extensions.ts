@@ -122,6 +122,15 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("system_settings", "payment_signer_name", "TEXT DEFAULT 'Lê Văn Thuần'");
 
   await run(`
+    CREATE TABLE IF NOT EXISTS kpi_formulas (
+      kpi_key TEXT PRIMARY KEY,
+      segments TEXT NOT NULL,
+      updated_by TEXT,
+      updated_at TEXT
+    )
+  `);
+
+  await run(`
     CREATE TABLE IF NOT EXISTS payment_request_exports (
       id TEXT PRIMARY KEY,
       contract_id TEXT NOT NULL,

@@ -9,12 +9,15 @@ import StatusSelect from "@/components/admin/shared/StatusSelect";
 import { useAuth } from "@/lib/auth/auth-context";
 import {
   getCommissions,
+  getCommissionReferrerSummary,
   updateCommissionStatus,
   updateCommissionAmount,
   updateCommissionPayout,
 } from "@/lib/api/commissions.api";
-import { CommissionRecord } from "@/lib/crm/types/crm.types";
+import { CommissionRecord, ReferrerSummaryRecord } from "@/lib/crm/types/crm.types";
 import { TableFilter } from "@/lib/table-filters";
+
+type CommissionTab = "chi-tiet" | "thong-ke";
 
 const COMMISSION_STATUSES: CommissionRecord["status"][] = [
   "Đã nhận",
@@ -32,9 +35,15 @@ export default function CommissionsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
 
+  const [activeTab, setActiveTab] = useState<CommissionTab>("chi-tiet");
+
   const [data, setData] = useState<CommissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [summaryData, setSummaryData] = useState<ReferrerSummaryRecord[]>([]);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const [editingItem, setEditingItem] = useState<CommissionRecord | null>(null);
   const [amountInput, setAmountInput] = useState<string>("");
@@ -71,6 +80,7 @@ export default function CommissionsPage() {
       const updated = await updateCommissionAmount(editingItem.id, val, noteInput.trim() || null);
       setData((prev) => prev.map((row) => (row.id === editingItem.id ? updated : row)));
       setEditingItem(null);
+      reloadSummary();
     } catch (err: any) {
       setModalError(err.message || "Không thể cập nhật số tiền hoa hồng");
     } finally {
@@ -120,10 +130,28 @@ export default function CommissionsPage() {
       });
       setData((prev) => prev.map((row) => (row.id === payoutItem.id ? updated : row)));
       setPayoutItem(null);
+      reloadSummary();
     } catch (err) {
       setPayoutError(err instanceof Error ? err.message : "Không thể cập nhật chi hoa hồng");
     } finally {
       setPayoutSaving(false);
+    }
+  }
+
+  async function reloadSummary() {
+    setSummaryLoading(true);
+    setSummaryError(null);
+    try {
+      const summary = await getCommissionReferrerSummary();
+      setSummaryData(summary);
+    } catch (err) {
+      setSummaryError(
+        err instanceof Error
+          ? err.message
+          : "Không thể tải dữ liệu thống kê theo người giới thiệu."
+      );
+    } finally {
+      setSummaryLoading(false);
     }
   }
 
@@ -154,6 +182,7 @@ export default function CommissionsPage() {
     }
 
     loadCommissions();
+    reloadSummary();
 
     return () => {
       isMounted = false;
@@ -313,6 +342,47 @@ export default function CommissionsPage() {
     { id: "status", label: "Trạng thái", getValue: (row) => row.status },
   ];
 
+  const summaryColumns: Column<ReferrerSummaryRecord>[] = [
+    {
+      header: "Người giới thiệu",
+      accessorKey: "referrerName",
+      cell: (item) => (
+        <div>
+          <span className="font-bold text-slate-900">{item.referrerName}</span>
+          {item.referrerCode && (
+            <p className="text-[11px] font-mono text-slate-400">{item.referrerCode}</p>
+          )}
+        </div>
+      ),
+    },
+    { header: "Số khách", accessorKey: "customerCount" },
+    { header: "Số đơn hàng", accessorKey: "orderCount" },
+    {
+      header: "Tổng khách đã chi",
+      accessorKey: "totalCustomerPaid",
+      cell: (item) => formatMoney(item.totalCustomerPaid),
+    },
+    {
+      header: "Tổng hoa hồng phải chi",
+      accessorKey: "totalCommission",
+      cell: (item) => formatMoney(item.totalCommission),
+    },
+    {
+      header: "Tổng đã chi hoa hồng",
+      accessorKey: "totalPaidOut",
+      cell: (item) => formatMoney(item.totalPaidOut),
+    },
+    {
+      header: "Tổng còn lại",
+      accessorKey: "totalRemaining",
+      cell: (item) => (
+        <span className={`font-bold ${item.totalRemaining < 0 ? "text-rose-600" : "text-emerald-700"}`}>
+          {formatMoney(item.totalRemaining)}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -360,28 +430,77 @@ export default function CommissionsPage() {
         />
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1 w-fit">
+        <button
+          type="button"
+          onClick={() => setActiveTab("chi-tiet")}
+          className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+            activeTab === "chi-tiet"
+              ? "bg-white text-vnpt shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          Chi tiết
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("thong-ke")}
+          className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+            activeTab === "thong-ke"
+              ? "bg-white text-vnpt shadow-xs"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          Thống kê theo người giới thiệu
+        </button>
+      </div>
+
       {/* Table */}
-      {error ? (
+      {activeTab === "chi-tiet" ? (
+        error ? (
+          <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
+            <AlertTriangle className="h-6 w-6 text-rose-500" />
+            <p className="text-sm font-semibold text-rose-700">
+              Không thể tải dữ liệu Hoa hồng
+            </p>
+            <p className="text-xs text-rose-600">{error}</p>
+          </div>
+        ) : loading ? (
+          <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
+            Đang tải dữ liệu Hoa hồng...
+          </div>
+        ) : (
+          <DataTable
+            title="Bảng đối soát hoa hồng"
+            subtitle="Chi tiết từng giao dịch nhận từ Sales và lệnh chi cho đối tác"
+            columns={columns}
+            data={data}
+            filters={filters}
+            searchPlaceholder="Tìm theo người giới thiệu, khách hàng, mã giao dịch..."
+            exportFileName="vnpt_hoa_hong"
+          />
+        )
+      ) : summaryError ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
           <AlertTriangle className="h-6 w-6 text-rose-500" />
           <p className="text-sm font-semibold text-rose-700">
-            Không thể tải dữ liệu Hoa hồng
+            Không thể tải dữ liệu thống kê
           </p>
-          <p className="text-xs text-rose-600">{error}</p>
+          <p className="text-xs text-rose-600">{summaryError}</p>
         </div>
-      ) : loading ? (
+      ) : summaryLoading ? (
         <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-sm text-slate-500">
-          Đang tải dữ liệu Hoa hồng...
+          Đang tải dữ liệu thống kê...
         </div>
       ) : (
         <DataTable
-          title="Bảng đối soát hoa hồng"
-          subtitle="Chi tiết từng giao dịch nhận từ Sales và lệnh chi cho đối tác"
-          columns={columns}
-          data={data}
-          filters={filters}
-          searchPlaceholder="Tìm theo người giới thiệu, khách hàng, mã giao dịch..."
-          exportFileName="vnpt_hoa_hong"
+          title="Thống kê theo người giới thiệu"
+          subtitle="Số khách, số đơn hàng và tổng tiền theo từng người giới thiệu"
+          columns={summaryColumns}
+          data={summaryData}
+          searchPlaceholder="Tìm theo tên người giới thiệu..."
+          exportFileName="vnpt_hoa_hong_thong_ke_nguoi_gioi_thieu"
         />
       )}
 

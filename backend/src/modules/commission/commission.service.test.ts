@@ -301,3 +301,48 @@ test("updatePayout throws not found when id does not exist", async () => {
     /Không tìm thấy Hoa hồng/
   );
 });
+
+test("summary counts distinct customers and sums paid", async () => {
+  const suffix = Date.now();
+  const ctv = await createTestCtv(`SUMMARY-${suffix}`);
+  const customerX = `Khách X ${suffix}`;
+  const customerY = `Khách Y ${suffix}`;
+
+  const contracts = [
+    { id: `CTR-SUM-1-${suffix}`, customerName: customerX, totalValue: 4000000, paid: 2000000 },
+    { id: `CTR-SUM-2-${suffix}`, customerName: customerX, totalValue: 5000000, paid: 3000000 },
+    { id: `CTR-SUM-3-${suffix}`, customerName: customerY, totalValue: 6000000, paid: 1000000 },
+  ];
+
+  const service = new CommissionService();
+  let totalCommission = 0;
+  let totalCustomerPaid = 0;
+
+  for (const c of contracts) {
+    await createTestContract({
+      id: c.id,
+      transactionCode: `${c.id}-TX`,
+      customerName: c.customerName,
+      totalValue: c.totalValue,
+      referredByCtvId: ctv.id,
+    });
+    await contractService.addPayment(c.id, { amount: c.paid }, "Admin Test");
+    const created = await service.createForContract({
+      id: c.id,
+      transaction_code: `${c.id}-TX`,
+      total_value: c.totalValue,
+      referred_by_ctv_id: ctv.id,
+    });
+    assert.ok(created);
+    totalCommission += created!.amount;
+    totalCustomerPaid += c.paid;
+  }
+
+  const summary = await service.getReferrerSummary();
+  const group = summary.find((g) => g.referrerName === ctv.name);
+  assert.ok(group, "Không tìm thấy nhóm thống kê của CTV vừa tạo");
+  assert.equal(group!.customerCount, 2);
+  assert.equal(group!.orderCount, 3);
+  assert.equal(group!.totalCustomerPaid, totalCustomerPaid);
+  assert.equal(group!.totalCommission, totalCommission);
+});

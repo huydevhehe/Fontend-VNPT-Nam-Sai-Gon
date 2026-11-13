@@ -153,3 +153,22 @@ test.describe("API Chi hoa hồng & ghi đè khách đã chi (PATCH /commissions
     expect(notFoundRes.status()).toBe(404);
   });
 });
+
+test.describe("API Thống kê theo người giới thiệu (GET /commissions/summary)", () => {
+  test("Trả về danh sách thống kê hợp lệ, không bị route /:id/... nuốt mất", async ({ request }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+
+    const res = await request.get(`${API_URL}/commissions/summary`, {
+      headers: bearer(adminToken),
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
+
+    for (const group of body.data as { customerCount: number; orderCount: number }[]) {
+      expect(group.customerCount).toBeGreaterThan(0);
+      expect(group.orderCount).toBeGreaterThanOrEqual(group.customerCount);
+    }
+  });
+});

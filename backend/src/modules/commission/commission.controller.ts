@@ -16,6 +16,17 @@ commissionRouter.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/commissions/summary — thống kê theo người giới thiệu.
+// Khai báo trước các route /:id/... để không bị Express hiểu "summary" là :id.
+commissionRouter.get("/summary", async (_req: Request, res: Response) => {
+  try {
+    const summary = await commissionService.getReferrerSummary();
+    res.json({ success: true, data: summary });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // PATCH /api/commissions/:id/status
 commissionRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {

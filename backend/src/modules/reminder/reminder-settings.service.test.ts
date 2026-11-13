@@ -33,6 +33,7 @@ test("update rejects bad cc email", async () => {
 test("update accepts valid cc emails and persists", async () => {
   const result = await ReminderSettingsService.update({ extraCc: "a@example.com, b@example.com" });
   assert.equal(result.extraCc, "a@example.com,b@example.com");
+  await ReminderSettingsService.update({ extraCc: "" });
 });
 
 test("update toggles enabled and persists across calls", async () => {

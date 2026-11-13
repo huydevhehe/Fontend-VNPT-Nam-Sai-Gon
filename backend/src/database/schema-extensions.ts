@@ -146,6 +146,50 @@ export async function applySchemaExtensions(): Promise<void> {
   `);
 
   await run(`
+    CREATE TABLE IF NOT EXISTS reminder_logs (
+      id TEXT PRIMARY KEY,
+      source TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      days_before INTEGER NOT NULL,
+      recipients TEXT,
+      status TEXT NOT NULL,
+      error TEXT,
+      sent_at TEXT NOT NULL
+    )
+  `);
+  await run(`
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_reminder_logs_once
+    ON reminder_logs(source, item_id, days_before)
+    WHERE status = 'sent'
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS reminder_batches (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      file_name TEXT,
+      days_before TEXT NOT NULL,
+      enabled BOOLEAN DEFAULT TRUE,
+      imported_by TEXT,
+      imported_at TEXT
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS reminder_items (
+      id TEXT PRIMARY KEY,
+      batch_id TEXT NOT NULL,
+      title TEXT,
+      customer_name TEXT,
+      subscriber_code TEXT,
+      expiry_date TEXT NOT NULL,
+      recipient_email TEXT,
+      staff_name TEXT,
+      extra TEXT
+    )
+  `);
+
+  await run(`
     CREATE TABLE IF NOT EXISTS kpi_formulas (
       kpi_key TEXT PRIMARY KEY,
       segments TEXT NOT NULL,

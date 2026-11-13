@@ -7,6 +7,7 @@ import { requireAdmin } from "../../middleware/require-role.js";
 import { CustomerService, CustomerServiceError } from "./customer.service.js";
 import { CustomerDocumentService, CustomerDocumentServiceError } from "./customer-document.service.js";
 import { ServiceService } from "../service/service.service.js";
+import { CustomerImportService, CustomerImportServiceError } from "./customer-import/customer-import.service.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -33,10 +34,32 @@ export const customerRouter = Router();
 const customerService = new CustomerService();
 const customerDocumentService = new CustomerDocumentService();
 const serviceService = new ServiceService();
+const customerImportService = new CustomerImportService();
 
 function sendError(res: Response, error: any) {
   const status = error instanceof CustomerServiceError ? error.status : 500;
   res.status(status).json({ success: false, message: error.message });
+}
+
+function sendImportError(res: Response, error: any) {
+  const status = error instanceof CustomerImportServiceError ? error.status : 500;
+  res.status(status).json({ success: false, message: error.message });
+}
+
+function handleImportUpload(req: Request, res: Response, next: NextFunction) {
+  upload.single("file")(req, res, (err: unknown) => {
+    if (err) {
+      const message =
+        err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE"
+          ? "File vượt quá 10 MB"
+          : err instanceof Error
+            ? err.message
+            : "Lỗi upload file";
+      res.status(400).json({ success: false, message });
+      return;
+    }
+    next();
+  });
 }
 
 function sendDocError(res: Response, error: any) {
@@ -77,6 +100,38 @@ customerRouter.patch("/team", requireAuth, requireAdmin, async (req: Request, re
     sendError(res, error);
   }
 });
+
+// POST /api/customers/import/preview — đọc file + phân loại trùng, không ghi DB (chỉ Admin).
+// Đặt TRƯỚC "/:id" để không bị route "/:id" nuốt mất.
+customerRouter.post(
+  "/import/preview",
+  requireAuth,
+  requireAdmin,
+  handleImportUpload,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: "Vui lòng chọn file Excel (.xlsx / .xls)" });
+        return;
+      }
+      const originalName = req.file.originalname.toLowerCase();
+      if (!originalName.endsWith(".xlsx") && !originalName.endsWith(".xls")) {
+        res.status(400).json({ success: false, message: "Chỉ hỗ trợ file .xlsx hoặc .xls" });
+        return;
+      }
+
+      const defaultStaff =
+        typeof req.body?.defaultStaff === "string" && req.body.defaultStaff.trim()
+          ? req.body.defaultStaff.trim()
+          : null;
+
+      const result = await customerImportService.preview(req.file.buffer, defaultStaff);
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      sendImportError(res, error);
+    }
+  }
+);
 
 customerRouter.get("/:id", async (req: Request, res: Response) => {
   try {

@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth/auth-context";
 import {
   LayoutDashboard,
   Receipt,
   RotateCw,
   Users,
   BellRing,
+  MailWarning,
   Target,
   FileText,
   Percent,
@@ -92,6 +94,13 @@ const NAV_SECTIONS = [
         icon: Settings2,
         badge: "Admin",
       },
+      {
+        name: "Nhắc hết hạn (Email)",
+        href: "/admin/reminders",
+        icon: MailWarning,
+        badge: "Admin",
+        adminOnly: true,
+      },
     ],
   },
   {
@@ -140,6 +149,8 @@ const NAV_SECTIONS = [
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
 
   return (
     <>
@@ -189,7 +200,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 {section.label}
               </div>
               <nav className="space-y-1">
-                {section.items.map((item) => {
+                {section.items
+                  .filter((item) => !("adminOnly" in item && item.adminOnly) || isAdmin)
+                  .map((item) => {
                   const isActive =
                     pathname === item.href ||
                     (item.href !== "/admin/dashboard" &&

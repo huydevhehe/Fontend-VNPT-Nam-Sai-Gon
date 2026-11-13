@@ -76,6 +76,27 @@ export async function getTerritories(): Promise<TerritoryRecord[]> {
   return rows.map(mapTerritoryRow);
 }
 
+export interface CreateTerritoryInput {
+  wardName: string;
+  staffName?: string;
+}
+
+export async function createTerritory(input: CreateTerritoryInput): Promise<TerritoryRecord> {
+  const row = await apiFetch<{ id: string; wardName: string; staffName: string }>("/territories", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return mapTerritoryRow({
+    id: row.id,
+    ward_name: row.wardName,
+    quarter_count: 0,
+    household_count: 0,
+    opportunity_count: 0,
+    deployed_count: 0,
+    staff_name: row.staffName,
+  });
+}
+
 /**
  * Lưu ý: route `PATCH /territories/:id/households` (xem
  * `backend/src/modules/territory/territory.controller.ts`) lệch chuẩn
@@ -148,6 +169,33 @@ export async function updateWardContact(
     body: JSON.stringify(patch),
   });
   return mapWardContactRow(row);
+}
+
+export interface ImportWardContactsResult {
+  created: number;
+  duplicates: number;
+  skipped: number;
+  createdWards: string[];
+  errors: { rowNumber: number; message: string }[];
+}
+
+/**
+ * Gọi `POST /api/territories/contacts/import` (multipart/form-data qua
+ * multer) — dùng `apiFetch` (không phải `apiFetchRaw`) vì route này trả
+ * đúng chuẩn `{success, data}` như phần còn lại của module territories.
+ */
+export async function importWardContacts(
+  file: File,
+  autoCreateWards: boolean
+): Promise<ImportWardContactsResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("autoCreateWards", autoCreateWards ? "true" : "false");
+
+  return apiFetch<ImportWardContactsResult>("/territories/contacts/import", {
+    method: "POST",
+    body: formData,
+  });
 }
 
 export async function deleteWardContact(contactId: string): Promise<void> {

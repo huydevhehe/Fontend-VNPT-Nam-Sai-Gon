@@ -96,13 +96,16 @@ async function start() {
       console.log(`[VNPT CRM Backend] Server is running on http://localhost:${config.port}`);
     });
     if (Number(config.port) !== 8087) {
-      try {
-        app.listen(8087, () => {
-          console.log("[VNPT CRM Backend] Also listening on http://localhost:8087");
-        });
-      } catch {
-        // Port 8087 might be busy, ignore
-      }
+      // `listen()` báo lỗi (vd cổng 8087 đang bị chiếm bởi một tiến trình
+      // backend khác) qua event 'error' bất đồng bộ, không ném exception nên
+      // try/catch không bắt được — phải đăng ký handler 'error' mới "ignore"
+      // được thật, nếu không tiến trình sẽ crash vì unhandled error event.
+      const compatServer = app.listen(8087, () => {
+        console.log("[VNPT CRM Backend] Also listening on http://localhost:8087");
+      });
+      compatServer.on("error", () => {
+        // Cổng 8087 có thể đang bị chiếm (bởi backend ở worktree khác) — bỏ qua.
+      });
     }
   } catch (error) {
     console.error("[VNPT CRM Backend] Failed to start server:", error);

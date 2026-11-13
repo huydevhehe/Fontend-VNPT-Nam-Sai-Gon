@@ -34,6 +34,18 @@ export const WARD_UNITS: readonly { unit: string; positions: readonly string[] }
   { unit: "Phòng Văn hóa", positions: ["Trưởng phòng", "Phó phòng"] },
 ];
 
+// Danh mục gợi ý Đơn vị cho đầu mối phường (sheet "PhườngXã") — chỉ là gợi ý
+// (frontend hiển thị bằng <datalist>), backend không chặn giá trị khác.
+export const WARD_CONTACT_UNITS = [
+  "UBND",
+  "Đảng ủy",
+  "Trường học",
+  "Công an",
+  "Trạm Y tế",
+  "BCH Quân sự",
+  "Trung tâm Cung ứng",
+] as const;
+
 export const CTV_COMMISSION_RATE = 0.1;
 
 export const UNASSIGNED_STAFF = "Chưa phân công";

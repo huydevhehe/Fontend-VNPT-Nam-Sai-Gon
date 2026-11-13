@@ -19,3 +19,15 @@ export const WARD_UNITS: readonly { unit: string; positions: readonly string[] }
   { unit: "Phòng Nội vụ", positions: ["Trưởng phòng", "Phó phòng"] },
   { unit: "Phòng Văn hóa", positions: ["Trưởng phòng", "Phó phòng"] },
 ];
+
+// Danh mục gợi ý Đơn vị cho đầu mối phường (sheet "PhườngXã") — chỉ là gợi ý
+// qua <datalist>, không giới hạn giá trị người dùng được nhập.
+export const WARD_CONTACT_UNITS = [
+  "UBND",
+  "Đảng ủy",
+  "Trường học",
+  "Công an",
+  "Trạm Y tế",
+  "BCH Quân sự",
+  "Trung tâm Cung ứng",
+] as const;

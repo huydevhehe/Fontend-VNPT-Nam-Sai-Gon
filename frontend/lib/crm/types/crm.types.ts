@@ -90,6 +90,10 @@ export interface ServiceRecord {
   daysRemaining: number;
   staffName: string;
   isExpired: boolean;
+  customerId?: string | null;
+  serviceGroup?: string | null;
+  packageName?: string | null;
+  paymentType?: string | null;
 }
 
 // 5. Lead

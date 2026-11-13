@@ -164,6 +164,11 @@ export async function applySchemaExtensions(): Promise<void> {
     )
   `);
 
+  await ensureColumn("services", "customer_id", "TEXT");
+  await ensureColumn("services", "service_group", "TEXT");
+  await ensureColumn("services", "package_name", "TEXT");
+  await ensureColumn("services", "payment_type", "TEXT");
+
   // Bảng đánh dấu migration một-lần, do file này sở hữu. Dùng để tránh
   // backfillRelations() chạy lại mỗi lần khởi động server và điền lại giá trị
   // territory_id mà admin đã chủ động gỡ (PATCH /leads/:id/assignment với
@@ -287,4 +292,26 @@ export async function backfillRelations(): Promise<void> {
       await run("UPDATE contracts SET collected_amount = ? WHERE id = ?", [c.total_value, c.id]);
     }
   });
+
+  // Dịch vụ cũ (seed) chỉ có customer_name, không có customer_id. Chỉ gán khi
+  // ĐÚNG 1 khách có name trùng khớp chính xác — tên trùng 0 hoặc >1 khách thì
+  // để NULL, không gán bừa (Review Focus #5, dot-07.md).
+  await runMigrationOnce("services_customer_id_backfill_v1", backfillServiceCustomerIds);
+}
+
+/**
+ * Logic thật của migration một-lần `services_customer_id_backfill_v1`, tách
+ * riêng (không gói trong `runMigrationOnce`) để test gọi lại được nhiều lần
+ * mà không bị khoá bởi `schema_migrations_state` (migration đã tự chạy một
+ * lần khi `initDatabase()` khởi động, trước khi test tạo thêm dữ liệu).
+ */
+export async function backfillServiceCustomerIds(): Promise<void> {
+  await run(`
+    UPDATE services s
+    SET customer_id = (
+      SELECT c.id FROM customers c WHERE c.name = s.customer_name
+    )
+    WHERE s.customer_id IS NULL
+      AND (SELECT COUNT(*) FROM customers c2 WHERE c2.name = s.customer_name) = 1
+  `);
 }

@@ -6,6 +6,7 @@ import { requireAuth } from "../../middleware/require-auth.js";
 import { requireAdmin } from "../../middleware/require-role.js";
 import { CustomerService, CustomerServiceError } from "./customer.service.js";
 import { CustomerDocumentService, CustomerDocumentServiceError } from "./customer-document.service.js";
+import { ServiceService } from "../service/service.service.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -31,6 +32,7 @@ function handleDocUpload(req: Request, res: Response, next: NextFunction) {
 export const customerRouter = Router();
 const customerService = new CustomerService();
 const customerDocumentService = new CustomerDocumentService();
+const serviceService = new ServiceService();
 
 function sendError(res: Response, error: any) {
   const status = error instanceof CustomerServiceError ? error.status : 500;
@@ -97,6 +99,16 @@ customerRouter.patch("/:id", requireAuth, async (req: Request, res: Response) =>
 });
 
 // GET /api/customers/:id/documents — danh sách giấy tờ đính kèm của 1 khách
+// GET /api/customers/:id/services — toàn bộ dịch vụ khách đang dùng (trang chi tiết)
+customerRouter.get("/:id/services", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const services = await serviceService.listByCustomer(req.params.id);
+    res.json({ success: true, data: services });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 customerRouter.get("/:id/documents", requireAuth, async (req: Request, res: Response) => {
   try {
     const docs = await customerDocumentService.list(req.params.id);

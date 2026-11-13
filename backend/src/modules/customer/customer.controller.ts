@@ -133,6 +133,22 @@ customerRouter.post(
   }
 );
 
+// POST /api/customers/import/commit — ghi dữ liệu theo quyết định admin (chỉ Admin).
+// Đặt TRƯỚC "/:id" để không bị route "/:id" nuốt mất.
+customerRouter.post("/import/commit", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
+    const { territoryId, handoverBatch, decisions } = req.body ?? {};
+    const result = await customerImportService.commit(
+      { territoryId: territoryId ?? null, handoverBatch, decisions },
+      operator
+    );
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    sendImportError(res, error);
+  }
+});
+
 customerRouter.get("/:id", async (req: Request, res: Response) => {
   try {
     const customer = await customerService.getById(req.params.id);

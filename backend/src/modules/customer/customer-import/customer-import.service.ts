@@ -1,6 +1,7 @@
-import { query } from "../../../database/db.js";
+import { query, transaction } from "../../../database/db.js";
 import { parseCustomerSheet, readWorkbookRows } from "./parse.js";
 import { classifyRows, type ClassifiedRow, type ExistingCustomer } from "./classify.js";
+import { commitImportRows, type CommitInput, type CommitResult } from "./commit.js";
 
 export const MAX_IMPORT_ROWS = 5000;
 
@@ -94,5 +95,27 @@ export class CustomerImportService {
     };
 
     return { rows: allRows, summary };
+  }
+
+  async commit(input: CommitInput, operator: string): Promise<CommitResult> {
+    if (!Array.isArray(input.decisions) || input.decisions.length === 0) {
+      throw new CustomerImportServiceError("Danh sách quyết định không được để trống");
+    }
+
+    const result = await transaction(async (tx) => {
+      const res = await commitImportRows(tx, input, operator);
+      await tx.run(
+        'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+        [
+          `LOG-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          operator,
+          "Nhập khách hàng (import có xử lý trùng)",
+          `Đợt: ${input.handoverBatch || "(không có)"}. Tạo mới: ${res.created}, Cập nhật: ${res.updated}, Giữ bản cũ: ${res.kept}, Bỏ qua: ${res.skipped}, Lỗi: ${res.errors.length}`,
+        ]
+      );
+      return res;
+    });
+
+    return result;
   }
 }

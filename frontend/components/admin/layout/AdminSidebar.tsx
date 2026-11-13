@@ -50,6 +50,11 @@ const NAV_SECTIONS = [
         icon: FileText,
       },
       {
+        name: "Đề nghị thanh toán",
+        href: "/admin/payment-requests",
+        icon: FileText,
+      },
+      {
         name: "Hoa hồng",
         href: "/admin/commissions",
         icon: Percent,

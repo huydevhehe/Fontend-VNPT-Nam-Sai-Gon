@@ -90,3 +90,26 @@ export function deleteContractPayment(paymentId: string): Promise<ContractRecord
     method: "DELETE",
   });
 }
+
+export interface PaymentRequestPreviewDto {
+  suggestedDocNumber: string;
+  missingFields: string[];
+}
+
+export interface PaymentExportRecordDto {
+  id: string;
+  contractId: string;
+  docNumber: string;
+  exportedBy: string | null;
+  exportedAt: string;
+  transactionCode?: string;
+  customerName?: string;
+}
+
+export function getPaymentRequestPreview(contractId: string): Promise<PaymentRequestPreviewDto> {
+  return apiFetch<PaymentRequestPreviewDto>(`/contracts/${contractId}/payment-request/preview`);
+}
+
+export function listPaymentExports(): Promise<PaymentExportRecordDto[]> {
+  return apiFetch<PaymentExportRecordDto[]>("/contracts/payment-requests");
+}

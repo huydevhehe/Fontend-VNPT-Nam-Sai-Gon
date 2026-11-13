@@ -115,6 +115,16 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("system_settings", "payment_bank_name", "TEXT DEFAULT 'TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)'");
   await ensureColumn("system_settings", "payment_signer_name", "TEXT DEFAULT 'Lê Văn Thuần'");
 
+  await run(`
+    CREATE TABLE IF NOT EXISTS payment_request_exports (
+      id TEXT PRIMARY KEY,
+      contract_id TEXT NOT NULL,
+      doc_number TEXT NOT NULL,
+      exported_by TEXT,
+      exported_at TEXT
+    )
+  `);
+
   // Bảng đánh dấu migration một-lần, do file này sở hữu. Dùng để tránh
   // backfillRelations() chạy lại mỗi lần khởi động server và điền lại giá trị
   // territory_id mà admin đã chủ động gỡ (PATCH /leads/:id/assignment với

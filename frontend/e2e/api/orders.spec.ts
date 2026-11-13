@@ -142,4 +142,59 @@ test.describe("Orders API (Đơn hàng)", () => {
     expect(updated.packageName).toBe("Gói Doanh Nghiệp VIP");
     expect(updated.paymentMethod).toBe("Trả trước");
   });
+
+  test("export payment request docx produces valid docx file and logs export", async ({ request }) => {
+    const suffix = Date.now();
+    const createRes = await request.post(`${API_URL}/contracts`, {
+      headers: bearer(adminToken),
+      data: {
+        transactionCode: `GD_EXPORT_${suffix}`,
+        customerName: `Khách Hàng Xuất Đề Nghị ${suffix}`,
+        subscriberCodes: [`TB_EXP_${suffix}`],
+        totalValue: 5940000,
+        channel: "Trực tiếp",
+        serviceGroup: "CNTT",
+        packageName: "eduOffice",
+        paymentMethod: "Trả trước",
+      },
+    });
+    expect(createRes.status()).toBe(201);
+    const order = (await createRes.json()).data;
+
+    // Missing docNumber -> 400
+    const errRes = await request.get(`${API_URL}/contracts/${order.id}/payment-request`, {
+      headers: bearer(adminToken),
+    });
+    expect(errRes.status()).toBe(400);
+
+    // Preview
+    const previewRes = await request.get(`${API_URL}/contracts/${order.id}/payment-request/preview`, {
+      headers: bearer(adminToken),
+    });
+    expect(previewRes.status()).toBe(200);
+    const previewJson = await previewRes.json();
+    expect(previewJson.data.missingFields).toBeDefined();
+
+    // Export with docNumber=706
+    const exportRes = await request.get(`${API_URL}/contracts/${order.id}/payment-request?docNumber=706`, {
+      headers: bearer(adminToken),
+    });
+    expect(exportRes.status()).toBe(200);
+    expect(exportRes.headers()["content-type"]).toContain("officedocument.wordprocessingml.document");
+    expect(exportRes.headers()["content-disposition"]).toContain(`De-nghi-thanh-toan_${order.transactionCode}.docx`);
+
+    const bodyBuffer = await exportRes.body();
+    // Docx file starts with PK (0x50 0x4B)
+    expect(bodyBuffer[0]).toBe(0x50);
+    expect(bodyBuffer[1]).toBe(0x4B);
+
+    // Verify logs
+    const logsRes = await request.get(`${API_URL}/contracts/payment-requests`, {
+      headers: bearer(adminToken),
+    });
+    expect(logsRes.status()).toBe(200);
+    const logsJson = await logsRes.json();
+    const foundLog = logsJson.data.find((l: any) => l.contractId === order.id && l.docNumber === "706");
+    expect(foundLog).toBeDefined();
+  });
 });

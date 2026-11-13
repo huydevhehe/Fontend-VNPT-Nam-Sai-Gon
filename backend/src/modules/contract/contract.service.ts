@@ -26,6 +26,8 @@ export interface ContractRow {
   contract_number: string | null;
   signed_date: string | null;
   collected_amount: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface ContractRecordDto {

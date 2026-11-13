@@ -24,8 +24,10 @@ import {
   getContractPayments,
   addContractPayment,
   deleteContractPayment,
+  getPaymentRequestPreview,
   ContractPaymentDto,
 } from "@/lib/api/contracts.api";
+import { API_BASE_URL, getToken } from "@/lib/api/client";
 import { getLeads, getCtvOptions, CtvOption } from "@/lib/api/leads.api";
 import { getTerritories } from "@/lib/api/territories.api";
 import { getCustomers } from "@/lib/api/customers.api";
@@ -120,6 +122,14 @@ export default function ContractsPage() {
   const [paymentNote, setPaymentNote] = useState("");
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [addingPayment, setAddingPayment] = useState(false);
+
+  // Export Modal state
+  const [exportingOrder, setExportingOrder] = useState<ContractRecord | null>(null);
+  const [exportDocNumber, setExportDocNumber] = useState("");
+  const [exportMissingFields, setExportMissingFields] = useState<string[]>([]);
+  const [loadingExportPreview, setLoadingExportPreview] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [downloadingDocx, setDownloadingDocx] = useState(false);
 
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [territories, setTerritories] = useState<TerritoryRecord[]>([]);
@@ -303,6 +313,66 @@ export default function ContractsPage() {
       setPayments(list);
     } catch (err) {
       setPaymentError(err instanceof Error ? err.message : "Không thể xóa lần thu tiền");
+    }
+  }
+
+  async function handleOpenExportModal(order: ContractRecord) {
+    setExportingOrder(order);
+    setExportDocNumber("");
+    setExportMissingFields([]);
+    setExportError(null);
+    setLoadingExportPreview(true);
+
+    try {
+      const preview = await getPaymentRequestPreview(order.id);
+      setExportDocNumber(preview.suggestedDocNumber || "1");
+      setExportMissingFields(preview.missingFields || []);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Không thể tải thông tin đề nghị thanh toán");
+    } finally {
+      setLoadingExportPreview(false);
+    }
+  }
+
+  async function handleDownloadDocx(e: FormEvent) {
+    e.preventDefault();
+    if (!exportingOrder) return;
+    if (!exportDocNumber.trim()) {
+      setExportError("Vui lòng nhập Số văn bản");
+      return;
+    }
+
+    setDownloadingDocx(true);
+    setExportError(null);
+    try {
+      const token = getToken();
+      const url = `${API_BASE_URL}/contracts/${exportingOrder.id}/payment-request?docNumber=${encodeURIComponent(
+        exportDocNumber.trim()
+      )}`;
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        throw new Error(errJson?.message || `Lỗi tải file (${res.status})`);
+      }
+
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `De-nghi-thanh-toan_${exportingOrder.transactionCode}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setExportingOrder(null);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Không thể xuất file Word");
+    } finally {
+      setDownloadingDocx(false);
     }
   }
 
@@ -564,6 +634,15 @@ export default function ContractsPage() {
           >
             <Banknote className="h-3.5 w-3.5" />
             <span>Thu tiền</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOpenExportModal(item)}
+            className="flex h-7 items-center gap-1 rounded-lg bg-sky-50 px-2 text-xs font-semibold text-sky-700 border border-sky-200 hover:bg-sky-100"
+            title="Xuất đề nghị thanh toán"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>Đề nghị TT</span>
           </button>
           <button
             type="button"
@@ -1227,6 +1306,93 @@ export default function ContractsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Export Payment Request Modal */}
+      {exportingOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between border-b pb-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Xuất đề nghị thanh toán
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Mã GD: <span className="font-mono font-bold text-vnpt">{exportingOrder.transactionCode}</span> · Khách:{" "}
+                  <span className="font-semibold text-slate-800">{exportingOrder.customerName}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setExportingOrder(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {loadingExportPreview ? (
+              <div className="py-8 text-center text-xs text-slate-400">Đang chuẩn bị dữ liệu văn bản...</div>
+            ) : (
+              <form onSubmit={handleDownloadDocx} className="space-y-4">
+                {/* Missing fields warning */}
+                {exportMissingFields.length > 0 && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                      Cảnh báo: Đơn hàng còn thiếu thông tin
+                    </div>
+                    <p className="mt-1">
+                      Còn thiếu: <span className="font-semibold">{exportMissingFields.join(", ")}</span>.
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-amber-700">
+                      Vẫn có thể xuất văn bản (chỗ thiếu sẽ để trống trong file Word).
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-700">
+                    Số văn bản <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    required
+                    value={exportDocNumber}
+                    onChange={(e) => setExportDocNumber(e.target.value)}
+                    placeholder="VD: 706"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Gợi ý tự động tăng theo năm hiện tại
+                  </p>
+                </div>
+
+                {exportError && (
+                  <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                    {exportError}
+                  </p>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <button
+                    type="button"
+                    onClick={() => setExportingOrder(null)}
+                    className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={downloadingDocx}
+                    className="flex items-center gap-1.5 rounded-xl bg-vnpt px-4 py-2 text-xs font-bold text-white hover:bg-vnpt-dark disabled:opacity-60"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>{downloadingDocx ? "Đang tạo file..." : "Tải file Word"}</span>
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

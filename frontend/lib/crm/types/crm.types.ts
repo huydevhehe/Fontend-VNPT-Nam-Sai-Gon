@@ -131,9 +131,34 @@ export interface CommissionRecord {
   amount: number;
   status: "Đã nhận" | "Chờ nhận" | "Đã chi" | "Chờ chi";
   date: string;
-  ctvId?: string;
-  contractId?: string;
+  ctvId?: string | null;
+  contractId?: string | null;
   note?: string | null;
+  /** Người giới thiệu: tên CTV, hoặc recipient_name (chi kênh không CTV), hoặc AM tiếp thị của đơn (nội bộ). */
+  referrerName: string | null;
+  referrerCode: string | null;
+  customerName: string | null;
+  /** "Khách đã chi" tự tính từ đơn hàng; null nếu không gắn đơn hàng nào. */
+  customerPaidAuto: number | null;
+  /** Admin ghi đè; null = dùng số tự tính. */
+  customerPaidOverride: number | null;
+  /** customerPaidOverride ?? customerPaidAuto. */
+  customerPaid: number | null;
+  paidOutAmount: number;
+  paidOutDate: string | null;
+  /** amount - paidOutAmount; có thể âm nếu chi vượt. */
+  remaining: number;
+}
+
+export interface ReferrerSummaryRecord {
+  referrerName: string;
+  referrerCode: string | null;
+  customerCount: number;
+  orderCount: number;
+  totalCustomerPaid: number;
+  totalCommission: number;
+  totalPaidOut: number;
+  totalRemaining: number;
 }
 
 // 8. Territory (7 Phường)

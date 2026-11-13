@@ -1,18 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, FormEvent } from "react";
 import Link from "next/link";
-import { MapPin, Building, Users, TrendingUp, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Building, Users, TrendingUp, AlertTriangle, ChevronDown, ChevronUp, Plus, X } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
-import { TerritoryRecord } from "@/lib/crm/types/crm.types";
-import { getTerritories, updateTerritoryHouseholds } from "@/lib/api/territories.api";
+import { TerritoryRecord, StaffRecord } from "@/lib/crm/types/crm.types";
+import { getTerritories, updateTerritoryHouseholds, createTerritory } from "@/lib/api/territories.api";
+import { getStaff } from "@/lib/api/staff.api";
+import { TableFilter } from "@/lib/table-filters";
+import { useAuth } from "@/lib/auth/auth-context";
+
+const EMPTY_WARD_FORM = { wardName: "", staffName: "" };
 
 export default function TerritoriesPage() {
+  const { user } = useAuth();
+  const canCreateWard = user?.role === "Admin";
+
   const [data, setData] = useState<TerritoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showList, setShowList] = useState(true);
+
+  const [staffList, setStaffList] = useState<StaffRecord[]>([]);
+  const [showWardForm, setShowWardForm] = useState(false);
+  const [wardForm, setWardForm] = useState(EMPTY_WARD_FORM);
+  const [wardFormError, setWardFormError] = useState<string | null>(null);
+  const [submittingWard, setSubmittingWard] = useState(false);
 
   // State cho pattern click-to-edit số hộ dân inline trên bảng.
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -138,6 +152,57 @@ export default function TerritoriesPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!canCreateWard) return;
+    let isMounted = true;
+    getStaff({ status: "Đang hoạt động" })
+      .then((staff) => {
+        if (isMounted) setStaffList(staff);
+      })
+      .catch(() => {
+        // Danh sách nhân viên chỉ phục vụ gợi ý trong form tạo phường; lỗi ở
+        // đây không được làm hỏng trang danh sách phường.
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [canCreateWard]);
+
+  function openCreateWard() {
+    setWardForm(EMPTY_WARD_FORM);
+    setWardFormError(null);
+    setShowWardForm(true);
+  }
+
+  async function handleWardSubmit(e: FormEvent) {
+    e.preventDefault();
+    setWardFormError(null);
+    setSubmittingWard(true);
+    try {
+      const created = await createTerritory({
+        wardName: wardForm.wardName,
+        staffName: wardForm.staffName || undefined,
+      });
+      setData((prev) => [...prev, created]);
+      setShowWardForm(false);
+      setWardForm(EMPTY_WARD_FORM);
+    } catch (err) {
+      setWardFormError(
+        err instanceof Error ? err.message : "Không thể tạo phường. Vui lòng thử lại."
+      );
+    } finally {
+      setSubmittingWard(false);
+    }
+  }
+
+  const territoryFilters: TableFilter<TerritoryRecord>[] = [
+    {
+      id: "staffName",
+      label: "AM phụ trách",
+      getValue: (r) => r.staffName || "Chưa phân công",
+    },
+  ];
+
   const columns: Column<TerritoryRecord>[] = [
     {
       header: "Phường / Địa bàn",
@@ -237,27 +302,39 @@ export default function TerritoriesPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-slate-900">
-            Địa bàn Phường / Khu phố & Cơ hội Chuyển đổi số
+            Địa bàn Phường xã & Cơ hội Chuyển đổi số
           </h2>
           <p className="text-xs text-slate-500">
-            Quản lý 7 phường Nam Sài Gòn, số hộ dân cập nhật trực tiếp; *Đã triển khai = Đã ký HĐ và có doanh thu
+            Quản lý các phường Nam Sài Gòn, số hộ dân cập nhật trực tiếp; *Đã triển khai = Đã ký HĐ và có doanh thu
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowList((v) => !v)}
-          className="flex items-center gap-2 self-start rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100 sm:self-auto"
-        >
-          {showList ? (
-            <>
-              Ẩn danh sách phường <ChevronUp className="h-4 w-4" />
-            </>
-          ) : (
-            <>
-              Xem danh sách phường <ChevronDown className="h-4 w-4" />
-            </>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {canCreateWard && (
+            <button
+              type="button"
+              onClick={openCreateWard}
+              className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="btn-label">Tạo phường</span>
+            </button>
           )}
-        </button>
+          <button
+            type="button"
+            onClick={() => setShowList((v) => !v)}
+            className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
+          >
+            {showList ? (
+              <>
+                Ẩn danh sách phường <ChevronUp className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Xem danh sách phường <ChevronDown className="h-4 w-4" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -308,10 +385,84 @@ export default function TerritoriesPage() {
             subtitle="Cho phép cập nhật số hộ dân, thông tin lãnh đạo phường và trường học địa bàn"
             columns={columns}
             data={data}
+            filters={territoryFilters}
             searchPlaceholder="Tìm theo tên phường, nhân viên, lãnh đạo..."
             exportFileName="vnpt_dia_ban"
           />
         ))}
+
+      {/* Modal tạo phường mới */}
+      {showWardForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Tạo phường mới</h3>
+              <button
+                onClick={() => setShowWardForm(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleWardSubmit} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Tên phường *
+                </label>
+                <input
+                  required
+                  placeholder="Phường Tân Hưng"
+                  value={wardForm.wardName}
+                  onChange={(e) => setWardForm({ ...wardForm, wardName: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  AM phụ trách
+                </label>
+                <select
+                  value={wardForm.staffName}
+                  onChange={(e) => setWardForm({ ...wardForm, staffName: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                >
+                  <option value="">— Chưa phân công —</option>
+                  {staffList.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {wardFormError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {wardFormError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowWardForm(false)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingWard}
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {submittingWard ? "Đang tạo..." : "Tạo phường"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

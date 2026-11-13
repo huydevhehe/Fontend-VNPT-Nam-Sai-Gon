@@ -198,6 +198,31 @@ test.describe("API chi tiết Phường", () => {
     expect(after.quarters.map((q: TerritoryDetail["quarters"][number]) => q.id)).not.toContain(q1.id);
   });
 
+  test("Admin tạo phường mới -> 201; trùng tên (khác hoa/thường, có tiền tố Phường) -> 409; AM tạo -> 403", async ({ request }) => {
+    const wardName = `E2E Phường Mới ${suffix}`;
+
+    const created = await request.post(`${API_URL}/territories`, {
+      headers: bearer(adminToken),
+      data: { wardName },
+    });
+    expect(created.status()).toBe(201);
+    const createdBody = (await created.json()).data;
+    expect(createdBody.wardName).toBe(wardName);
+    expect(typeof createdBody.id).toBe("string");
+
+    const duplicate = await request.post(`${API_URL}/territories`, {
+      headers: bearer(adminToken),
+      data: { wardName: `phường ${wardName.toLowerCase()}` },
+    });
+    expect(duplicate.status()).toBe(409);
+
+    const amAttempt = await request.post(`${API_URL}/territories`, {
+      headers: bearer(amToken),
+      data: { wardName: `E2E AM Không Được Tạo ${suffix}` },
+    });
+    expect(amAttempt.status()).toBe(403);
+  });
+
   test("Route /:id/households cũ vẫn hoạt động (không bị route mới bắt nhầm)", async ({ request }) => {
     const res = await request.patch(`${API_URL}/territories/TB-06/households`, {
       headers: bearer(adminToken),

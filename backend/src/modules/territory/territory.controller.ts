@@ -29,6 +29,17 @@ territoryRouter.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// POST /api/territories — Admin tạo phường mới
+territoryRouter.post("/", requireAdmin, (req: Request, res: Response) => {
+  const operator = req.user?.name ?? req.user?.id ?? "Admin";
+  return handle(res, 201, () =>
+    territoryService.createTerritory(
+      { wardName: req.body?.wardName, staffName: req.body?.staffName },
+      operator
+    )
+  );
+});
+
 // Các path /officials/... và /quarters/... phải khai báo TRƯỚC /:id/... để không bị bắt nhầm.
 territoryRouter.patch("/officials/:officialId", requireAdmin, (req: Request, res: Response) =>
   handle(res, 200, () => territoryService.updateOfficial(String(req.params.officialId), req.body ?? {}))

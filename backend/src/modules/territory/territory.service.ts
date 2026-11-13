@@ -1,5 +1,6 @@
 import { query, run } from "../../database/db.js";
 import { WARD_UNITS } from "../../constants/org.js";
+import { normalizeWardName } from "./ward-name.js";
 
 export class TerritoryServiceError extends Error {
   constructor(message: string, public status: number) {
@@ -17,6 +18,10 @@ function badRequest(message: string): TerritoryServiceError {
 
 function notFound(message: string): TerritoryServiceError {
   return new TerritoryServiceError(message, 404);
+}
+
+function conflict(message: string): TerritoryServiceError {
+  return new TerritoryServiceError(message, 409);
 }
 
 function requireText(value: unknown, label: string, max: number): string {
@@ -110,6 +115,11 @@ export interface WardContactInput {
   amInCharge?: string;
 }
 
+export interface CreateTerritoryInput {
+  wardName: string;
+  staffName?: string;
+}
+
 export interface WardStatsInput {
   population?: number;
   schoolMamnon?: number;
@@ -122,6 +132,56 @@ export interface WardStatsInput {
 export class TerritoryService {
   async getAll() {
     return query("SELECT * FROM territories ORDER BY ward_name ASC");
+  }
+
+  async createTerritory(input: CreateTerritoryInput, operator: string = "Admin") {
+    if (typeof input.wardName !== "string" || input.wardName.trim() === "") {
+      throw badRequest("Tên phường không được để trống");
+    }
+    const wardName = input.wardName.trim();
+    if (wardName.length < 2 || wardName.length > MAX_NAME_LENGTH) {
+      throw badRequest("Tên phường phải từ 2 đến 100 ký tự");
+    }
+
+    const normalizedNew = normalizeWardName(wardName);
+    const existingWards = await query<{ ward_name: string }>("SELECT ward_name FROM territories");
+    const isDuplicate = existingWards.some(
+      (row) => normalizeWardName(row.ward_name) === normalizedNew
+    );
+    if (isDuplicate) {
+      throw conflict("Phường đã tồn tại");
+    }
+
+    let staffName = "";
+    if (input.staffName !== undefined && input.staffName !== null && input.staffName !== "") {
+      if (typeof input.staffName !== "string") {
+        throw badRequest("Nhân viên phụ trách không hợp lệ");
+      }
+      staffName = input.staffName.trim();
+      const staffRows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [staffName]);
+      if (!staffRows.length) {
+        throw badRequest("Nhân viên phụ trách không tồn tại");
+      }
+    }
+
+    const id = `TB-${Date.now()}`;
+    await run(
+      "INSERT INTO territories (id, ward_name, staff_name) VALUES (?, ?, ?)",
+      [id, wardName, staffName || null]
+    );
+
+    await run(
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+      [`LOG-${Date.now()}`, operator, "Tạo phường", `Tạo phường ${wardName} (ID ${id})`]
+    );
+
+    const created = await query<any>("SELECT * FROM territories WHERE id = ?", [id]);
+    const row = created[0];
+    return {
+      id: row.id,
+      wardName: row.ward_name,
+      staffName: row.staff_name || "",
+    };
   }
 
   async updateStats(id: string, stats: WardStatsInput, operator: string = "Admin") {
@@ -160,7 +220,7 @@ export class TerritoryService {
     await run(`UPDATE territories SET ${fields.join(", ")} WHERE id = ?`, values);
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [`LOG-${Date.now()}`, operator, "Cập nhật chỉ số địa bàn", `Cập nhật địa bàn ID ${id}: ${JSON.stringify(stats)}`]
     );
 
@@ -218,7 +278,7 @@ export class TerritoryService {
     );
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [`LOG-${Date.now()}`, operator, "Thêm đầu mối phường", `Thêm ${data.fullName} (${data.position}) vào địa bàn ID ${territoryId}`]
     );
 
@@ -250,7 +310,7 @@ export class TerritoryService {
     );
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [`LOG-${Date.now()}`, operator, "Cập nhật đầu mối phường", `Cập nhật đầu mối ID ${contactId}`]
     );
 
@@ -267,7 +327,7 @@ export class TerritoryService {
     await run("DELETE FROM ward_contacts WHERE id = ?", [contactId]);
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [`LOG-${Date.now()}`, operator, "Xóa đầu mối phường", `Xóa đầu mối ID ${contactId}`]
     );
 

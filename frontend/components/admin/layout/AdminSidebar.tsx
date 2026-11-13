@@ -91,7 +91,7 @@ const NAV_SECTIONS = [
     label: "ĐỊA BÀN",
     items: [
       {
-        name: "Phường / Khu phố",
+        name: "Phường xã",
         href: "/admin/territories",
         icon: MapPin,
       },

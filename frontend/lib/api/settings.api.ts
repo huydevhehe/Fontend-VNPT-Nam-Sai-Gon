@@ -7,6 +7,10 @@ export interface SystemSettings {
   smtpPassSet: boolean;
   zaloOaId: string;
   zaloOaTokenSet: boolean;
+  paymentBeneficiary?: string;
+  paymentAccountNo?: string;
+  paymentBankName?: string;
+  paymentSignerName?: string;
 }
 
 export interface UpdateSystemSettingsInput {
@@ -16,6 +20,10 @@ export interface UpdateSystemSettingsInput {
   smtpPass?: string;
   zaloOaId?: string;
   zaloOaToken?: string;
+  paymentBeneficiary?: string;
+  paymentAccountNo?: string;
+  paymentBankName?: string;
+  paymentSignerName?: string;
 }
 
 export function getSystemSettings(): Promise<SystemSettings> {

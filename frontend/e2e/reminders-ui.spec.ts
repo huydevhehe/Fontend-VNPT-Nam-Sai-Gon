@@ -32,6 +32,7 @@ test.describe("Menu Nhắc hết hạn (Email) (Đợt 10 - Task 5)", () => {
 
   test("import file nhắc hạn -> đợt xuất hiện trong danh sách tab Nhắc theo file Excel", async ({
     page,
+    request,
   }) => {
     await loginAs(page, "admin");
     await page.goto("/admin/reminders");
@@ -57,6 +58,18 @@ test.describe("Menu Nhắc hết hạn (Email) (Đợt 10 - Task 5)", () => {
     await page.getByRole("button", { name: "Xong" }).click();
 
     await expect(page.getByText(`Batch UI ${suffix}`)).toBeVisible();
+
+    // Dọn đợt vừa tạo (mặc định daysBefore [30,7,1], ngày hết hạn 18/11/2026)
+    // để không còn "enabled" trong DB test dùng chung — tránh bị tính nhầm
+    // vào test nhắc hạn dịch vụ ở backend (reminder-runner.test.ts) nếu sau
+    // này nó cũng dùng mốc 7 ngày trước 2026-11-18.
+    const adminToken = await apiLogin(request, "admin", "admin@Vnpt2026");
+    const listRes = await request.get(`${API_URL}/reminders/files`, { headers: bearer(adminToken) });
+    const batches: Array<{ id: string; name: string }> = (await listRes.json()).data;
+    const created = batches.find((b) => b.name === `Batch UI ${suffix}`);
+    if (created) {
+      await request.delete(`${API_URL}/reminders/files/${created.id}`, { headers: bearer(adminToken) });
+    }
   });
 
   test("AM không thấy menu Nhắc hết hạn (Email) và API trả 403", async ({ page, request }) => {

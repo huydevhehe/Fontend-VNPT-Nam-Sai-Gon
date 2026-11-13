@@ -7,6 +7,17 @@ const { ReminderSettingsService } = await import("./reminder-settings.service.js
 
 await initDatabase();
 
+// Dọn dữ liệu test của CHÍNH FILE NÀY sau khi toàn bộ test trong file chạy
+// xong — nếu không, SVC-TEST-*/STAFF-TEST-* của lần chạy trước (đặc biệt là
+// mục tạo ở test cuối cùng) sẽ còn sót lại trong DB test dùng chung và có
+// thể bị tính nhầm vào lần chạy sau (vd nếu ngày hết hạn của chúng lại khớp
+// mốc nhắc hạn của một test khác).
+test.after(async () => {
+  await run("DELETE FROM reminder_logs WHERE item_id LIKE 'SVC-TEST-%' OR item_id LIKE 'RMI-TEST-%'");
+  await run("DELETE FROM services WHERE id LIKE 'SVC-TEST-%'");
+  await run("DELETE FROM staff WHERE id LIKE 'STAFF-TEST-%'");
+});
+
 test("findDueDays returns the matching milestone and no catch-up for missed ones", () => {
   assert.equal(findDueDays("2026-11-18", "2026-11-11", [30, 7, 1]), 7);
   assert.equal(findDueDays("2026-11-17", "2026-11-11", [30, 7, 1]), null);

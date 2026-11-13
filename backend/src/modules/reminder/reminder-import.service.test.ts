@@ -39,6 +39,11 @@ test("import maps chosen columns and parses mixed date formats (serial, dd/mm/yy
     [result.batchId]
   );
   assert.equal(items.length, 2);
+
+  // Dọn đợt vừa tạo: để batch này "enabled" sót lại trong DB test dùng chung
+  // sẽ bị collectDue() của test khác (reminder-runner.test.ts) tính nhầm vào
+  // nếu sau này có ngày hết hạn khớp mốc nhắc của test đó.
+  await ReminderImportService.deleteBatch(result.batchId);
 });
 
 test("import reports rows with unreadable dates and does not insert them", async () => {
@@ -56,6 +61,8 @@ test("import reports rows with unreadable dates and does not insert them", async
 
   assert.equal(result.imported, 0);
   assert.equal(result.errors.length, 1);
+
+  await ReminderImportService.deleteBatch(result.batchId);
 });
 
 test("disabled batch is ignored by collectDue", async () => {

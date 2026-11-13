@@ -107,5 +107,10 @@ test.describe("API Nhắc hết hạn (Đợt 10 - Task 4)", () => {
     const batch = body.data.find((b: { name: string }) => b.name === `Batch E2E ${SUFFIX}`);
     expect(batch).toBeTruthy();
     expect(batch.itemCount).toBe(2);
+
+    // Dọn đợt vừa tạo để không còn "enabled" trong DB test dùng chung (xem
+    // comment trong reminders-ui.spec.ts) — làm sau cùng vì các test khác
+    // trong describe này cũng cần đợt này còn tồn tại.
+    await request.delete(`${API_URL}/reminders/files/${batch.id}`, { headers: bearer(adminToken) });
   });
 });

@@ -1,7 +1,14 @@
 import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { requireAuth } from "../../middleware/require-auth.js";
+import { requireAdmin } from "../../middleware/require-role.js";
+import { resolveActorName } from "../../middleware/actor.js";
+import { ROLES } from "../../constants/org.js";
+import { HttpError } from "../auth/auth.service.js";
 import { DebtService } from "./debt.service.js";
+
+/** Giá trị chắc chắn không khớp bất kỳ `staff_name` nào — dùng khi không xác định được tên nhân viên hiện tại. */
+const NO_MATCH_STAFF = "\u0000__NO_STAFF__\u0000";
 
 const ALLOWED_EXCEL_MIMES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -38,12 +45,18 @@ export const debtRouter = Router();
 const debtService = new DebtService();
 
 // GET /api/debts
-debtRouter.get("/", async (req: Request, res: Response) => {
+// Không phải Admin: ép staff = tên của người gọi (ép ở tầng API, không chỉ
+// ẩn ở UI) — tham số `?staff=...` của client bị bỏ qua hoàn toàn.
+debtRouter.get("/", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { month, staff, status } = req.query;
+    const { month, status } = req.query;
+    let staffFilter = req.query.staff as string | undefined;
+    if (req.user?.role !== ROLES.ADMIN) {
+      staffFilter = (await resolveActorName(req)) ?? NO_MATCH_STAFF;
+    }
     const debts = await debtService.getAll({
       month: month as string,
-      staff: staff as string,
+      staff: staffFilter,
       status: status as string,
     });
     res.json({ success: true, data: debts });
@@ -52,8 +65,20 @@ debtRouter.get("/", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/debts/import
-debtRouter.post("/import", requireAuth, handleUpload, async (req: Request, res: Response): Promise<void> => {
+// POST /api/debts — Admin thêm nợ lẻ (ngoài luồng import Excel)
+debtRouter.post("/", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
+    const created = await debtService.createSingle(req.body ?? {}, operator);
+    res.status(201).json({ success: true, data: created });
+  } catch (error: any) {
+    const statusCode = error instanceof HttpError ? error.status : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/debts/import — chỉ Admin
+debtRouter.post("/import", requireAuth, requireAdmin, handleUpload, async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
       res.status(400).json({ success: false, message: "Vui lòng đính kèm file Excel (.xlsx)" });
@@ -71,15 +96,24 @@ debtRouter.post("/import", requireAuth, handleUpload, async (req: Request, res: 
 });
 
 // PATCH /api/debts/:id/gach-no
-debtRouter.patch("/:id/gach-no", requireAuth, async (req: Request, res: Response) => {
+debtRouter.patch("/:id/gach-no", requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    if (req.user?.role !== ROLES.ADMIN) {
+      const existing = await debtService.getById(id);
+      const actorName = await resolveActorName(req);
+      if (!existing || existing.staff_name.trim() !== (actorName ?? "").trim()) {
+        res.status(403).json({ success: false, message: "Bạn chỉ được xử lý dữ liệu của mình" });
+        return;
+      }
+    }
     const { amount, documentRef } = req.body;
     const operator = req.user?.name ?? req.user?.id ?? "Admin";
     const result = await debtService.gachNo(id, Number(amount), documentRef, operator);
     res.json(result);
   } catch (error: any) {
-    res.status(400).json({ success: false, message: error.message });
+    const statusCode = error instanceof HttpError ? error.status : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 });
 

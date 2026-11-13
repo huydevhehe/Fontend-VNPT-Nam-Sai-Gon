@@ -26,6 +26,9 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("users", "must_change_password", "BOOLEAN DEFAULT FALSE");
   await run("CREATE UNIQUE INDEX IF NOT EXISTS ux_users_referral_code ON users(referral_code)");
 
+  await ensureColumn("renewals", "expiry_date", "TEXT");
+  await ensureColumn("renewals", "renewed_at", "TEXT");
+
   await ensureColumn("customers", "handover_batch", "TEXT");
   await ensureColumn("customers", "handover_date", "TEXT");
   await ensureColumn("customers", "territory_id", "TEXT");
@@ -117,6 +120,30 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("system_settings", "payment_account_no", "TEXT DEFAULT '1058561111'");
   await ensureColumn("system_settings", "payment_bank_name", "TEXT DEFAULT 'TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)'");
   await ensureColumn("system_settings", "payment_signer_name", "TEXT DEFAULT 'Lê Văn Thuần'");
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS kpi_formulas (
+      kpi_key TEXT PRIMARY KEY,
+      segments TEXT NOT NULL,
+      updated_by TEXT,
+      updated_at TEXT
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS kpi_targets (
+      id TEXT PRIMARY KEY,
+      staff_name TEXT NOT NULL,
+      month TEXT NOT NULL,
+      kpi_key TEXT NOT NULL,
+      target_rate REAL NOT NULL,
+      updated_by TEXT,
+      updated_at TEXT
+    )
+  `);
+  await run(
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_kpi_targets_staff_month_key ON kpi_targets(staff_name, month, kpi_key)`
+  );
 
   await run(`
     CREATE TABLE IF NOT EXISTS payment_request_exports (

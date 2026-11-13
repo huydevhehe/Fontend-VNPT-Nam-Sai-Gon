@@ -17,6 +17,7 @@ import {
   CheckSquare,
   ShieldCheck,
   Settings,
+  Settings2,
   X,
 } from "lucide-react";
 
@@ -84,6 +85,12 @@ const NAV_SECTIONS = [
         name: "Dịch vụ & Cảnh báo",
         href: "/admin/services",
         icon: BellRing,
+      },
+      {
+        name: "Cấu hình KPI",
+        href: "/admin/kpi-settings",
+        icon: Settings2,
+        badge: "Admin",
       },
     ],
   },

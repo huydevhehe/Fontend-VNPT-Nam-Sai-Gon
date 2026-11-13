@@ -1,5 +1,8 @@
 import * as XLSX from "xlsx";
 import { query, run } from "../../database/db.js";
+import { HttpError } from "../auth/auth.service.js";
+import { parseExcelDate } from "../../utils/excel-date.js";
+import { todayVn } from "../../utils/date-vn.js";
 
 export interface RenewalRow {
   id: string;
@@ -14,6 +17,33 @@ export interface RenewalRow {
   cohort: string;
   status: string;
   failure_reason?: string;
+  expiry_date?: string | null;
+  renewed_at?: string | null;
+}
+
+const RENEWAL_COMPLETED_STATUS = "Hoàn thành";
+
+/** Bí danh cột "ngày hết hạn" gặp trong file Excel, sau khi bỏ dấu + hạ thường. */
+const EXPIRY_COLUMN_ALIASES = ["ngay kt", "ngay ket thuc", "ngay het han", "ngay ktdc", "ngay_kt"];
+
+function stripAccents(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase();
+}
+
+/** Tìm giá trị cột "ngày hết hạn" trong 1 dòng Excel theo danh sách bí danh (so khớp đã bỏ dấu + hạ thường). */
+function findExpiryRawValue(row: Record<string, unknown>): unknown {
+  for (const key of Object.keys(row)) {
+    const normalizedKey = stripAccents(key.trim());
+    if (EXPIRY_COLUMN_ALIASES.includes(normalizedKey)) {
+      return row[key];
+    }
+  }
+  return undefined;
 }
 
 export class RenewalService {
@@ -36,6 +66,11 @@ export class RenewalService {
 
     sql += " ORDER BY created_at DESC";
     return query<RenewalRow>(sql, params);
+  }
+
+  async getById(id: string): Promise<RenewalRow | null> {
+    const rows = await query<RenewalRow>("SELECT * FROM renewals WHERE id = ?", [id]);
+    return rows[0] ?? null;
   }
 
   async importExcel(fileBuffer: Buffer, cohort: string = "THÁNG T", operator: string = "Admin") {
@@ -69,6 +104,7 @@ export class RenewalService {
       }
 
       const termAmount = parseFloat(row["THÁNG T"] || row["SO_TIEN"] || 0) || 0;
+      const expiryDate = parseExcelDate(findExpiryRawValue(row));
 
       if (!subscriberCode || !customerName) {
         skippedCount++;
@@ -89,8 +125,8 @@ export class RenewalService {
         `INSERT INTO renewals (
           id, transaction_code, subscriber_code, customer_name, payment_code,
           installation_address, staff_name, term_amount, duration_months,
-          cohort, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          cohort, status, expiry_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           transactionCode,
@@ -103,6 +139,7 @@ export class RenewalService {
           12,
           cohort,
           "Chưa xử lý",
+          expiryDate,
         ]
       );
       importedCount++;
@@ -132,12 +169,22 @@ export class RenewalService {
   async updateStatus(id: string, status: string, failureReason?: string, operator: string = "Admin") {
     const existing = await query<RenewalRow>("SELECT * FROM renewals WHERE id = ?", [id]);
     if (!existing.length) {
-      throw new Error("Không tìm thấy giao dịch gia hạn");
+      throw new HttpError(404, "Không tìm thấy giao dịch gia hạn");
+    }
+
+    // Chuyển SANG "Hoàn thành" và chưa có renewed_at (dữ liệu cũ hoặc lần đầu
+    // xử lý) → ghi nhận ngày gia hạn thành công là hôm nay (giờ VN). Chuyển
+    // RA KHỎI "Hoàn thành" → xoá renewed_at (không còn coi là đã gia hạn).
+    let renewedAt = existing[0].renewed_at ?? null;
+    if (status === RENEWAL_COMPLETED_STATUS && !renewedAt) {
+      renewedAt = todayVn();
+    } else if (status !== RENEWAL_COMPLETED_STATUS) {
+      renewedAt = null;
     }
 
     await run(
-      "UPDATE renewals SET status = ?, failure_reason = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [status, failureReason || null, id]
+      "UPDATE renewals SET status = ?, failure_reason = ?, renewed_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [status, failureReason || null, renewedAt, id]
     );
 
     await run(
@@ -151,6 +198,51 @@ export class RenewalService {
     );
 
     return { success: true, message: "Cập nhật trạng thái thành công" };
+  }
+
+  /** Admin sửa tay ngày hết hạn / ngày gia hạn thành công. */
+  async updateDates(
+    id: string,
+    input: { expiryDate?: string | null; renewedAt?: string | null }
+  ): Promise<RenewalRow> {
+    const existing = await this.getById(id);
+    if (!existing) {
+      throw new HttpError(404, "Không tìm thấy giao dịch gia hạn");
+    }
+
+    const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+    let expiryDate = existing.expiry_date ?? null;
+    if ("expiryDate" in input) {
+      if (input.expiryDate === null || input.expiryDate === undefined || input.expiryDate === "") {
+        expiryDate = null;
+      } else if (ISO_DATE_PATTERN.test(input.expiryDate)) {
+        expiryDate = input.expiryDate;
+      } else {
+        throw new HttpError(400, "Ngày hết hạn phải theo định dạng YYYY-MM-DD");
+      }
+    }
+
+    let renewedAt = existing.renewed_at ?? null;
+    if ("renewedAt" in input) {
+      if (input.renewedAt === null || input.renewedAt === undefined || input.renewedAt === "") {
+        renewedAt = null;
+      } else if (ISO_DATE_PATTERN.test(input.renewedAt)) {
+        renewedAt = input.renewedAt;
+      } else {
+        throw new HttpError(400, "Ngày gia hạn phải theo định dạng YYYY-MM-DD");
+      }
+    }
+
+    await run(
+      "UPDATE renewals SET expiry_date = ?, renewed_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [expiryDate, renewedAt, id]
+    );
+
+    const updated = await this.getById(id);
+    if (!updated) {
+      throw new HttpError(500, "Không thể cập nhật ngày gia hạn");
+    }
+    return updated;
   }
 }
 

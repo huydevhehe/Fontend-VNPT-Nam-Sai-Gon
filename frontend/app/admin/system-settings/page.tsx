@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { Mail, MessageSquare, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { Mail, MessageSquare, AlertTriangle, CheckCircle2, ShieldAlert, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import {
   getSystemSettings,
   updateSystemSettings,
   SystemSettings,
 } from "@/lib/api/settings.api";
+
+const DEFAULT_PAYMENT_BENEFICIARY = "VNPT thành phố Hồ Chí Minh";
+const DEFAULT_PAYMENT_ACCOUNT_NO = "1058561111";
+const DEFAULT_PAYMENT_BANK_NAME = "TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)";
+const DEFAULT_PAYMENT_SIGNER_NAME = "Lê Văn Thuần";
 
 interface FormState {
   smtpHost: string;
@@ -16,6 +21,10 @@ interface FormState {
   smtpPass: string;
   zaloOaId: string;
   zaloOaToken: string;
+  paymentBeneficiary: string;
+  paymentAccountNo: string;
+  paymentBankName: string;
+  paymentSignerName: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -25,6 +34,10 @@ const EMPTY_FORM: FormState = {
   smtpPass: "",
   zaloOaId: "",
   zaloOaToken: "",
+  paymentBeneficiary: DEFAULT_PAYMENT_BENEFICIARY,
+  paymentAccountNo: DEFAULT_PAYMENT_ACCOUNT_NO,
+  paymentBankName: DEFAULT_PAYMENT_BANK_NAME,
+  paymentSignerName: DEFAULT_PAYMENT_SIGNER_NAME,
 };
 
 export default function SystemSettingsPage() {
@@ -61,6 +74,10 @@ export default function SystemSettingsPage() {
             smtpPass: "",
             zaloOaId: data.zaloOaId,
             zaloOaToken: "",
+            paymentBeneficiary: data.paymentBeneficiary || DEFAULT_PAYMENT_BENEFICIARY,
+            paymentAccountNo: data.paymentAccountNo || DEFAULT_PAYMENT_ACCOUNT_NO,
+            paymentBankName: data.paymentBankName || DEFAULT_PAYMENT_BANK_NAME,
+            paymentSignerName: data.paymentSignerName || DEFAULT_PAYMENT_SIGNER_NAME,
           });
         }
       } catch (err) {
@@ -99,6 +116,10 @@ export default function SystemSettingsPage() {
         smtpPass: form.smtpPass || undefined,
         zaloOaId: form.zaloOaId,
         zaloOaToken: form.zaloOaToken || undefined,
+        paymentBeneficiary: form.paymentBeneficiary,
+        paymentAccountNo: form.paymentAccountNo,
+        paymentBankName: form.paymentBankName,
+        paymentSignerName: form.paymentSignerName,
       });
       setSettings(updated);
       setForm((prev) => ({ ...prev, smtpPass: "", zaloOaToken: "" }));
@@ -251,6 +272,74 @@ export default function SystemSettingsPage() {
           </div>
           <p className="mt-3 text-xs text-slate-400">
             Chưa có Token thật: hệ thống chỉ ghi log mô phỏng, không gửi Zalo thật.
+          </p>
+        </div>
+
+        {/* Thông tin trên đề nghị thanh toán */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <CreditCard className="h-4.5 w-4.5 text-vnpt" />
+            <h2 className="text-sm font-bold text-slate-900">
+              Thông tin trên đề nghị thanh toán
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-slate-600">
+                Đơn vị thụ hưởng
+              </label>
+              <input
+                value={form.paymentBeneficiary}
+                onChange={(e) =>
+                  setForm({ ...form, paymentBeneficiary: e.target.value })
+                }
+                placeholder="VNPT thành phố Hồ Chí Minh"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-slate-600">
+                Số tài khoản
+              </label>
+              <input
+                value={form.paymentAccountNo}
+                onChange={(e) =>
+                  setForm({ ...form, paymentAccountNo: e.target.value })
+                }
+                placeholder="1058561111"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-slate-600">
+                Ngân hàng
+              </label>
+              <input
+                value={form.paymentBankName}
+                onChange={(e) =>
+                  setForm({ ...form, paymentBankName: e.target.value })
+                }
+                placeholder="TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-slate-600">
+                Người ký đại diện
+              </label>
+              <input
+                value={form.paymentSignerName}
+                onChange={(e) =>
+                  setForm({ ...form, paymentSignerName: e.target.value })
+                }
+                placeholder="Lê Văn Thuần"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              />
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-400">
+            Thông tin này được tự động điền vào văn bản Đề nghị thanh toán khi xuất file Word.
           </p>
         </div>
 

@@ -62,9 +62,9 @@ export default function WardLeadsContractsSection({
 
       <section className="rounded-2xl border border-slate-200/80 bg-white shadow-xs">
         <div className="border-b border-slate-100 p-5">
-          <h3 className="text-sm font-bold text-slate-900">Hợp đồng đã triển khai</h3>
+          <h3 className="text-sm font-bold text-slate-900">Đơn hàng đã triển khai</h3>
           <p className="text-caption mt-0.5 text-slate-500">
-            {totals.contractCount} hợp đồng · Tổng giá trị:{" "}
+            {totals.contractCount} đơn hàng · Tổng giá trị:{" "}
             <span className="font-bold text-slate-900">{money(totals.contractValue)}</span>
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function WardLeadsContractsSection({
               {contracts.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-5 py-6 text-center text-slate-400 italic">
-                    Chưa có hợp đồng nào thuộc phường này
+                    Chưa có đơn hàng nào thuộc phường này
                   </td>
                 </tr>
               )}

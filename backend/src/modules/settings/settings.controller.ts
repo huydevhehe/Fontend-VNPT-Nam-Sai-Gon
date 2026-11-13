@@ -27,7 +27,18 @@ settingsRouter.put("/", requireAuth, async (req: Request, res: Response) => {
   }
 
   try {
-    const { smtpHost, smtpPort, smtpUser, smtpPass, zaloOaId, zaloOaToken } = req.body;
+    const {
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPass,
+      zaloOaId,
+      zaloOaToken,
+      paymentBeneficiary,
+      paymentAccountNo,
+      paymentBankName,
+      paymentSignerName,
+    } = req.body;
     const view = await SettingsService.update({
       smtpHost,
       smtpPort: smtpPort !== undefined && smtpPort !== "" ? Number(smtpPort) : undefined,
@@ -35,6 +46,10 @@ settingsRouter.put("/", requireAuth, async (req: Request, res: Response) => {
       smtpPass,
       zaloOaId,
       zaloOaToken,
+      paymentBeneficiary,
+      paymentAccountNo,
+      paymentBankName,
+      paymentSignerName,
     });
     res.json({ success: true, data: view });
   } catch (error: any) {

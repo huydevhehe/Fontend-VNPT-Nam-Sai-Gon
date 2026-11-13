@@ -37,6 +37,16 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("contracts", "territory_id", "TEXT");
   await ensureColumn("contracts", "referred_by_ctv_id", "TEXT");
   await ensureColumn("contracts", "lead_id", "TEXT");
+  await ensureColumn("contracts", "am_staff", "TEXT");
+  await ensureColumn("contracts", "service_group", "TEXT");
+  await ensureColumn("contracts", "service_name", "TEXT");
+  await ensureColumn("contracts", "package_name", "TEXT");
+  await ensureColumn("contracts", "payment_method", "TEXT");
+  await ensureColumn("contracts", "customer_id", "TEXT");
+  await ensureColumn("contracts", "tax_code", "TEXT");
+  await ensureColumn("contracts", "contract_number", "TEXT");
+  await ensureColumn("contracts", "signed_date", "TEXT");
+  await ensureColumn("contracts", "collected_amount", "REAL DEFAULT 0");
 
   await ensureColumn("commissions", "contract_id", "TEXT");
   await ensureColumn("commissions", "ctv_id", "TEXT");
@@ -85,6 +95,33 @@ export async function applySchemaExtensions(): Promise<void> {
       household_count INTEGER DEFAULT 0,
       population INTEGER DEFAULT 0,
       created_at TEXT
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS contract_payments (
+      id TEXT PRIMARY KEY,
+      contract_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      paid_date TEXT NOT NULL,
+      note TEXT,
+      created_by TEXT,
+      created_at TEXT
+    )
+  `);
+
+  await ensureColumn("system_settings", "payment_beneficiary", "TEXT DEFAULT 'VNPT thành phố Hồ Chí Minh'");
+  await ensureColumn("system_settings", "payment_account_no", "TEXT DEFAULT '1058561111'");
+  await ensureColumn("system_settings", "payment_bank_name", "TEXT DEFAULT 'TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)'");
+  await ensureColumn("system_settings", "payment_signer_name", "TEXT DEFAULT 'Lê Văn Thuần'");
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS payment_request_exports (
+      id TEXT PRIMARY KEY,
+      contract_id TEXT NOT NULL,
+      doc_number TEXT NOT NULL,
+      exported_by TEXT,
+      exported_at TEXT
     )
   `);
 
@@ -170,5 +207,45 @@ export async function backfillRelations(): Promise<void> {
       )
       WHERE territory_id IS NULL
     `);
+  });
+
+  await runMigrationOnce("contracts_am_staff_backfill_v1", async () => {
+    await run(`
+      UPDATE contracts
+      SET am_staff = (
+        SELECT l.staff_name
+        FROM leads l
+        WHERE l.id = contracts.lead_id
+        LIMIT 1
+      )
+      WHERE lead_id IS NOT NULL AND am_staff IS NULL
+    `);
+  });
+
+  await runMigrationOnce("contract_payments_backfill_v1", async () => {
+    const paidContracts = await query<{
+      id: string;
+      total_value: number;
+      updated_at: string;
+      created_at: string;
+    }>(
+      `SELECT c.id, c.total_value, c.updated_at, c.created_at
+       FROM contracts c
+       LEFT JOIN contract_payments p ON p.contract_id = c.id
+       WHERE c.payment_status = 'Đã thanh toán' AND p.id IS NULL`
+    );
+
+    for (const c of paidContracts) {
+      const paymentId = `PAY-BF-${c.id}`;
+      const rawDate: any = c.updated_at || c.created_at || new Date().toISOString();
+      const dateStr = (rawDate instanceof Date ? rawDate.toISOString() : String(rawDate)).slice(0, 10);
+      const nowStr = new Date().toISOString();
+      await run(
+        `INSERT INTO contract_payments (id, contract_id, amount, paid_date, note, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [paymentId, c.id, c.total_value, dateStr, "Backfill thanh toán tự động", "System Backfill", nowStr]
+      );
+      await run("UPDATE contracts SET collected_amount = ? WHERE id = ?", [c.total_value, c.id]);
+    }
   });
 }

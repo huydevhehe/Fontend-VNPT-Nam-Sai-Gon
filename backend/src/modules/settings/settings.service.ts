@@ -3,6 +3,11 @@ import { config } from "../../config/index.js";
 
 const SETTINGS_ID = "default";
 
+export const DEFAULT_PAYMENT_BENEFICIARY = "VNPT thành phố Hồ Chí Minh";
+export const DEFAULT_PAYMENT_ACCOUNT_NO = "1058561111";
+export const DEFAULT_PAYMENT_BANK_NAME = "TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)";
+export const DEFAULT_PAYMENT_SIGNER_NAME = "Lê Văn Thuần";
+
 interface SettingsRow {
   id: string;
   smtp_host: string;
@@ -11,6 +16,10 @@ interface SettingsRow {
   smtp_pass: string;
   zalo_oa_id: string;
   zalo_oa_token: string;
+  payment_beneficiary?: string | null;
+  payment_account_no?: string | null;
+  payment_bank_name?: string | null;
+  payment_signer_name?: string | null;
 }
 
 export interface EffectiveSmtpConfig {
@@ -25,6 +34,13 @@ export interface EffectiveZaloConfig {
   oaToken: string;
 }
 
+export interface PaymentSettingsConfig {
+  paymentBeneficiary: string;
+  paymentAccountNo: string;
+  paymentBankName: string;
+  paymentSignerName: string;
+}
+
 export interface SettingsView {
   smtpHost: string;
   smtpPort: number;
@@ -32,6 +48,10 @@ export interface SettingsView {
   smtpPassSet: boolean;
   zaloOaId: string;
   zaloOaTokenSet: boolean;
+  paymentBeneficiary: string;
+  paymentAccountNo: string;
+  paymentBankName: string;
+  paymentSignerName: string;
 }
 
 async function getRow(): Promise<SettingsRow> {
@@ -40,8 +60,20 @@ async function getRow(): Promise<SettingsRow> {
     return rows[0];
   }
   await run(
-    "INSERT INTO system_settings (id, smtp_host, smtp_port, smtp_user, smtp_pass, zalo_oa_id, zalo_oa_token) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [SETTINGS_ID, "", null, "", "", "", ""]
+    "INSERT INTO system_settings (id, smtp_host, smtp_port, smtp_user, smtp_pass, zalo_oa_id, zalo_oa_token, payment_beneficiary, payment_account_no, payment_bank_name, payment_signer_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      SETTINGS_ID,
+      "",
+      null,
+      "",
+      "",
+      "",
+      "",
+      DEFAULT_PAYMENT_BENEFICIARY,
+      DEFAULT_PAYMENT_ACCOUNT_NO,
+      DEFAULT_PAYMENT_BANK_NAME,
+      DEFAULT_PAYMENT_SIGNER_NAME,
+    ]
   );
   return {
     id: SETTINGS_ID,
@@ -51,6 +83,10 @@ async function getRow(): Promise<SettingsRow> {
     smtp_pass: "",
     zalo_oa_id: "",
     zalo_oa_token: "",
+    payment_beneficiary: DEFAULT_PAYMENT_BENEFICIARY,
+    payment_account_no: DEFAULT_PAYMENT_ACCOUNT_NO,
+    payment_bank_name: DEFAULT_PAYMENT_BANK_NAME,
+    payment_signer_name: DEFAULT_PAYMENT_SIGNER_NAME,
   };
 }
 
@@ -65,6 +101,10 @@ export const SettingsService = {
       smtpPassSet: Boolean(row.smtp_pass),
       zaloOaId: row.zalo_oa_id || "",
       zaloOaTokenSet: Boolean(row.zalo_oa_token),
+      paymentBeneficiary: row.payment_beneficiary ?? DEFAULT_PAYMENT_BENEFICIARY,
+      paymentAccountNo: row.payment_account_no ?? DEFAULT_PAYMENT_ACCOUNT_NO,
+      paymentBankName: row.payment_bank_name ?? DEFAULT_PAYMENT_BANK_NAME,
+      paymentSignerName: row.payment_signer_name ?? DEFAULT_PAYMENT_SIGNER_NAME,
     };
   },
 
@@ -77,6 +117,10 @@ export const SettingsService = {
     smtpPass?: string;
     zaloOaId?: string;
     zaloOaToken?: string;
+    paymentBeneficiary?: string;
+    paymentAccountNo?: string;
+    paymentBankName?: string;
+    paymentSignerName?: string;
   }): Promise<SettingsView> {
     const row = await getRow();
 
@@ -87,14 +131,40 @@ export const SettingsService = {
       smtp_pass: input.smtpPass ? input.smtpPass : row.smtp_pass,
       zalo_oa_id: input.zaloOaId ?? row.zalo_oa_id,
       zalo_oa_token: input.zaloOaToken ? input.zaloOaToken : row.zalo_oa_token,
+      payment_beneficiary: input.paymentBeneficiary !== undefined ? input.paymentBeneficiary : (row.payment_beneficiary ?? DEFAULT_PAYMENT_BENEFICIARY),
+      payment_account_no: input.paymentAccountNo !== undefined ? input.paymentAccountNo : (row.payment_account_no ?? DEFAULT_PAYMENT_ACCOUNT_NO),
+      payment_bank_name: input.paymentBankName !== undefined ? input.paymentBankName : (row.payment_bank_name ?? DEFAULT_PAYMENT_BANK_NAME),
+      payment_signer_name: input.paymentSignerName !== undefined ? input.paymentSignerName : (row.payment_signer_name ?? DEFAULT_PAYMENT_SIGNER_NAME),
     };
 
     await run(
-      "UPDATE system_settings SET smtp_host = ?, smtp_port = ?, smtp_user = ?, smtp_pass = ?, zalo_oa_id = ?, zalo_oa_token = ? WHERE id = ?",
-      [next.smtp_host, next.smtp_port, next.smtp_user, next.smtp_pass, next.zalo_oa_id, next.zalo_oa_token, SETTINGS_ID]
+      "UPDATE system_settings SET smtp_host = ?, smtp_port = ?, smtp_user = ?, smtp_pass = ?, zalo_oa_id = ?, zalo_oa_token = ?, payment_beneficiary = ?, payment_account_no = ?, payment_bank_name = ?, payment_signer_name = ? WHERE id = ?",
+      [
+        next.smtp_host,
+        next.smtp_port,
+        next.smtp_user,
+        next.smtp_pass,
+        next.zalo_oa_id,
+        next.zalo_oa_token,
+        next.payment_beneficiary,
+        next.payment_account_no,
+        next.payment_bank_name,
+        next.payment_signer_name,
+        SETTINGS_ID,
+      ]
     );
 
     return SettingsService.getView();
+  },
+
+  async getPaymentConfig(): Promise<PaymentSettingsConfig> {
+    const row = await getRow();
+    return {
+      paymentBeneficiary: row.payment_beneficiary ?? DEFAULT_PAYMENT_BENEFICIARY,
+      paymentAccountNo: row.payment_account_no ?? DEFAULT_PAYMENT_ACCOUNT_NO,
+      paymentBankName: row.payment_bank_name ?? DEFAULT_PAYMENT_BANK_NAME,
+      paymentSignerName: row.payment_signer_name ?? DEFAULT_PAYMENT_SIGNER_NAME,
+    };
   },
 
   // Dùng bởi email.service / zalo.service: giá trị trong DB (nếu admin đã nhập qua CMS)

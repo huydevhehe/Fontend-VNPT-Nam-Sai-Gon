@@ -11,7 +11,18 @@ export type CreateContractInput = Pick<
 > & {
   leadId?: string | null;
   territoryId?: string | null;
+  amStaff?: string | null;
+  serviceGroup?: string | null;
+  serviceName?: string | null;
+  packageName?: string | null;
+  paymentMethod?: string | null;
+  customerId?: string | null;
+  taxCode?: string | null;
+  contractNumber?: string | null;
+  signedDate?: string | null;
 };
+
+export type UpdateContractInfoInput = Partial<CreateContractInput>;
 
 export function getContracts(): Promise<ContractRecord[]> {
   return apiFetch<ContractRecord[]>("/contracts");
@@ -24,6 +35,16 @@ export function createContract(data: CreateContractInput): Promise<ContractRecor
   });
 }
 
+export function updateContractInfo(
+  id: string,
+  patch: UpdateContractInfoInput
+): Promise<ContractRecord> {
+  return apiFetch<ContractRecord>(`/contracts/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
 export function updateContractStatus(
   id: string,
   patch: UpdateContractStatusInput
@@ -32,4 +53,63 @@ export function updateContractStatus(
     method: "PATCH",
     body: JSON.stringify(patch),
   });
+}
+
+export interface ContractPaymentDto {
+  id: string;
+  contractId: string;
+  amount: number;
+  paidDate: string;
+  note: string | null;
+  createdBy: string | null;
+  createdAt: string;
+}
+
+export interface AddPaymentInput {
+  amount: number;
+  paidDate?: string;
+  note?: string;
+}
+
+export function getContractPayments(contractId: string): Promise<ContractPaymentDto[]> {
+  return apiFetch<ContractPaymentDto[]>(`/contracts/${contractId}/payments`);
+}
+
+export function addContractPayment(
+  contractId: string,
+  data: AddPaymentInput
+): Promise<ContractRecord> {
+  return apiFetch<ContractRecord>(`/contracts/${contractId}/payments`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteContractPayment(paymentId: string): Promise<ContractRecord> {
+  return apiFetch<ContractRecord>(`/contracts/payments/${paymentId}`, {
+    method: "DELETE",
+  });
+}
+
+export interface PaymentRequestPreviewDto {
+  suggestedDocNumber: string;
+  missingFields: string[];
+}
+
+export interface PaymentExportRecordDto {
+  id: string;
+  contractId: string;
+  docNumber: string;
+  exportedBy: string | null;
+  exportedAt: string;
+  transactionCode?: string;
+  customerName?: string;
+}
+
+export function getPaymentRequestPreview(contractId: string): Promise<PaymentRequestPreviewDto> {
+  return apiFetch<PaymentRequestPreviewDto>(`/contracts/${contractId}/payment-request/preview`);
+}
+
+export function listPaymentExports(): Promise<PaymentExportRecordDto[]> {
+  return apiFetch<PaymentExportRecordDto[]>("/contracts/payment-requests");
 }

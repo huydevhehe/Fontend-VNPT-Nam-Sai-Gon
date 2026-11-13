@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Settings2, RotateCcw, Calculator, AlertCircle } from "lucide-react";
+import { Settings2, RotateCcw, Calculator, AlertCircle, ClipboardCopy } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import {
   DEFAULT_KPI_FORMULAS,
@@ -10,7 +10,15 @@ import {
   type KpiKey,
   type KpiSegment,
 } from "@/lib/kpi-formula";
-import { getKpiFormulas, resetKpiFormula, saveKpiFormula, type KpiFormulas } from "@/lib/api/kpi.api";
+import {
+  getKpiFormulas,
+  getKpiPerformance,
+  resetKpiFormula,
+  saveKpiFormula,
+  saveKpiTargets,
+  type KpiFormulas,
+  type KpiTargetItem,
+} from "@/lib/api/kpi.api";
 
 const KPI_CARDS: { key: KpiKey; label: string }[] = [
   { key: "thu_ngay", label: "Tỷ lệ thu ngay" },
@@ -261,9 +269,190 @@ function FormulaCard({
   );
 }
 
+function currentMonth(): string {
+  return new Date().toISOString().slice(0, 7);
+}
+
+function previousMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  const total = (y * 12 + (m - 1)) - 1;
+  const newYear = Math.floor(total / 12);
+  const newMonth = (total % 12) + 1;
+  return `${newYear}-${String(newMonth).padStart(2, "0")}`;
+}
+
+interface TargetRow {
+  staffName: string;
+  thuNgay: string;
+  ghttT: string;
+  ghttT1: string;
+}
+
+function KpiTargetsTab() {
+  const [month, setMonth] = useState(currentMonth());
+  const [rows, setRows] = useState<TargetRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const performance = await getKpiPerformance(month);
+      setRows(
+        performance.map((p) => ({
+          staffName: p.staffName,
+          thuNgay: p.thuNgay.targetRate === null ? "" : String(p.thuNgay.targetRate * 100),
+          ghttT: p.ghttT.targetRate === null ? "" : String(p.ghttT.targetRate * 100),
+          ghttT1: p.ghttT1.targetRate === null ? "" : String(p.ghttT1.targetRate * 100),
+        }))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không thể tải chỉ tiêu KPI.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, [month]);
+
+  function updateCell(staffName: string, field: "thuNgay" | "ghttT" | "ghttT1", value: string) {
+    setRows((prev) => prev.map((r) => (r.staffName === staffName ? { ...r, [field]: value } : r)));
+  }
+
+  async function handleCopyFromPreviousMonth() {
+    setError(null);
+    try {
+      const prev = await getKpiPerformance(previousMonth(month));
+      const byName = new Map(prev.map((p) => [p.staffName, p]));
+      setRows((current) =>
+        current.map((row) => {
+          const p = byName.get(row.staffName);
+          if (!p) return row;
+          return {
+            staffName: row.staffName,
+            thuNgay: p.thuNgay.targetRate === null ? "" : String(p.thuNgay.targetRate * 100),
+            ghttT: p.ghttT.targetRate === null ? "" : String(p.ghttT.targetRate * 100),
+            ghttT1: p.ghttT1.targetRate === null ? "" : String(p.ghttT1.targetRate * 100),
+          };
+        })
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không thể sao chép từ tháng trước.");
+    }
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const items: KpiTargetItem[] = [];
+      for (const row of rows) {
+        (["thuNgay", "ghttT", "ghttT1"] as const).forEach((field, idx) => {
+          const raw = row[field];
+          if (raw.trim() === "") return;
+          const kpiKey: KpiKey = (["thu_ngay", "ghtt_t", "ghtt_t1"] as const)[idx];
+          items.push({ staffName: row.staffName, kpiKey, targetRate: Number(raw) / 100 });
+        });
+      }
+      await saveKpiTargets(month, items);
+      setMessage("Đã lưu chỉ tiêu.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Lưu chỉ tiêu thất bại.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <label className="text-xs font-semibold text-slate-600">Tháng</label>
+        <input
+          type="month"
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+          className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
+        />
+        <button
+          onClick={handleCopyFromPreviousMonth}
+          className="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+        >
+          <ClipboardCopy className="h-3.5 w-3.5" /> Sao chép từ tháng trước
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving || loading}
+          className="rounded-lg bg-vnpt px-3 py-1.5 text-xs font-bold text-white hover:bg-vnpt-dark disabled:opacity-60"
+        >
+          {saving ? "Đang lưu..." : "Lưu chỉ tiêu"}
+        </button>
+        {message && <span className="text-xs font-semibold text-emerald-600">{message}</span>}
+      </div>
+
+      {error && (
+        <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">{error}</p>
+      )}
+
+      {loading ? (
+        <p className="py-6 text-center text-xs text-slate-500">Đang tải...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px] text-left text-xs">
+            <thead className="text-[11px] font-bold uppercase text-slate-500">
+              <tr>
+                <th className="px-3 py-2">Nhân viên</th>
+                <th className="px-3 py-2">Thu ngay (%)</th>
+                <th className="px-3 py-2">GHTT T (%)</th>
+                <th className="px-3 py-2">GHTT T+1 (%)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {rows.map((row) => (
+                <tr key={row.staffName}>
+                  <td className="px-3 py-2 font-semibold text-slate-800">{row.staffName}</td>
+                  <td className="px-3 py-2">
+                    <input
+                      value={row.thuNgay}
+                      placeholder="Chưa có chỉ tiêu"
+                      onChange={(e) => updateCell(row.staffName, "thuNgay", e.target.value)}
+                      className="w-24 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <input
+                      value={row.ghttT}
+                      onChange={(e) => updateCell(row.staffName, "ghttT", e.target.value)}
+                      className="w-24 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <input
+                      value={row.ghttT1}
+                      onChange={(e) => updateCell(row.staffName, "ghttT1", e.target.value)}
+                      className="w-24 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function KpiSettingsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
+
+  const [tab, setTab] = useState<"formulas" | "targets">("formulas");
 
   const [formulas, setFormulas] = useState<KpiFormulas>(DEFAULT_KPI_FORMULAS);
   const [loading, setLoading] = useState(true);
@@ -311,7 +500,30 @@ export default function KpiSettingsPage() {
         </p>
       </div>
 
-      {error ? (
+      {isAdmin && (
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+          <button
+            onClick={() => setTab("formulas")}
+            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+              tab === "formulas" ? "bg-vnpt text-white" : "bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Công thức
+          </button>
+          <button
+            onClick={() => setTab("targets")}
+            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+              tab === "targets" ? "bg-vnpt text-white" : "bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Chỉ tiêu
+          </button>
+        </div>
+      )}
+
+      {tab === "targets" && isAdmin ? (
+        <KpiTargetsTab />
+      ) : error ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center text-sm font-semibold text-rose-700">
           {error}
         </div>

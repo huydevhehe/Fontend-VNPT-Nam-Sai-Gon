@@ -67,6 +67,7 @@ export const STAFF_NAME_REFERENCES: ReadonlyArray<readonly [table: string, colum
   ["territories", "staff_name"],
   ["ward_contacts", "am_in_charge"],
   ["contracts", "am_staff"],
+  ["kpi_targets", "staff_name"],
 ];
 
 export const KPI_KEYS = ["thu_ngay", "ghtt_t", "ghtt_t1"] as const;

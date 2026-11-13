@@ -9,6 +9,7 @@ import { DebtRecord, StaffRecord } from "@/lib/crm/types/crm.types";
 import { createDebt, getDebts, importDebtsExcel } from "@/lib/api/debts.api";
 import { getStaff } from "@/lib/api/staff.api";
 import { useAuth } from "@/lib/auth/auth-context";
+import StaffKpiTable from "@/components/admin/kpi/StaffKpiTable";
 
 const SERVICE_GROUPS = ["BRCĐ", "CNTT", "Di động"] as const;
 
@@ -33,7 +34,7 @@ export default function DebtManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<"all" | "immediate" | "cumulative">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "immediate" | "cumulative" | "kpi">("all");
 
   const [staffList, setStaffList] = useState<StaffRecord[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -297,10 +298,22 @@ export default function DebtManagementPage() {
         >
           Nợ lũy kế
         </button>
+        <button
+          onClick={() => setActiveTab("kpi")}
+          className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+            activeTab === "kpi"
+              ? "bg-vnpt text-white"
+              : "bg-white text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          % thực hiện theo nhân viên
+        </button>
       </div>
 
       {/* Main Table */}
-      {error ? (
+      {activeTab === "kpi" ? (
+        <StaffKpiTable kpiKeys={["thu_ngay"]} />
+      ) : error ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
           <AlertCircle className="h-6 w-6 text-rose-500" />
           <p className="text-sm font-semibold text-rose-700">

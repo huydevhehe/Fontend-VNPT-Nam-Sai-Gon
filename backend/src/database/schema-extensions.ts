@@ -131,6 +131,21 @@ export async function applySchemaExtensions(): Promise<void> {
   `);
 
   await run(`
+    CREATE TABLE IF NOT EXISTS kpi_targets (
+      id TEXT PRIMARY KEY,
+      staff_name TEXT NOT NULL,
+      month TEXT NOT NULL,
+      kpi_key TEXT NOT NULL,
+      target_rate REAL NOT NULL,
+      updated_by TEXT,
+      updated_at TEXT
+    )
+  `);
+  await run(
+    `CREATE UNIQUE INDEX IF NOT EXISTS ux_kpi_targets_staff_month_key ON kpi_targets(staff_name, month, kpi_key)`
+  );
+
+  await run(`
     CREATE TABLE IF NOT EXISTS payment_request_exports (
       id TEXT PRIMARY KEY,
       contract_id TEXT NOT NULL,

@@ -16,6 +16,7 @@ import {
 } from "@/lib/api/renewals.api";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
 import { useAuth } from "@/lib/auth/auth-context";
+import StaffKpiTable from "@/components/admin/kpi/StaffKpiTable";
 
 const RENEWAL_STATUS_OPTIONS: RenewalStatus[] = [
   "Chưa xử lý",
@@ -33,7 +34,7 @@ export default function RenewalsPage() {
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedCohort, setSelectedCohort] = useState<"ALL" | "THÁNG T" | "THÁNG T-1">("ALL");
+  const [selectedCohort, setSelectedCohort] = useState<"ALL" | "THÁNG T" | "THÁNG T-1" | "KPI">("ALL");
 
   const [dateEditTarget, setDateEditTarget] = useState<RenewalRecord | null>(null);
   const [dateForm, setDateForm] = useState({ expiryDate: "", renewedAt: "" });
@@ -345,10 +346,22 @@ export default function RenewalsPage() {
         >
           Gia hạn Tháng T-1 (09/2026)
         </button>
+        <button
+          onClick={() => setSelectedCohort("KPI")}
+          className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+            selectedCohort === "KPI"
+              ? "bg-vnpt text-white"
+              : "bg-white text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          % thực hiện theo nhân viên
+        </button>
       </div>
 
       {/* Data Table */}
-      {error ? (
+      {selectedCohort === "KPI" ? (
+        <StaffKpiTable kpiKeys={["ghtt_t", "ghtt_t1"]} />
+      ) : error ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
           <AlertTriangle className="h-6 w-6 text-rose-500" />
           <p className="text-sm font-semibold text-rose-700">

@@ -79,3 +79,71 @@ test.describe("API Cấu hình công thức KPI (Đợt 9 - Task 3)", () => {
     expect(afterResetBody.data.ghtt_t1.some((s: { a: number }) => s.a === 22.22)).toBe(true);
   });
 });
+
+/** Tên nhân viên gắn với tài khoản AM test (xem 00-tong-quan.md mục 3). */
+const AM_STAFF_NAME = "Nguyễn Thị Tình";
+/** Tháng cố định, xa thực tế để không lẫn với dữ liệu nghiệp vụ thật. */
+const TEST_MONTH = "2031-07";
+
+test.describe("API Chỉ tiêu & % thực hiện KPI (Đợt 9 - Task 4)", () => {
+  test.describe.configure({ mode: "serial" });
+
+  let adminToken: string;
+  let amToken: string;
+
+  test.beforeAll(async ({ request }) => {
+    adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+    amToken = await apiLogin(request, AM.username, AM.password);
+  });
+
+  test("AM PUT /kpi/targets/:month bị từ chối 403", async ({ request }) => {
+    const res = await request.put(`${API_URL}/kpi/targets/${TEST_MONTH}`, {
+      headers: bearer(amToken),
+      data: { items: [{ staffName: AM_STAFF_NAME, kpiKey: "thu_ngay", targetRate: 1.0 }] },
+    });
+    expect(res.status()).toBe(403);
+  });
+
+  test("Admin PUT /kpi/targets/:month lưu chỉ tiêu thu_ngay 100% cho AM test", async ({ request }) => {
+    const res = await request.put(`${API_URL}/kpi/targets/${TEST_MONTH}`, {
+      headers: bearer(adminToken),
+      data: { items: [{ staffName: AM_STAFF_NAME, kpiKey: "thu_ngay", targetRate: 1.0 }] },
+    });
+    expect(res.status(), await res.text()).toBe(200);
+  });
+
+  test("AM GET /kpi/targets/:month chỉ thấy chỉ tiêu của chính mình", async ({ request }) => {
+    const res = await request.get(`${API_URL}/kpi/targets/${TEST_MONTH}`, {
+      headers: bearer(amToken),
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(Array.isArray(body.data)).toBe(true);
+    for (const item of body.data) {
+      expect(item.staffName.trim()).toBe(AM_STAFF_NAME);
+    }
+    expect(body.data.some((item: { kpiKey: string }) => item.kpiKey === "thu_ngay")).toBe(true);
+  });
+
+  test("AM GET /kpi/performance chỉ có 1 dòng của chính mình với chỉ tiêu vừa lưu", async ({ request }) => {
+    const res = await request.get(`${API_URL}/kpi/performance?month=${TEST_MONTH}`, {
+      headers: bearer(amToken),
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.data.length).toBe(1);
+    expect(body.data[0].staffName).toBe(AM_STAFF_NAME);
+    expect(body.data[0].thuNgay.targetRate).toBe(1.0);
+  });
+
+  test("Admin GET /kpi/performance thấy đầy đủ, bao gồm dòng AM test", async ({ request }) => {
+    const res = await request.get(`${API_URL}/kpi/performance?month=${TEST_MONTH}`, {
+      headers: bearer(adminToken),
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    const row = body.data.find((r: { staffName: string }) => r.staffName === AM_STAFF_NAME);
+    expect(row).toBeTruthy();
+    expect(row.thuNgay.targetRate).toBe(1.0);
+  });
+});

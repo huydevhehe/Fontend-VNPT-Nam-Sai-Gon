@@ -26,8 +26,11 @@ import {
 } from "@/lib/api/customers.api";
 import { getTerritories } from "@/lib/api/territories.api";
 import { getStaff } from "@/lib/api/staff.api";
+import { getCustomerTeams, CustomerTeamRecord } from "@/lib/api/customer-teams.api";
 import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 import { useAuth } from "@/lib/auth/auth-context";
+import TeamManager from "@/components/admin/customer/TeamManager";
+import { Users2 } from "lucide-react";
 
 const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
 const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu"];
@@ -94,6 +97,18 @@ export default function CustomersPage() {
   const [batchSuccess, setBatchSuccess] = useState<string | null>(null);
   const [batchLoading, setBatchLoading] = useState(false);
 
+  // Team khách hàng (Đợt 7, Task 2)
+  const [teams, setTeams] = useState<CustomerTeamRecord[]>([]);
+  const [showTeamManager, setShowTeamManager] = useState(false);
+
+  function loadTeams() {
+    getCustomerTeams()
+      .then(setTeams)
+      .catch(() => {
+        // Không chặn trang khách hàng nếu danh sách team tải lỗi.
+      });
+  }
+
   useEffect(() => {
     let isMounted = true;
 
@@ -145,6 +160,8 @@ export default function CustomersPage() {
         }
       })
       .catch(() => {});
+
+    loadTeams();
 
     return () => {
       isMounted = false;
@@ -390,6 +407,13 @@ export default function CustomersPage() {
       ),
     },
     {
+      header: "Team",
+      accessorKey: "teamName",
+      cell: (item) => (
+        <span className="text-xs font-semibold text-slate-700">{item.teamName || "—"}</span>
+      ),
+    },
+    {
       header: "Đợt giao",
       accessorKey: "handoverBatch",
       cell: (item) =>
@@ -445,6 +469,15 @@ export default function CustomersPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <button
+              onClick={() => setShowTeamManager(true)}
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-600 shadow-xs hover:bg-slate-50 transition-colors"
+            >
+              <Users2 className="h-4 w-4" />
+              <span className="btn-label">Quản lý Team</span>
+            </button>
+          )}
           {isAdmin && (
             <button
               onClick={() => {
@@ -534,8 +567,26 @@ export default function CustomersPage() {
           subtitle="Hỗ trợ lọc theo loại doanh nghiệp, hộ kinh doanh hoặc cá nhân"
           columns={columns}
           data={groupFilter ? data.filter((c) => c.group === groupFilter) : data}
+          filters={[
+            {
+              id: "teamName",
+              label: "Team",
+              getValue: (row) => row.teamName || null,
+            },
+          ]}
           searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
           exportFileName="vnpt_khach_hang"
+        />
+      )}
+
+      {/* Quản lý Team khách hàng */}
+      {showTeamManager && (
+        <TeamManager
+          onClose={() => setShowTeamManager(false)}
+          onChanged={() => {
+            loadTeams();
+            getCustomers().then(setData).catch(() => {});
+          }}
         />
       )}
 

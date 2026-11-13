@@ -66,9 +66,10 @@ export class CustomerService {
     }
 
     let sql = `
-      SELECT c.*, t.ward_name AS territory_name
+      SELECT c.*, t.ward_name AS territory_name, ct.name AS team_name
       FROM customers c
       LEFT JOIN territories t ON t.id = c.territory_id
+      LEFT JOIN customer_teams ct ON ct.id = c.team_id
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -123,6 +124,12 @@ export class CustomerService {
     if (data.billingEmail && !isValidEmail(data.billingEmail)) {
       throw new CustomerServiceError("Email thanh toán không hợp lệ", 400);
     }
+    if (data.teamId) {
+      const teamRows = await query("SELECT id FROM customer_teams WHERE id = ?", [data.teamId]);
+      if (teamRows.length === 0) {
+        throw new CustomerServiceError("Team không tồn tại", 400);
+      }
+    }
 
     const handoverBatch =
       typeof data.handoverBatch === "string" ? data.handoverBatch.trim() : "";
@@ -175,9 +182,10 @@ export class CustomerService {
   /** Lấy 1 khách hàng kèm tên địa bàn (join territories); 404 nếu không có. */
   async getById(id: string) {
     const rows = await query<any>(
-      `SELECT c.*, t.ward_name AS territory_name
+      `SELECT c.*, t.ward_name AS territory_name, ct.name AS team_name
        FROM customers c
        LEFT JOIN territories t ON t.id = c.territory_id
+       LEFT JOIN customer_teams ct ON ct.id = c.team_id
        WHERE c.id = ?`,
       [id]
     );
@@ -255,6 +263,12 @@ export class CustomerService {
     if (patch.identityCode !== undefined && patch.identityCode) {
       patch.identityCode = normalizeTaxCode(patch.identityCode);
     }
+    if (patch.teamId !== undefined && patch.teamId) {
+      const teamRows = await query("SELECT id FROM customer_teams WHERE id = ?", [patch.teamId]);
+      if (teamRows.length === 0) {
+        throw new CustomerServiceError("Team không tồn tại", 400);
+      }
+    }
 
     const sets: string[] = [];
     const params: any[] = [];
@@ -281,6 +295,29 @@ export class CustomerService {
 
     const updatedRows = await query<any>("SELECT * FROM customers WHERE id = ?", [id]);
     return updatedRows[0];
+  }
+
+  /** Gán (hoặc gỡ, teamId = null) team cho nhiều khách hàng cùng lúc; trả về số khách đã cập nhật. */
+  async assignTeam(customerIds: string[], teamId: string | null): Promise<number> {
+    if (!Array.isArray(customerIds) || customerIds.length === 0) {
+      throw new CustomerServiceError("Vui lòng chọn ít nhất 1 khách hàng", 400);
+    }
+    if (teamId) {
+      const teamRows = await query("SELECT id FROM customer_teams WHERE id = ?", [teamId]);
+      if (teamRows.length === 0) {
+        throw new CustomerServiceError("Team không tồn tại", 400);
+      }
+    }
+
+    let updated = 0;
+    for (const customerId of customerIds) {
+      const result = await run("UPDATE customers SET team_id = ? WHERE id = ?", [
+        teamId || null,
+        customerId,
+      ]);
+      updated += result.changes;
+    }
+    return updated;
   }
 
   private async loadForTransfer(id: string, newStaff: unknown) {

@@ -40,6 +40,18 @@ customerRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+// PATCH /api/customers/team — gán/gỡ team cho nhiều khách cùng lúc (chỉ Admin).
+// Đặt TRƯỚC "/:id" để không bị route "/:id" (id="team") nuốt mất.
+customerRouter.patch("/team", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { customerIds, teamId } = req.body ?? {};
+    const updated = await customerService.assignTeam(customerIds, teamId ?? null);
+    res.json({ success: true, data: { updated } });
+  } catch (error: any) {
+    sendError(res, error);
+  }
+});
+
 customerRouter.get("/:id", async (req: Request, res: Response) => {
   try {
     const customer = await customerService.getById(req.params.id);

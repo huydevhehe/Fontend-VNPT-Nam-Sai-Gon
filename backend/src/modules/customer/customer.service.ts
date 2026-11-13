@@ -59,6 +59,19 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** SELECT khách hàng kèm territory_name/team_name (dùng chung cho getAll/getById/create/update). */
+async function fetchCustomerWithJoins(id: string): Promise<any | undefined> {
+  const rows = await query<any>(
+    `SELECT c.*, t.ward_name AS territory_name, ct.name AS team_name
+     FROM customers c
+     LEFT JOIN territories t ON t.id = c.territory_id
+     LEFT JOIN customer_teams ct ON ct.id = c.team_id
+     WHERE c.id = ?`,
+    [id]
+  );
+  return rows[0];
+}
+
 export class CustomerService {
   async getAll(search?: string, group?: string) {
     if (group !== undefined && group !== "" && !isValidGroup(group)) {
@@ -174,25 +187,20 @@ export class CustomerService {
       ]
     );
 
-    const rows = await query("SELECT * FROM customers WHERE id = ?", [id]);
+    // Trả kèm territory_name/team_name (giống getById) để FE không cần gọi lại
+    // GET /customers sau khi tạo mới vẫn thấy đúng badge địa bàn/Team ngay.
+    const created = await fetchCustomerWithJoins(id);
 
-    return { success: true, customer: rows[0], message: "Thêm khách hàng thành công" };
+    return { success: true, customer: created, message: "Thêm khách hàng thành công" };
   }
 
-  /** Lấy 1 khách hàng kèm tên địa bàn (join territories); 404 nếu không có. */
+  /** Lấy 1 khách hàng kèm tên địa bàn/team (join territories/customer_teams); 404 nếu không có. */
   async getById(id: string) {
-    const rows = await query<any>(
-      `SELECT c.*, t.ward_name AS territory_name, ct.name AS team_name
-       FROM customers c
-       LEFT JOIN territories t ON t.id = c.territory_id
-       LEFT JOIN customer_teams ct ON ct.id = c.team_id
-       WHERE c.id = ?`,
-      [id]
-    );
-    if (rows.length === 0) {
+    const customer = await fetchCustomerWithJoins(id);
+    if (!customer) {
       throw new CustomerServiceError("Không tìm thấy khách hàng", 404);
     }
-    return rows[0];
+    return customer;
   }
 
   /**
@@ -293,8 +301,7 @@ export class CustomerService {
       `Sửa khách ${id}: cập nhật ${Object.keys(patch).join(", ")}`
     );
 
-    const updatedRows = await query<any>("SELECT * FROM customers WHERE id = ?", [id]);
-    return updatedRows[0];
+    return fetchCustomerWithJoins(id);
   }
 
   /** Gán (hoặc gỡ, teamId = null) team cho nhiều khách hàng cùng lúc; trả về số khách đã cập nhật. */

@@ -2,8 +2,9 @@ import { expect, test } from "@playwright/test";
 import { loginAs } from "./fixtures/auth";
 import { ADMIN, API_URL, apiLogin, bearer } from "./api/helpers";
 
-const LABEL_PTM = "KH PTM (phát triển mới)";
-const LABEL_KHDN = "KHDN chăm (địa bàn giao)";
+const LABEL_PTM = "KH PTM";
+const LABEL_KHDN = "KH địa bàn";
+const LABEL_PTM_DIA_BAN = "PTM địa bàn";
 
 test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
   test("hiện nhãn mới, lọc theo nhóm và ghi đợt giao khi điều chuyển KHDN chăm", async ({
@@ -41,19 +42,17 @@ test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
     await expect(page.locator("tbody")).not.toContainText("Tự phát triển");
     await expect(page.locator("tbody")).not.toContainText("Tập hiện hữu");
 
-    // Lọc theo nhóm
-    const filter = page.getByLabel("Lọc theo nhóm khách hàng");
+    // Lọc theo loại khách
+    const filter = page.getByLabel("Loại khách");
     await filter.selectOption({ label: LABEL_KHDN });
     await expect(khdnRow).toBeVisible();
     await expect(ptmRow).toHaveCount(0);
-    await expect(page.locator("tbody")).not.toContainText(LABEL_PTM);
 
     await filter.selectOption({ label: LABEL_PTM });
     await expect(ptmRow).toBeVisible();
     await expect(khdnRow).toHaveCount(0);
-    await expect(page.locator("tbody")).not.toContainText(LABEL_KHDN);
 
-    await filter.selectOption({ label: LABEL_KHDN });
+    await filter.selectOption("");
 
     // Điều chuyển AM chăm sóc (CSKH) của KHDN chăm kèm mã đợt giao — việc
     // "bàn giao" đợt giờ gắn với nút Điều chuyển CSKH, tách khỏi Điều chuyển AM.
@@ -81,5 +80,48 @@ test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
     await expect(page.locator("table")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole("button", { name: "Điều chuyển AM" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Điều chuyển CSKH" })).toHaveCount(0);
+  });
+
+  test("tạo khách loại PTM địa bàn với Team, Kênh bán, liên hệ/thanh toán — dòng mới hiện badge địa bàn, cột Kênh bán, cột Team", async ({
+    page,
+    request,
+  }) => {
+    const suffix = Date.now();
+    const customerName = `KH UI PTM Địa Bàn ${suffix}`;
+    const teamName = `NOVA UI ${suffix}`;
+
+    const token = await apiLogin(request, ADMIN.username, ADMIN.password);
+    const teamRes = await request.post(`${API_URL}/customer-teams`, {
+      headers: bearer(token),
+      data: { name: teamName },
+    });
+    expect(teamRes.status()).toBe(201);
+
+    const territoriesRes = await request.get(`${API_URL}/territories`, { headers: bearer(token) });
+    const territories = (await territoriesRes.json()).data as Array<{ id: string; ward_name: string }>;
+    const territory = territories[0];
+
+    await loginAs(page, "admin");
+    await page.goto("/admin/customers");
+
+    await page.getByRole("button", { name: "Thêm khách hàng" }).click();
+    const formModal = page.locator("div.fixed", { hasText: "Thêm khách hàng" });
+    await expect(formModal).toBeVisible();
+
+    await formModal.locator("#cf-name").fill(customerName);
+    await formModal.locator("#cf-group").selectOption({ label: LABEL_PTM_DIA_BAN });
+    await formModal.locator("#cf-team").selectOption({ label: teamName });
+    await formModal.locator("#cf-sales-channel").selectOption({ label: "Online" });
+    await formModal.locator("#cf-territory").selectOption({ label: territory.ward_name });
+
+    await formModal.getByRole("button", { name: "Thêm khách hàng" }).click();
+    await expect(formModal).toBeHidden();
+
+    const row = page.locator("tbody tr", { hasText: customerName });
+    await expect(row).toBeVisible();
+    await expect(row).toContainText(LABEL_PTM_DIA_BAN);
+    await expect(row).toContainText(teamName);
+    await expect(row).toContainText("Online");
+    await expect(row).toContainText(territory.ward_name);
   });
 });

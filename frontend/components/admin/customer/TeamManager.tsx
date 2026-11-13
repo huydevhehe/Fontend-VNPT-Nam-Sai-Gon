@@ -41,7 +41,22 @@ export default function TeamManager({ onClose, onChanged }: TeamManagerProps) {
   }
 
   useEffect(() => {
-    reload();
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await getCustomerTeams();
+        if (isMounted) setTeams(data);
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Không thể tải danh sách team");
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   function resetForm() {

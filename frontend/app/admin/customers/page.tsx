@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent, ChangeEvent } from "react";
+import Link from "next/link";
 import {
   Users,
   UserPlus,
@@ -12,14 +13,17 @@ import {
   ArrowRightLeft,
   UploadCloud,
   CheckCircle2,
+  Users2,
+  Pencil,
 } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { CustomerRecord, CustomerType, CustomerGroup, TerritoryRecord } from "@/lib/crm/types/crm.types";
+import { CustomerRecord, TerritoryRecord } from "@/lib/crm/types/crm.types";
 import {
   getCustomers,
   createCustomer,
+  updateCustomer,
   transferCustomer,
   transferCaringStaff,
   importCustomerBatchExcel,
@@ -30,34 +34,11 @@ import { getCustomerTeams, CustomerTeamRecord } from "@/lib/api/customer-teams.a
 import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 import { useAuth } from "@/lib/auth/auth-context";
 import TeamManager from "@/components/admin/customer/TeamManager";
-import { Users2 } from "lucide-react";
+import CustomerForm, {
+  CustomerFormValues,
+  customerToFormValues,
+} from "@/components/admin/customer/CustomerForm";
 
-const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
-const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu"];
-
-interface CustomerFormState {
-  name: string;
-  identityCode: string;
-  type: CustomerType;
-  customerGroup: CustomerGroup;
-  phone: string;
-  address: string;
-  amStaff: string;
-  amCaringStaff: string;
-  handoverBatch: string;
-}
-
-const EMPTY_FORM: CustomerFormState = {
-  name: "",
-  identityCode: "",
-  type: TYPE_OPTIONS[0],
-  customerGroup: GROUP_OPTIONS[0],
-  phone: "",
-  address: "",
-  amStaff: "",
-  amCaringStaff: "",
-  handoverBatch: "",
-};
 
 export default function CustomersPage() {
   const { user } = useAuth();
@@ -68,13 +49,12 @@ export default function CustomersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<CustomerFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [editTarget, setEditTarget] = useState<CustomerRecord | null>(null);
 
   const [transferTarget, setTransferTarget] = useState<CustomerRecord | null>(null);
   const [transferStaff, setTransferStaff] = useState("");
-  const [groupFilter, setGroupFilter] = useState<CustomerGroup | "">("");
   const [staffNames, setStaffNames] = useState<string[]>([]);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [transferring, setTransferring] = useState(false);
@@ -212,31 +192,72 @@ export default function CustomersPage() {
     }
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleCreateSubmit(values: CustomerFormValues) {
     setFormError(null);
     setSubmitting(true);
 
     try {
       const created = await createCustomer({
-        name: form.name,
-        identityCode: form.identityCode || undefined,
-        type: form.type,
-        customerGroup: form.customerGroup,
-        phone: form.phone || undefined,
-        address: form.address || undefined,
-        amStaff: form.amStaff || undefined,
-        amCaringStaff: form.amCaringStaff || undefined,
-        handoverBatch: form.handoverBatch.trim() || undefined,
+        name: values.name,
+        identityCode: values.identityCode || undefined,
+        type: values.type,
+        customerGroup: values.customerGroup,
+        customerCode: values.customerCode || undefined,
+        status: values.status || undefined,
+        teamId: values.teamId || undefined,
+        salesChannel: values.salesChannel || undefined,
+        territoryId: values.territoryId || undefined,
+        phone: values.phone || undefined,
+        address: values.address || undefined,
+        note: values.note || undefined,
+        contactName: values.contactName || undefined,
+        contactEmail: values.contactEmail || undefined,
+        billingName: values.billingName || undefined,
+        billingPhone: values.billingPhone || undefined,
+        billingEmail: values.billingEmail || undefined,
       });
 
       setData((prev) => [created, ...prev]);
       setShowForm(false);
-      setForm(EMPTY_FORM);
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "Không thể thêm khách hàng. Vui lòng thử lại."
       );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleEditSubmit(values: CustomerFormValues) {
+    if (!editTarget) return;
+    setFormError(null);
+    setSubmitting(true);
+
+    try {
+      const updated = await updateCustomer(editTarget.id, {
+        name: values.name,
+        identityCode: values.identityCode || undefined,
+        type: values.type,
+        customerGroup: values.customerGroup,
+        customerCode: values.customerCode || undefined,
+        status: values.status || undefined,
+        teamId: values.teamId || undefined,
+        salesChannel: values.salesChannel || undefined,
+        territoryId: values.territoryId || undefined,
+        phone: values.phone || undefined,
+        address: values.address || undefined,
+        note: values.note || undefined,
+        contactName: values.contactName || undefined,
+        contactEmail: values.contactEmail || undefined,
+        billingName: values.billingName || undefined,
+        billingPhone: values.billingPhone || undefined,
+        billingEmail: values.billingEmail || undefined,
+      });
+
+      setData((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      setEditTarget(null);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Không thể sửa khách hàng. Vui lòng thử lại.");
     } finally {
       setSubmitting(false);
     }
@@ -322,10 +343,32 @@ export default function CustomersPage() {
             {item.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <div className="font-bold text-slate-900">{item.name}</div>
+            <Link
+              href={`/admin/customers/${item.id}`}
+              className="font-bold text-slate-900 hover:text-vnpt hover:underline"
+            >
+              {item.name}
+            </Link>
             <div className="text-[11px] text-slate-400">{item.address}</div>
           </div>
         </div>
+      ),
+    },
+    {
+      header: "Địa bàn",
+      accessorKey: "territoryName",
+      cell: (item) =>
+        item.territoryName ? (
+          <StatusBadge status={item.territoryName} variant="slate" />
+        ) : (
+          <span className="text-slate-400">—</span>
+        ),
+    },
+    {
+      header: "Kênh bán",
+      accessorKey: "salesChannel",
+      cell: (item) => (
+        <span className="text-xs text-slate-700">{item.salesChannel || "—"}</span>
       ),
     },
     {
@@ -436,6 +479,16 @@ export default function CustomersPage() {
             cell: (item: CustomerRecord) => (
               <div className="flex flex-col items-start gap-1">
                 <button
+                  onClick={() => {
+                    setFormError(null);
+                    setEditTarget(item);
+                  }}
+                  className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
+                >
+                  <Pencil className="h-3 w-3" />
+                  Sửa thông tin
+                </button>
+                <button
                   onClick={() => openTransfer(item)}
                   className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
                 >
@@ -494,7 +547,6 @@ export default function CustomersPage() {
           <button
             onClick={() => {
               setFormError(null);
-              setForm(EMPTY_FORM);
               setShowForm(true);
             }}
             className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
@@ -548,30 +600,40 @@ export default function CustomersPage() {
         </div>
       ) : (
         <DataTable
-          actionButton={
-            <select
-              aria-label="Lọc theo nhóm khách hàng"
-              value={groupFilter}
-              onChange={(e) => setGroupFilter(e.target.value as CustomerGroup | "")}
-              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 focus:border-vnpt focus:outline-none"
-            >
-              <option value="">Tất cả nhóm</option>
-              {GROUP_OPTIONS.map((g) => (
-                <option key={g} value={g}>
-                  {CUSTOMER_GROUP_LABEL[g]}
-                </option>
-              ))}
-            </select>
-          }
           title="Danh sách hồ sơ khách hàng"
-          subtitle="Hỗ trợ lọc theo loại doanh nghiệp, hộ kinh doanh hoặc cá nhân"
+          subtitle="Hỗ trợ lọc theo loại khách, team, địa bàn, kênh bán, AM phụ trách/chăm sóc"
           columns={columns}
-          data={groupFilter ? data.filter((c) => c.group === groupFilter) : data}
+          data={data}
           filters={[
+            {
+              id: "group",
+              label: "Loại khách",
+              getValue: (row) => CUSTOMER_GROUP_LABEL[row.group] ?? row.group,
+            },
             {
               id: "teamName",
               label: "Team",
               getValue: (row) => row.teamName || null,
+            },
+            {
+              id: "territoryName",
+              label: "Địa bàn",
+              getValue: (row) => row.territoryName || null,
+            },
+            {
+              id: "salesChannel",
+              label: "Kênh bán",
+              getValue: (row) => row.salesChannel || null,
+            },
+            {
+              id: "amStaff",
+              label: "AM phụ trách",
+              getValue: (row) => row.amStaff || null,
+            },
+            {
+              id: "amCaringStaff",
+              label: "AM chăm sóc",
+              getValue: (row) => row.amCaringStaff || null,
             },
           ]}
           searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
@@ -592,167 +654,29 @@ export default function CustomersPage() {
 
       {/* Create Customer Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900">Thêm khách hàng</h3>
-              <button
-                onClick={() => setShowForm(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+        <CustomerForm
+          mode="create"
+          territories={territories}
+          teams={teams}
+          submitting={submitting}
+          error={formError}
+          onSubmit={handleCreateSubmit}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Tên khách hàng
-                </label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Mã định danh (MST / CCCD)
-                </label>
-                <input
-                  value={form.identityCode}
-                  onChange={(e) => setForm({ ...form, identityCode: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Loại khách hàng
-                  </label>
-                  <select
-                    value={form.type}
-                    onChange={(e) => setForm({ ...form, type: e.target.value as CustomerType })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  >
-                    {TYPE_OPTIONS.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Nhóm khách hàng
-                  </label>
-                  <select
-                    value={form.customerGroup}
-                    onChange={(e) =>
-                      setForm({ ...form, customerGroup: e.target.value as CustomerGroup })
-                    }
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  >
-                    {GROUP_OPTIONS.map((g) => (
-                      <option key={g} value={g}>
-                        {CUSTOMER_GROUP_LABEL[g]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Số điện thoại
-                  </label>
-                  <input
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    AM phụ trách (bán hàng)
-                  </label>
-                  <input
-                    list="customer-staff-names"
-                    value={form.amStaff}
-                    onChange={(e) => setForm({ ...form, amStaff: e.target.value })}
-                    placeholder="Nguyễn Thị Tình"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="create-handover-batch"
-                  className="mb-1 block text-xs font-semibold text-slate-600"
-                >
-                  Mã đợt giao (tuỳ chọn)
-                </label>
-                <input
-                  id="create-handover-batch"
-                  value={form.handoverBatch}
-                  onChange={(e) => setForm({ ...form, handoverBatch: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  AM chăm sóc (CSKH)
-                </label>
-                <input
-                  value={form.amCaringStaff}
-                  onChange={(e) => setForm({ ...form, amCaringStaff: e.target.value })}
-                  placeholder="Để trống = giống AM phụ trách"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Địa chỉ
-                </label>
-                <input
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              {formError && (
-                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
-                  {formError}
-                </p>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
-                >
-                  {submitting ? "Đang tạo..." : "Thêm khách hàng"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Edit Customer Modal */}
+      {editTarget && (
+        <CustomerForm
+          mode="edit"
+          initialValues={customerToFormValues(editTarget)}
+          territories={territories}
+          teams={teams}
+          submitting={submitting}
+          error={formError}
+          onSubmit={handleEditSubmit}
+          onCancel={() => setEditTarget(null)}
+        />
       )}
 
       {/* Transfer AM bán hàng Modal */}

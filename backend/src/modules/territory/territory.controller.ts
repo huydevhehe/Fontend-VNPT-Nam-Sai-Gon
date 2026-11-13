@@ -1,10 +1,45 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
+import multer from "multer";
+import * as XLSX from "xlsx";
 import { requireAuth } from "../../middleware/require-auth.js";
 import { requireAdmin } from "../../middleware/require-role.js";
 import { TerritoryService, TerritoryServiceError } from "./territory.service.js";
+import { parseWardContactRows } from "./ward-contact-import.js";
+import { stripDiacritics } from "./ward-name.js";
 
 export const territoryRouter = Router();
 const territoryService = new TerritoryService();
+
+const ALLOWED_EXCEL_MIMES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+];
+const ALLOWED_EXCEL_EXT = /\.(xlsx|xls)$/i;
+
+const wardContactUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (_req, file, cb) => {
+    const isAllowedMime = ALLOWED_EXCEL_MIMES.includes(file.mimetype);
+    const isAllowedExt = ALLOWED_EXCEL_EXT.test(file.originalname);
+    if (isAllowedMime || isAllowedExt) {
+      cb(null, true);
+    } else {
+      cb(new Error("Chỉ chấp nhận file Excel .xlsx/.xls"));
+    }
+  },
+});
+
+function handleWardContactUpload(req: Request, res: Response, next: NextFunction) {
+  wardContactUpload.single("file")(req, res, (err: unknown) => {
+    if (err) {
+      const message = err instanceof Error ? err.message : "Lỗi upload file";
+      res.status(400).json({ success: false, message });
+      return;
+    }
+    next();
+  });
+}
 
 async function handle(res: Response, status: number, action: () => Promise<unknown>) {
   try {
@@ -39,6 +74,41 @@ territoryRouter.post("/", requireAdmin, (req: Request, res: Response) => {
     )
   );
 });
+
+// POST /api/territories/contacts/import — import đầu mối phường từ file Excel
+// (khai báo trước /:id/... để không bị route :id bắt nhầm, dù ở đây không có
+// xung đột segment thật sự — vẫn theo quy ước chung của module).
+territoryRouter.post(
+  "/contacts/import",
+  requireAdmin,
+  handleWardContactUpload,
+  async (req: Request, res: Response) => {
+    try {
+      const file = (req as Request & { file?: Express.Multer.File }).file;
+      if (!file) {
+        res.status(400).json({ success: false, message: "Thiếu file import" });
+        return;
+      }
+
+      const workbook = XLSX.read(file.buffer, { type: "buffer" });
+      const sheetName =
+        workbook.SheetNames.find((name) => stripDiacritics(name.toLowerCase()).includes("phuong")) ||
+        workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
+
+      const { items, skipped } = parseWardContactRows(rawRows);
+      const autoCreateWards = req.body?.autoCreateWards === "true" || req.body?.autoCreateWards === true;
+      const operator = req.user?.name ?? req.user?.id ?? "Admin";
+
+      const result = await territoryService.importWardContacts(items, { autoCreateWards }, operator);
+      res.status(200).json({ success: true, data: { ...result, skipped } });
+    } catch (error: any) {
+      console.error("Territory import error:", error);
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
+);
 
 // Các path /officials/... và /quarters/... phải khai báo TRƯỚC /:id/... để không bị bắt nhầm.
 territoryRouter.patch("/officials/:officialId", requireAdmin, (req: Request, res: Response) =>

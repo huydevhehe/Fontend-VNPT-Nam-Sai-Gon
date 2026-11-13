@@ -171,6 +171,33 @@ export async function updateWardContact(
   return mapWardContactRow(row);
 }
 
+export interface ImportWardContactsResult {
+  created: number;
+  duplicates: number;
+  skipped: number;
+  createdWards: string[];
+  errors: { rowNumber: number; message: string }[];
+}
+
+/**
+ * Gọi `POST /api/territories/contacts/import` (multipart/form-data qua
+ * multer) — dùng `apiFetch` (không phải `apiFetchRaw`) vì route này trả
+ * đúng chuẩn `{success, data}` như phần còn lại của module territories.
+ */
+export async function importWardContacts(
+  file: File,
+  autoCreateWards: boolean
+): Promise<ImportWardContactsResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("autoCreateWards", autoCreateWards ? "true" : "false");
+
+  return apiFetch<ImportWardContactsResult>("/territories/contacts/import", {
+    method: "POST",
+    body: formData,
+  });
+}
+
 export async function deleteWardContact(contactId: string): Promise<void> {
   await apiFetch<{ message: string }>(`/territories/contacts/${contactId}`, {
     method: "DELETE",

@@ -2,11 +2,17 @@
 
 import { useEffect, useRef, useState, FormEvent } from "react";
 import Link from "next/link";
-import { MapPin, Building, Users, TrendingUp, AlertTriangle, ChevronDown, ChevronUp, Plus, X } from "lucide-react";
+import { MapPin, Building, Users, TrendingUp, AlertTriangle, ChevronDown, ChevronUp, Plus, X, Upload } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import { TerritoryRecord, StaffRecord } from "@/lib/crm/types/crm.types";
-import { getTerritories, updateTerritoryHouseholds, createTerritory } from "@/lib/api/territories.api";
+import {
+  getTerritories,
+  updateTerritoryHouseholds,
+  createTerritory,
+  importWardContacts,
+  ImportWardContactsResult,
+} from "@/lib/api/territories.api";
 import { getStaff } from "@/lib/api/staff.api";
 import { TableFilter } from "@/lib/table-filters";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -27,6 +33,13 @@ export default function TerritoriesPage() {
   const [wardForm, setWardForm] = useState(EMPTY_WARD_FORM);
   const [wardFormError, setWardFormError] = useState<string | null>(null);
   const [submittingWard, setSubmittingWard] = useState(false);
+
+  const [showImportForm, setShowImportForm] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [autoCreateWards, setAutoCreateWards] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importResult, setImportResult] = useState<ImportWardContactsResult | null>(null);
 
   // State cho pattern click-to-edit số hộ dân inline trên bảng.
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -195,6 +208,39 @@ export default function TerritoriesPage() {
     }
   }
 
+  function openImportForm() {
+    setImportFile(null);
+    setAutoCreateWards(false);
+    setImportError(null);
+    setImportResult(null);
+    setShowImportForm(true);
+  }
+
+  async function handleImportSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!importFile) {
+      setImportError("Vui lòng chọn file Excel");
+      return;
+    }
+    setImportError(null);
+    setImportResult(null);
+    setImporting(true);
+    try {
+      const result = await importWardContacts(importFile, autoCreateWards);
+      setImportResult(result);
+      if (result.created > 0) {
+        const territories = await getTerritories();
+        setData(territories);
+      }
+    } catch (err) {
+      setImportError(
+        err instanceof Error ? err.message : "Không thể import file. Vui lòng thử lại."
+      );
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const territoryFilters: TableFilter<TerritoryRecord>[] = [
     {
       id: "staffName",
@@ -310,14 +356,24 @@ export default function TerritoriesPage() {
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
           {canCreateWard && (
-            <button
-              type="button"
-              onClick={openCreateWard}
-              className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="btn-label">Tạo phường</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={openImportForm}
+                className="flex h-9 items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50/70 px-3.5 text-xs font-bold text-vnpt hover:bg-blue-100"
+              >
+                <Upload className="h-4 w-4" />
+                <span className="btn-label">Import đầu mối (Excel)</span>
+              </button>
+              <button
+                type="button"
+                onClick={openCreateWard}
+                className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="btn-label">Tạo phường</span>
+              </button>
+            </>
           )}
           <button
             type="button"
@@ -457,6 +513,97 @@ export default function TerritoriesPage() {
                   className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
                 >
                   {submittingWard ? "Đang tạo..." : "Tạo phường"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal import đầu mối phường từ Excel */}
+      {showImportForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Import đầu mối phường (Excel)</h3>
+              <button
+                onClick={() => setShowImportForm(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleImportSubmit} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  File Excel (sheet &quot;PhườngXã&quot;)
+                </label>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={autoCreateWards}
+                  onChange={(e) => setAutoCreateWards(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                Tự tạo phường chưa có
+              </label>
+
+              {importError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {importError}
+                </p>
+              )}
+
+              {importResult && (
+                <div className="space-y-1 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                  <p>
+                    Tạo mới: <span className="font-bold text-emerald-600">{importResult.created}</span> · Trùng bỏ
+                    qua: <span className="font-bold">{importResult.duplicates}</span> · Dòng bỏ qua (trống):{" "}
+                    <span className="font-bold">{importResult.skipped}</span>
+                  </p>
+                  {importResult.createdWards.length > 0 && (
+                    <p>
+                      Phường mới: <span className="font-semibold">{importResult.createdWards.join(", ")}</span>
+                    </p>
+                  )}
+                  {importResult.errors.length > 0 && (
+                    <div>
+                      <p className="font-semibold text-rose-600">Lỗi theo dòng:</p>
+                      <ul className="list-inside list-disc">
+                        {importResult.errors.map((e) => (
+                          <li key={e.rowNumber}>
+                            Dòng {e.rowNumber}: {e.message}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowImportForm(false)}
+                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="submit"
+                  disabled={importing}
+                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {importing ? "Đang import..." : "Import"}
                 </button>
               </div>
             </form>

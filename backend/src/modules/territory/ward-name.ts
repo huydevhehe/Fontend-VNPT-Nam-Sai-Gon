@@ -12,7 +12,7 @@ const VIETNAMESE_DIACRITICS_MAP: Array<[RegExp, string]> = [
   [/đ/g, "d"],
 ];
 
-function stripDiacritics(input: string): string {
+export function stripDiacritics(input: string): string {
   let result = input;
   for (const [pattern, replacement] of VIETNAMESE_DIACRITICS_MAP) {
     result = result.replace(pattern, replacement);

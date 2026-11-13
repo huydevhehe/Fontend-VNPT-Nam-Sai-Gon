@@ -1,6 +1,7 @@
-import { query, run } from "../../database/db.js";
+import { query, run, transaction, type TransactionClient } from "../../database/db.js";
 import { WARD_UNITS } from "../../constants/org.js";
 import { normalizeWardName } from "./ward-name.js";
+import type { WardContactImportItem } from "./ward-contact-import.js";
 
 export class TerritoryServiceError extends Error {
   constructor(message: string, public status: number) {
@@ -354,6 +355,95 @@ export class TerritoryService {
     );
 
     return { success: true, message: "Xóa đầu mối thành công" };
+  }
+
+  async importWardContacts(
+    items: WardContactImportItem[],
+    opts: { autoCreateWards: boolean },
+    operator: string = "Admin"
+  ): Promise<{
+    created: number;
+    duplicates: number;
+    createdWards: string[];
+    errors: { rowNumber: number; message: string }[];
+  }> {
+    return transaction(async (tx: TransactionClient) => {
+      const errors: { rowNumber: number; message: string }[] = [];
+      const createdWards: string[] = [];
+      let created = 0;
+      let duplicates = 0;
+
+      const territoryRows = await tx.query<{ id: string; ward_name: string }>(
+        "SELECT id, ward_name FROM territories"
+      );
+      // wardId theo tên đã chuẩn hóa — dùng Map để tìm phường trùng O(1) và
+      // để phường vừa tự tạo trong lượt import này cũng được các dòng sau
+      // trong CÙNG file nhận diện (vd nhiều dòng của 1 phường mới).
+      const wardsByNormalizedName = new Map<string, string>();
+      for (const row of territoryRows) {
+        wardsByNormalizedName.set(normalizeWardName(row.ward_name), row.id);
+      }
+
+      const staffRows = await tx.query<{ name: string }>("SELECT name FROM staff");
+      const knownStaffNames = new Set(staffRows.map((r) => r.name));
+
+      for (const item of items) {
+        const normalizedWard = normalizeWardName(item.wardName);
+        let territoryId = wardsByNormalizedName.get(normalizedWard);
+
+        if (!territoryId) {
+          if (!opts.autoCreateWards) {
+            errors.push({ rowNumber: item.rowNumber, message: `Không tìm thấy phường: ${item.wardName}` });
+            continue;
+          }
+          territoryId = newId("TB");
+          await tx.run("INSERT INTO territories (id, ward_name) VALUES (?, ?)", [territoryId, item.wardName.trim()]);
+          wardsByNormalizedName.set(normalizedWard, territoryId);
+          createdWards.push(item.wardName.trim());
+        }
+
+        if (!item.unit || !item.department || !item.position) {
+          errors.push({
+            rowNumber: item.rowNumber,
+            message: "Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Chức vụ)",
+          });
+          continue;
+        }
+
+        if (item.amInCharge && !knownStaffNames.has(item.amInCharge)) {
+          errors.push({ rowNumber: item.rowNumber, message: `AM phụ trách không tồn tại: ${item.amInCharge}` });
+          continue;
+        }
+
+        const existingContact = await tx.query<{ id: string }>(
+          "SELECT id FROM ward_contacts WHERE territory_id = ? AND unit = ? AND department = ? AND position = ? AND full_name = ?",
+          [territoryId, item.unit, item.department, item.position, item.fullName]
+        );
+        if (existingContact.length > 0) {
+          duplicates++;
+          continue;
+        }
+
+        const contactId = newId("WARDC");
+        await tx.run(
+          "INSERT INTO ward_contacts (id, territory_id, unit, department, full_name, position, phone, am_in_charge) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [contactId, territoryId, item.unit, item.department, item.fullName, item.position, item.phone, item.amInCharge]
+        );
+        created++;
+      }
+
+      await tx.run(
+        'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+        [
+          newId("LOG"),
+          operator,
+          "Import đầu mối phường",
+          `Tạo mới ${created}, trùng bỏ qua ${duplicates}, phường mới ${createdWards.length}, lỗi ${errors.length}`,
+        ]
+      );
+
+      return { created, duplicates, createdWards, errors };
+    });
   }
 
   async updateHouseholds(id: string, householdCount: number, quarterCount?: number, operator: string = "Admin") {

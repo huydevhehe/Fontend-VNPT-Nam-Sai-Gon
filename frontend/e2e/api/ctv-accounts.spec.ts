@@ -174,9 +174,10 @@ test.describe("Đăng ký, duyệt và đăng nhập CTV (API)", () => {
 });
 
 test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", () => {
-  test("tạo staff mới: đăng nhập được bằng <code>@Vnpt2026 và response có initialPassword", async ({ request }) => {
+  test("tạo staff mới với password hợp lệ: đăng nhập thành công", async ({ request }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
     const code = `NV-T4-${Date.now()}`;
+    const password = "Matkhau@HopLe1";
 
     const res = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
@@ -186,58 +187,47 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
         role: "AM",
         territory: "Khu vực T4",
         email: `${code.toLowerCase()}@example.com`,
+        password,
       },
     });
     expect(res.status()).toBe(201);
     const body = (await res.json()).data;
     expect(body.code).toBe(code);
-    expect(body.initialPassword).toBe(`${code}@Vnpt2026`);
 
-    const login = await rawLogin(request, code, `${code}@Vnpt2026`);
+    const login = await rawLogin(request, code, password);
     expect(login.status()).toBe(200);
     const user = (await login.json()).data.user;
     expect(user.role).toBe("AM");
     expect(user.name).toBe("NV T4 Mặc định");
   });
 
-  test("tạo staff với password tự đặt: không có initialPassword, đăng nhập bằng mật khẩu đó", async ({ request }) => {
-    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
-    const code = `NV-T4P-${Date.now()}`;
-
-    const res = await request.post(`${API_URL}/staff`, {
-      headers: bearer(adminToken),
-      data: {
-        code,
-        name: "NV T4 Tự đặt",
-        role: "AM Bán chăm",
-        territory: "Khu vực T4",
-        email: `${code.toLowerCase()}@example.com`,
-        password: "Matkhau@Rieng1",
-      },
-    });
-    expect(res.status()).toBe(201);
-    expect((await res.json()).data.initialPassword).toBeUndefined();
-
-    expect((await rawLogin(request, code, "Matkhau@Rieng1")).status()).toBe(200);
-    expect((await rawLogin(request, code, `${code}@Vnpt2026`)).status()).toBe(401);
-  });
-
-  test("password tự đặt quá ngắn: dùng mật khẩu mặc định", async ({ request }) => {
+  test("tạo staff thiếu password hoặc quá ngắn: trả về 400", async ({ request }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
     const code = `NV-T4S-${Date.now()}`;
-    const res = await request.post(`${API_URL}/staff`, {
+    const resNoPass = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
       data: {
         code,
-        name: "NV T4 Ngắn",
+        name: "NV Thiếu Pass",
         role: "AM",
         territory: "Khu vực T4",
         email: `${code.toLowerCase()}@example.com`,
+      },
+    });
+    expect(resNoPass.status()).toBe(400);
+
+    const resShort = await request.post(`${API_URL}/staff`, {
+      headers: bearer(adminToken),
+      data: {
+        code: `${code}-2`,
+        name: "NV Pass Ngắn",
+        role: "AM",
+        territory: "Khu vực T4",
+        email: `${code.toLowerCase()}2@example.com`,
         password: "abc",
       },
     });
-    expect(res.status()).toBe(201);
-    expect((await res.json()).data.initialPassword).toBe(`${code}@Vnpt2026`);
+    expect(resShort.status()).toBe(400);
   });
 
   test("trùng username trong users trả 409 và không tạo staff", async ({ request }) => {
@@ -253,6 +243,7 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
         role: "AM",
         territory: "Khu vực T4",
         email: "dup@example.com",
+        password: "Matkhau@Dup123",
       },
     });
     expect(dup.status()).toBe(409);
@@ -272,6 +263,7 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
         role: "AM",
         territory: "Khu vực T4",
         email: "am@example.com",
+        password: "Matkhau@Am123",
       },
     });
     expect(res.status()).toBe(403);
@@ -280,23 +272,27 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
   test("chuyển staff sang Ngừng hoạt động thì đăng nhập bị 403, bật lại thì vào được; vai trò và tên đồng bộ", async ({ request }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
     const code = `NV-T4D-${Date.now()}`;
+    const password = "Matkhau@DongBo1";
+    const initialName = `NV T4 Ngừng ${code}`;
+    const updatedName = `NV T4 Đổi tên ${code}`;
+
     const created = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
       data: {
         code,
-        name: "NV T4 Ngừng",
+        name: initialName,
         role: "AM",
         territory: "Khu vực T4",
         email: `${code.toLowerCase()}@example.com`,
+        password,
       },
     });
     expect(created.status()).toBe(201);
     const staff = (await created.json()).data;
-    const password = `${code}@Vnpt2026`;
 
-    const off = await request.patch(`${API_URL}/staff/${staff.id}`, {
+    const off = await request.patch(`${API_URL}/staff/${staff.id}/status`, {
       headers: bearer(adminToken),
-      data: { status: "Ngừng hoạt động" },
+      data: { status: "Ngừng hoạt động", reason: "Ngừng hoạt động để test" },
     });
     expect(off.status()).toBe(200);
 
@@ -305,16 +301,69 @@ test.describe("Admin tạo nhân viên có tài khoản đăng nhập (API)", ()
     // sai mật khẩu vẫn 401, không lộ trạng thái
     expect((await rawLogin(request, code, "Sai-mat-khau-1")).status()).toBe(401);
 
-    const on = await request.patch(`${API_URL}/staff/${staff.id}`, {
+    const on = await request.patch(`${API_URL}/staff/${staff.id}/status`, {
       headers: bearer(adminToken),
-      data: { status: "Đang hoạt động", role: "AM Bán chăm", name: "NV T4 Đổi tên" },
+      data: { status: "Đang hoạt động" },
     });
     expect(on.status()).toBe(200);
+
+    const rename = await request.patch(`${API_URL}/staff/${staff.id}`, {
+      headers: bearer(adminToken),
+      data: { role: "AM Bán chăm", name: updatedName },
+    });
+    expect(rename.status()).toBe(200);
 
     const ok = await rawLogin(request, code, password);
     expect(ok.status()).toBe(200);
     const user = (await ok.json()).data.user;
     expect(user.role).toBe("AM Bán chăm");
-    expect(user.name).toBe("NV T4 Đổi tên");
+    expect(user.name).toBe(updatedName);
+  });
+
+  test("admin tạo trực tiếp CTV → 201, CTV đăng nhập được ngay (không cần duyệt) và bắt buộc đổi mật khẩu", async ({
+    request,
+  }) => {
+    const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
+    const suffix = Date.now();
+    const username = `ctv_direct_${suffix}`;
+    const password = "DirectPassword@123";
+    const phone = `09${String(suffix).slice(-8)}`;
+
+    const createRes = await request.post(`${API_URL}/ctv-accounts`, {
+      headers: bearer(adminToken),
+      data: {
+        username,
+        password,
+        name: `CTV Tạo Trực Tiếp ${suffix}`,
+        phone,
+        email: `direct_${suffix}@vnpt.vn`,
+        mustChangePassword: true,
+      },
+    });
+    expect(createRes.status()).toBe(201);
+    const created = (await createRes.json()).data;
+    expect(created.username).toBe(username);
+    expect(created.status).toBe("Đang hoạt động");
+    expect(created.referralCode).toBeTruthy();
+
+    // CTV đăng nhập được ngay mà không cần qua duyệt
+    const loginRes = await rawLogin(request, username, password);
+    expect(loginRes.status()).toBe(200);
+    const loginData = (await loginRes.json()).data;
+    expect(loginData.user.role).toBe("CTV");
+    expect(loginData.user.mustChangePassword).toBe(true);
+
+    // AM gọi POST /api/ctv-accounts bị từ chối 403
+    const amToken = await apiLogin(request, AM.username, AM.password);
+    const amRes = await request.post(`${API_URL}/ctv-accounts`, {
+      headers: bearer(amToken),
+      data: {
+        username: `ctv_am_forbid_${suffix}`,
+        password: "Password@123",
+        name: "CTV AM Forbid",
+        phone: `08${String(suffix).slice(-8)}`,
+      },
+    });
+    expect(amRes.status()).toBe(403);
   });
 });

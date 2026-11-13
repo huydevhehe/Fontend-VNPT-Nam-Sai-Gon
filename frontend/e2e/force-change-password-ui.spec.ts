@@ -8,7 +8,7 @@ test.describe("Bắt đổi mật khẩu nhân viên mới trên UI", () => {
   }) => {
     const adminToken = await apiLogin(request, ADMIN.username, ADMIN.password);
 
-    // 1. Admin tạo nhân viên mới không truyền password
+    // 1. Admin tạo nhân viên mới có password do admin đặt và mustChangePassword = true
     const code = `NV-UI-${Date.now()}`;
     const defaultPassword = `${code}@Vnpt2026`;
     const newPassword = "MyNewPassword@2026";
@@ -20,6 +20,8 @@ test.describe("Bắt đổi mật khẩu nhân viên mới trên UI", () => {
         name: `Nhân viên UI ${code}`,
         role: "AM",
         territory: "Phường 1",
+        password: defaultPassword,
+        mustChangePassword: true,
       },
     });
     expect(createRes.status()).toBe(201);

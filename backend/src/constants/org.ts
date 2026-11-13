@@ -42,3 +42,24 @@ export const RANDOM_STAFF_TOKEN = "__RANDOM__";
 
 export const ACTIVE_AM_ROLES = [ROLES.AM, ROLES.AM_BAN_CHAM] as const;
 
+export const STAFF_TYPES = ["Chính thức", "Cộng tác viên"] as const;
+export type StaffType = (typeof STAFF_TYPES)[number];
+
+export const STAFF_STATUSES = ["Đang hoạt động", "Đình chỉ", "Ngừng hoạt động"] as const;
+export type StaffStatus = (typeof STAFF_STATUSES)[number];
+
+export const INACTIVE_USER_STATUS = "Ngừng hoạt động";
+
+export const STAFF_NAME_REFERENCES: ReadonlyArray<readonly [table: string, column: string]> = [
+  ["leads", "staff_name"],
+  ["debts", "staff_name"],
+  ["renewals", "staff_name"],
+  ["customers", "am_staff"],
+  ["customers", "am_caring_staff"],
+  ["services", "staff_name"],
+  ["tasks", "assignee"],
+  ["territories", "staff_name"],
+  ["ward_contacts", "am_in_charge"],
+];
+
+

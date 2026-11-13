@@ -124,37 +124,48 @@ test.describe("CTV đăng ký, Admin duyệt, đăng nhập chung (UI)", () => {
     await expect(page.getByText(/Số điện thoại phải gồm 10 chữ số/)).toBeVisible();
   });
 
-  test("Admin tạo nhân viên → hiện mật khẩu mặc định một lần, nhân viên đăng nhập được", async ({
+  test("Admin tạo nhân viên → nhân viên đăng nhập bằng mật khẩu ban đầu và phải đổi mật khẩu", async ({
     page,
   }) => {
     const suffix = Date.now();
     const code = `NV-UI-${suffix}`;
+    const password = `InitPass@${suffix}`;
 
     await loginAs(page, "admin");
     await page.goto("/admin/employees");
     await page.getByRole("button", { name: "Thêm nhân viên" }).click();
     await fieldByLabel(page, "Mã nhân viên").fill(code);
     await fieldByLabel(page, "Họ tên").fill(`NV UI ${suffix}`);
-    await fieldByLabel(page, "Địa bàn phụ trách").fill("Khu vực UI");
-    await fieldByLabel(page, "Email").fill(`nv-ui-${suffix}@example.com`);
+    const territoryField = fieldByLabel(page, "Phường phụ trách");
+    if ((await territoryField.count()) > 0) {
+      const tagName = await territoryField.evaluate((el) => el.tagName.toLowerCase());
+      if (tagName === "select") {
+        await territoryField.selectOption({ index: 1 });
+      } else {
+        await territoryField.fill("Phường Tân Phong");
+      }
+    }
+    await fieldByLabel(page, "Email VNPT").fill(`nv-ui-${suffix}@example.com`);
+    await page.getByPlaceholder("Mật khẩu ban đầu").fill(password);
+    await page.getByPlaceholder("Nhập lại chính xác").fill(password);
     await page.getByRole("button", { name: "Tạo nhân viên" }).click();
 
-    await expect(page.getByText(`${code}@Vnpt2026`)).toBeVisible({ timeout: 10_000 });
-    await page.getByRole("button", { name: "Đã lưu mật khẩu" }).click();
-    await expect(page.getByText(`${code}@Vnpt2026`)).toHaveCount(0);
+    await expect(page.getByRole("table").getByText(code, { exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Nhân viên mới đăng nhập bằng mật khẩu mặc định → bị bắt đổi mật khẩu lần đầu (Task B)
+    // Nhân viên mới đăng nhập bằng mật khẩu ban đầu → bị bắt đổi mật khẩu lần đầu
     const fresh = await page.context().browser()!.newContext();
     const freshPage = await fresh.newPage();
     await freshPage.goto("/login");
     await freshPage.getByLabel("Tên đăng nhập").fill(code);
-    await freshPage.getByLabel("Mật khẩu").fill(`${code}@Vnpt2026`);
+    await freshPage.getByLabel("Mật khẩu").fill(password);
     await freshPage.getByRole("button", { name: "Đăng nhập" }).click();
     await freshPage.waitForURL("**/doi-mat-khau", { timeout: 15_000, waitUntil: "domcontentloaded" });
 
     // Đổi mật khẩu sang mật khẩu mới
     const newPass = `${code}@NewPass123`;
-    await freshPage.getByLabel("Mật khẩu hiện tại").fill(`${code}@Vnpt2026`);
+    await freshPage.getByLabel("Mật khẩu hiện tại").fill(password);
     await freshPage.locator("#newPassword").fill(newPass);
     await freshPage.locator("#confirmPassword").fill(newPass);
     await freshPage.getByRole("button", { name: "Cập nhật mật khẩu" }).click();

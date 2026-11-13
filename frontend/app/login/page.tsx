@@ -26,13 +26,13 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const loggedIn = await login(username.trim(), password);
-      if (loggedIn.mustChangePassword) {
+      const user = await login(username.trim(), password);
+      if (user.mustChangePassword) {
         router.push("/doi-mat-khau");
         return;
       }
       router.push(
-        loggedIn.role === "CTV" ? "/cong-tac-vien/dashboard" : "/admin/dashboard"
+        user.role === "CTV" ? "/cong-tac-vien/dashboard" : "/admin/dashboard"
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : "";

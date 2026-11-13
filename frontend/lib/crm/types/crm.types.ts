@@ -1,5 +1,6 @@
 export type CustomerType = "Doanh nghiệp" | "Hộ kinh doanh" | "Cá nhân";
-export type CustomerGroup = "Tự phát triển" | "Tập hiện hữu";
+export type CustomerGroup = "Tự phát triển" | "Tập hiện hữu" | "PTM địa bàn";
+export type DocumentType = "GPKD" | "CCCD" | "KHAC";
 export type StaffRole = "Admin" | "AM" | "AM Bán chăm" | "Người xem";
 export type UserRole = "Admin" | "AM" | "AM Bán chăm" | "CTV";
 
@@ -57,7 +58,7 @@ export interface CustomerRecord {
   identityCode: string; // MST (10/14) hoặc CCCD (12)
   type: CustomerType;
   group: CustomerGroup;
-  phone: string;
+  phone: string; // SĐT liên hệ
   address: string;
   services: string[];
   nearestExpiration: string;
@@ -65,6 +66,19 @@ export interface CustomerRecord {
   amCaringStaff: string;
   handoverBatch?: string; // Đợt giao (rỗng nếu chưa có)
   handoverDate?: string; // Ngày giao (rỗng nếu chưa có)
+  territoryId?: string;
+  territoryName?: string;
+  customerCode?: string;
+  status?: string;
+  teamId?: string;
+  teamName?: string;
+  salesChannel?: string;
+  contactName?: string;
+  contactEmail?: string;
+  billingName?: string;
+  billingPhone?: string;
+  billingEmail?: string;
+  note?: string;
 }
 
 // 4. Service & Alert
@@ -78,6 +92,10 @@ export interface ServiceRecord {
   daysRemaining: number;
   staffName: string;
   isExpired: boolean;
+  customerId?: string | null;
+  serviceGroup?: string | null;
+  packageName?: string | null;
+  paymentType?: string | null;
 }
 
 // 5. Lead

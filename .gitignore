@@ -27,6 +27,9 @@ docs/
 ~$*
 *.bak
 
+# Giấy tờ đính kèm khách hàng (PDF/DOC/DOCX) tải lên — không commit file người dùng upload.
+backend/uploads/
+
 # Database files
 backend/data/
 *.sqlite

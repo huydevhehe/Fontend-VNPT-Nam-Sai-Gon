@@ -1,8 +1,9 @@
-import { apiFetch, apiFetchRaw } from "./client";
+import { apiFetch, apiFetchRaw, API_BASE_URL, getToken } from "./client";
 import {
   CustomerRecord,
   CustomerType,
   CustomerGroup,
+  DocumentType,
 } from "@/lib/crm/types/crm.types";
 
 /**
@@ -23,6 +24,19 @@ interface CustomerApiRow {
   am_caring_staff?: string | null;
   handover_batch?: string | null;
   handover_date?: string | null;
+  territory_id?: string | null;
+  territory_name?: string | null;
+  customer_code?: string | null;
+  status?: string | null;
+  team_id?: string | null;
+  team_name?: string | null;
+  sales_channel?: string | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+  billing_name?: string | null;
+  billing_phone?: string | null;
+  billing_email?: string | null;
+  note?: string | null;
 }
 
 function mapCustomerRow(row: CustomerApiRow): CustomerRecord {
@@ -45,6 +59,19 @@ function mapCustomerRow(row: CustomerApiRow): CustomerRecord {
     amCaringStaff: row.am_caring_staff || "",
     handoverBatch: row.handover_batch || "",
     handoverDate: row.handover_date || "",
+    territoryId: row.territory_id || undefined,
+    territoryName: row.territory_name || undefined,
+    customerCode: row.customer_code || undefined,
+    status: row.status || undefined,
+    teamId: row.team_id || undefined,
+    teamName: row.team_name || undefined,
+    salesChannel: row.sales_channel || undefined,
+    contactName: row.contact_name || undefined,
+    contactEmail: row.contact_email || undefined,
+    billingName: row.billing_name || undefined,
+    billingPhone: row.billing_phone || undefined,
+    billingEmail: row.billing_email || undefined,
+    note: row.note || undefined,
   };
 }
 
@@ -72,6 +99,35 @@ export interface CreateCustomerInput {
   amStaff?: string;
   amCaringStaff?: string;
   handoverBatch?: string;
+  territoryId?: string;
+  customerCode?: string;
+  status?: string;
+  teamId?: string;
+  salesChannel?: string;
+  contactName?: string;
+  contactEmail?: string;
+  billingName?: string;
+  billingPhone?: string;
+  billingEmail?: string;
+  note?: string;
+}
+
+export type UpdateCustomerInput = Partial<Omit<CreateCustomerInput, "amStaff" | "amCaringStaff">>;
+
+export async function getCustomer(id: string): Promise<CustomerRecord> {
+  const row = await apiFetch<CustomerApiRow>(`/customers/${encodeURIComponent(id)}`);
+  return mapCustomerRow(row);
+}
+
+export async function updateCustomer(
+  id: string,
+  patch: UpdateCustomerInput
+): Promise<CustomerRecord> {
+  const row = await apiFetch<CustomerApiRow>(`/customers/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+  return mapCustomerRow(row);
 }
 
 /**
@@ -172,4 +228,86 @@ export async function importCustomerBatchExcel(
   }
 
   return payload.data;
+}
+
+export interface CustomerDocumentRecord {
+  id: string;
+  customerId: string;
+  docType: DocumentType;
+  originalName: string;
+  mime: string | null;
+  size: number | null;
+  uploadedBy: string | null;
+  createdAt: string | null;
+}
+
+export async function getCustomerDocuments(customerId: string): Promise<CustomerDocumentRecord[]> {
+  return apiFetch<CustomerDocumentRecord[]>(`/customers/${encodeURIComponent(customerId)}/documents`);
+}
+
+export async function uploadCustomerDocument(
+  customerId: string,
+  docType: DocumentType,
+  file: File
+): Promise<CustomerDocumentRecord> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("docType", docType);
+
+  const payload = await apiFetchRaw<{
+    success: boolean;
+    data: CustomerDocumentRecord;
+    message?: string;
+  }>(`/customers/${encodeURIComponent(customerId)}/documents`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!payload || !payload.success) {
+    throw new Error(payload?.message || "Tải lên giấy tờ thất bại");
+  }
+
+  return payload.data;
+}
+
+export async function deleteCustomerDocument(documentId: string): Promise<void> {
+  await apiFetch<{ message: string }>(`/customers/documents/${encodeURIComponent(documentId)}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Tải file giấy tờ về máy người dùng. Route tải về cần header Authorization
+ * (không phải public), nên không thể dùng thẳng `<a href>` — phải `fetch`
+ * kèm token rồi tạo Blob URL tạm để trigger download.
+ */
+export async function downloadCustomerDocument(
+  documentId: string,
+  fallbackName: string
+): Promise<void> {
+  const token = getToken();
+  const res = await fetch(
+    `${API_BASE_URL}/customers/documents/${encodeURIComponent(documentId)}/download`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  );
+  if (!res.ok) {
+    let message = `Tải file thất bại (mã lỗi ${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.message) message = body.message;
+    } catch {
+      // body không phải JSON (vd lỗi mạng) — giữ message mặc định.
+    }
+    throw new Error(message);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fallbackName;
+  link.click();
+  URL.revokeObjectURL(url);
 }

@@ -224,4 +224,169 @@ test.describe("API khách hàng PTM / KHDN chăm", () => {
     });
     expect(transferCaringRes.status()).toBe(403);
   });
+
+  test("tạo KH nhóm PTM địa bàn, chuẩn hóa MST, có thông tin liên hệ/thanh toán riêng", async ({
+    request,
+  }) => {
+    const res = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: {
+        name: `KH PTM Địa Bàn ${Date.now()}`,
+        type: "Doanh nghiệp",
+        customerGroup: "PTM địa bàn",
+        identityCode: "317424086",
+        contactName: "Chị Diễm",
+        contactEmail: "diem.api@example.com",
+        billingName: "Anh Khải",
+        billingEmail: "khai.api@example.com",
+      },
+    });
+    expect(res.status()).toBe(201);
+    const data = (await res.json()).data;
+    expect(data.customer_group).toBe("PTM địa bàn");
+    expect(data.identity_code).toBe("0317424086");
+    expect(data.contact_name).toBe("Chị Diễm");
+    expect(data.billing_name).toBe("Anh Khải");
+  });
+
+  test("GET /customers/:id trả đủ thông tin, 404 khi không tồn tại", async ({ request }) => {
+    const created = await createCustomer(request, "Tự phát triển", `DETAIL-${Date.now()}`);
+    const id = (await created.json()).data.id;
+
+    const res = await request.get(`${API_URL}/customers/${id}`, { headers: bearer(token) });
+    expect(res.status()).toBe(200);
+    expect((await res.json()).data.id).toBe(id);
+
+    const notFound = await request.get(`${API_URL}/customers/KH-KHONG-TON-TAI`, {
+      headers: bearer(token),
+    });
+    expect(notFound.status()).toBe(404);
+  });
+
+  test("PATCH /customers/:id: Admin sửa được, AM không liên quan bị 403, không đổi được am_staff", async ({
+    request,
+  }) => {
+    // Khách gán cho STAFF_NEW ("Phạm Thanh Hà") — khác tài khoản AM đăng nhập
+    // (AM.username ứng với "Nguyễn Thị Tình" = STAFF_OLD) nên chắc chắn
+    // "không liên quan" theo đúng kịch bản test.
+    const res = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: {
+        name: `KH API EDIT-${Date.now()}`,
+        type: "Doanh nghiệp",
+        customerGroup: "Tự phát triển",
+        amStaff: STAFF_NEW,
+        amCaringStaff: STAFF_NEW,
+      },
+    });
+    expect(res.status()).toBe(201);
+    const id = (await res.json()).data.id;
+
+    const adminEdit = await request.patch(`${API_URL}/customers/${id}`, {
+      headers: bearer(token),
+      data: { note: "Admin sửa ghi chú" },
+    });
+    expect(adminEdit.status()).toBe(200);
+    expect((await adminEdit.json()).data.note).toBe("Admin sửa ghi chú");
+
+    const amEdit = await request.patch(`${API_URL}/customers/${id}`, {
+      headers: bearer(amToken),
+      data: { note: "AM không liên quan cố sửa" },
+    });
+    expect(amEdit.status()).toBe(403);
+
+    const amStaffEdit = await request.patch(`${API_URL}/customers/${id}`, {
+      headers: bearer(token),
+      data: { amStaff: "Cố đổi AM" },
+    });
+    expect(amStaffEdit.status()).toBe(400);
+  });
+});
+
+test.describe("API Team khách hàng", () => {
+  let token: string;
+  let amToken: string;
+
+  test.beforeAll(async ({ request }) => {
+    token = await apiLogin(request, ADMIN.username, ADMIN.password);
+    amToken = await apiLogin(request, AM.username, AM.password);
+  });
+
+  test("AM không được tạo team (403)", async ({ request }) => {
+    const res = await request.post(`${API_URL}/customer-teams`, {
+      headers: bearer(amToken),
+      data: { name: `Team AM ${Date.now()}` },
+    });
+    expect(res.status()).toBe(403);
+  });
+
+  test("Admin tạo team, gán 2 khách, GET /customers thấy team_name", async ({ request }) => {
+    const suffix = Date.now();
+    const teamRes = await request.post(`${API_URL}/customer-teams`, {
+      headers: bearer(token),
+      data: { name: `NOVA E2E ${suffix}` },
+    });
+    expect(teamRes.status()).toBe(201);
+    const team = (await teamRes.json()).data;
+
+    const c1 = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: { name: `KH Team 1 ${suffix}`, type: "Doanh nghiệp", customerGroup: "Tự phát triển" },
+    });
+    const c2 = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: { name: `KH Team 2 ${suffix}`, type: "Doanh nghiệp", customerGroup: "Tự phát triển" },
+    });
+    const id1 = (await c1.json()).data.id;
+    const id2 = (await c2.json()).data.id;
+
+    const assignRes = await request.patch(`${API_URL}/customers/team`, {
+      headers: bearer(token),
+      data: { customerIds: [id1, id2], teamId: team.id },
+    });
+    expect(assignRes.status()).toBe(200);
+    expect((await assignRes.json()).data.updated).toBe(2);
+
+    const listRes = await request.get(`${API_URL}/customers`, { headers: bearer(token) });
+    const rows = (await listRes.json()).data as any[];
+    const row1 = rows.find((r) => r.id === id1);
+    const row2 = rows.find((r) => r.id === id2);
+    expect(row1.team_name).toBe(team.name);
+    expect(row2.team_name).toBe(team.name);
+  });
+
+  test("xóa team còn khách trả 409; xóa team trống thành công", async ({ request }) => {
+    const suffix = Date.now();
+    const teamRes = await request.post(`${API_URL}/customer-teams`, {
+      headers: bearer(token),
+      data: { name: `Dragon E2E ${suffix}` },
+    });
+    const team = (await teamRes.json()).data;
+
+    const customerRes = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: {
+        name: `KH Dragon ${suffix}`,
+        type: "Doanh nghiệp",
+        customerGroup: "Tự phát triển",
+        teamId: team.id,
+      },
+    });
+    expect(customerRes.status()).toBe(201);
+
+    const blockedDelete = await request.delete(`${API_URL}/customer-teams/${team.id}`, {
+      headers: bearer(token),
+    });
+    expect(blockedDelete.status()).toBe(409);
+
+    const emptyTeamRes = await request.post(`${API_URL}/customer-teams`, {
+      headers: bearer(token),
+      data: { name: `Team Trống E2E ${suffix}` },
+    });
+    const emptyTeam = (await emptyTeamRes.json()).data;
+    const okDelete = await request.delete(`${API_URL}/customer-teams/${emptyTeam.id}`, {
+      headers: bearer(token),
+    });
+    expect(okDelete.status()).toBe(200);
+  });
 });

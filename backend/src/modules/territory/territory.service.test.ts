@@ -125,3 +125,81 @@ test("createTerritory rejects name shorter than 2 chars or longer than 100", asy
     await service.createTerritory({ wardName: "A".repeat(101) });
   });
 });
+
+test("createWardContact allows empty full name", async () => {
+  const service = new TerritoryService();
+  const suffix = Date.now();
+  const territory = await service.createTerritory({ wardName: `Phường Đầu Mối Trống Tên ${suffix}` });
+
+  const created = await service.createWardContact(territory.id, {
+    unit: "Trạm Y tế",
+    department: "Hành chính",
+    fullName: "",
+    position: "Trưởng trạm",
+  });
+
+  assert.equal(created.full_name, "");
+  assert.equal(created.phone, "");
+  assert.equal(created.am_in_charge, "");
+});
+
+test("createWardContact rejects missing position", async () => {
+  const service = new TerritoryService();
+  const suffix = Date.now();
+  const territory = await service.createTerritory({ wardName: `Phường Thiếu Chức Vụ ${suffix}` });
+
+  await assert.rejects(
+    async () => {
+      await service.createWardContact(territory.id, {
+        unit: "UBND",
+        department: "Hành chính",
+        fullName: "Nguyễn Văn A",
+        position: "",
+      });
+    },
+    (err: any) => {
+      assert.equal(err.message, "Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Chức vụ)");
+      return true;
+    }
+  );
+});
+
+test("createWardContact rejects unknown AM", async () => {
+  const service = new TerritoryService();
+  const suffix = Date.now();
+  const territory = await service.createTerritory({ wardName: `Phường AM Lạ ${suffix}` });
+
+  await assert.rejects(async () => {
+    await service.createWardContact(territory.id, {
+      unit: "UBND",
+      department: "Hành chính",
+      fullName: "Nguyễn Văn A",
+      position: "Chủ tịch",
+      amInCharge: `AM Không Tồn Tại ${suffix}`,
+    });
+  });
+});
+
+test("createWardContact accepts known AM and trims unit/department/position", async () => {
+  const service = new TerritoryService();
+  const suffix = Date.now();
+  const staffName = `AM Đầu Mối ${suffix}`;
+  await run("INSERT INTO staff (id, name, code, role, status) VALUES (?, ?, ?, ?, ?)", [
+    `STF-CONTACT-${suffix}`,
+    staffName,
+    `NV-CONTACT-${suffix}`,
+    "AM",
+    "Đang hoạt động",
+  ]);
+  const territory = await service.createTerritory({ wardName: `Phường AM Hợp Lệ ${suffix}` });
+
+  const created = await service.createWardContact(territory.id, {
+    unit: "UBND",
+    department: "Hành chính",
+    fullName: "Nguyễn Văn B",
+    position: "Chủ tịch",
+    amInCharge: staffName,
+  });
+
+  assert.equal(created.am_in_charge, staffName);
+});

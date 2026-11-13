@@ -259,9 +259,16 @@ export class TerritoryService {
     }
   }
 
+  private async assertKnownStaff(staffName: string): Promise<void> {
+    const rows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [staffName]);
+    if (!rows.length) {
+      throw new Error("AM phụ trách không tồn tại");
+    }
+  }
+
   async createWardContact(territoryId: string, data: WardContactInput, operator: string = "Admin") {
-    if (!data.unit || !data.department || !data.fullName || !data.position) {
-      throw new Error("Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Họ tên, Chức vụ)");
+    if (!data.unit || !data.department || !data.position) {
+      throw new Error("Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Chức vụ)");
     }
 
     const territoryExists = await query("SELECT id FROM territories WHERE id = ?", [territoryId]);
@@ -269,17 +276,25 @@ export class TerritoryService {
       throw new Error("Không tìm thấy địa bàn");
     }
 
-    await this.assertNoDuplicateContact(territoryId, data);
+    const fullName = data.fullName || "";
+    const phone = data.phone || "";
+    const amInCharge = data.amInCharge || "";
+    if (amInCharge) {
+      await this.assertKnownStaff(amInCharge);
+    }
+
+    const normalized: WardContactInput = { ...data, fullName, phone, amInCharge };
+    await this.assertNoDuplicateContact(territoryId, normalized);
 
     const id = `WARDC-${Date.now()}`;
     await run(
       "INSERT INTO ward_contacts (id, territory_id, unit, department, full_name, position, phone, am_in_charge) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [id, territoryId, data.unit, data.department, data.fullName, data.position, data.phone || "", data.amInCharge || ""]
+      [id, territoryId, data.unit, data.department, fullName, data.position, phone, amInCharge]
     );
 
     await run(
       'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
-      [`LOG-${Date.now()}`, operator, "Thêm đầu mối phường", `Thêm ${data.fullName} (${data.position}) vào địa bàn ID ${territoryId}`]
+      [`LOG-${Date.now()}`, operator, "Thêm đầu mối phường", `Thêm ${fullName || data.position} (${data.position}) vào địa bàn ID ${territoryId}`]
     );
 
     const created = await query("SELECT * FROM ward_contacts WHERE id = ?", [id]);
@@ -296,11 +311,18 @@ export class TerritoryService {
     const merged: WardContactInput = {
       unit: patch.unit ?? existing.unit,
       department: patch.department ?? existing.department,
-      fullName: patch.fullName ?? existing.full_name,
+      fullName: patch.fullName ?? existing.full_name ?? "",
       position: patch.position ?? existing.position,
-      phone: patch.phone ?? existing.phone,
-      amInCharge: patch.amInCharge ?? existing.am_in_charge,
+      phone: patch.phone ?? existing.phone ?? "",
+      amInCharge: patch.amInCharge ?? existing.am_in_charge ?? "",
     };
+
+    if (!merged.unit || !merged.department || !merged.position) {
+      throw new Error("Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Chức vụ)");
+    }
+    if (merged.amInCharge) {
+      await this.assertKnownStaff(merged.amInCharge);
+    }
 
     await this.assertNoDuplicateContact(existing.territory_id, merged, contactId);
 

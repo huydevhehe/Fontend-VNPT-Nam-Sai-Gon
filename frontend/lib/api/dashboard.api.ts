@@ -1,45 +1,6 @@
 import { AuditLogRecord, StaffRecord } from "@/lib/crm/types/crm.types";
 import { apiFetchRaw } from "./client";
 
-/**
- * Field thô (snake_case) của bảng `staff`, được
- * `backend/src/modules/dashboard/dashboard.service.ts` trả về trực tiếp
- * (SELECT * FROM staff) — không đi qua StaffService nên không camelCase.
- */
-interface DashboardStaffRow {
-  id: string;
-  code: string;
-  name: string;
-  role: string;
-  territory: string;
-  assigned_customers: number;
-  monthly_leads: number;
-  monthly_contracts: number;
-  revenue_executed: number;
-  collection_rate: number;
-  renewal_rate: number;
-  status: string;
-  email: string;
-}
-
-function mapStaffRow(row: DashboardStaffRow): StaffRecord {
-  return {
-    id: row.id,
-    code: row.code,
-    name: row.name,
-    role: row.role as StaffRecord["role"],
-    territory: row.territory,
-    assignedCustomers: Number(row.assigned_customers) || 0,
-    monthlyLeads: Number(row.monthly_leads) || 0,
-    monthlyContracts: Number(row.monthly_contracts) || 0,
-    revenueExecuted: Number(row.revenue_executed) || 0,
-    collectionRate: Number(row.collection_rate) || 0,
-    renewalRate: Number(row.renewal_rate) || 0,
-    status: row.status as StaffRecord["status"],
-    email: row.email,
-  };
-}
-
 export interface DashboardKpis {
   collectionRateImmediate: number;
   collectionRateCumulative: number;
@@ -71,7 +32,9 @@ interface DashboardStatsApiResponse {
   month: string;
   kpis: DashboardKpis;
   territorySummary: DashboardTerritorySummary;
-  staffList: DashboardStaffRow[];
+  // Từ Đợt 5: dashboard.service.ts lấy staffList qua StaffService.getAll(month),
+  // nên đã là camelCase (StaffRecordDto, kèm revenue) — không cần map lại từ snake_case.
+  staffList: StaffRecord[];
   recentLogs: AuditLogRecord[];
 }
 
@@ -101,7 +64,7 @@ export async function getDashboardSummary(
     month: payload.month,
     kpis: payload.kpis,
     territorySummary: payload.territorySummary,
-    staffList: (payload.staffList || []).map(mapStaffRow),
+    staffList: payload.staffList || [],
     recentLogs: payload.recentLogs || [],
   };
 }

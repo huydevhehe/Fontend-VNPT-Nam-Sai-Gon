@@ -309,4 +309,69 @@ test.describe("API Quản lý Nhân viên (POST /api/staff)", () => {
     });
     expect(res.status()).toBe(404);
   });
+
+  test("GET /api/staff?month= trả doanh thu tính từ đơn hàng (đã chốt + đã thu)", async ({
+    request,
+  }) => {
+    const suffix = Date.now();
+    const code = `NV-REV-E2E-${suffix}`;
+    const name = `NV Doanh Thu E2E ${suffix}`;
+    const month = "2026-10";
+
+    const createStaffRes = await request.post(`${API_URL}/staff`, {
+      headers: bearer(adminToken),
+      data: {
+        code,
+        name,
+        role: "AM",
+        territory: "Phường Tân Phong",
+        email: `rev_e2e_${suffix}@vnpt.vn`,
+        password: "Password@123",
+      },
+    });
+    expect(createStaffRes.status()).toBe(201);
+
+    const createOrderRes = await request.post(`${API_URL}/contracts`, {
+      headers: bearer(adminToken),
+      data: {
+        transactionCode: `GD_REV_${suffix}`,
+        customerName: `KH Doanh Thu E2E ${suffix}`,
+        subscriberCodes: [`TB_REV_${suffix}`],
+        totalValue: 8000000,
+        channel: "Trực tiếp",
+        amStaff: name,
+        signedDate: `${month}-10`,
+      },
+    });
+    expect(createOrderRes.status()).toBe(201);
+    const orderId = (await createOrderRes.json()).data.id;
+
+    const addPaymentRes = await request.post(`${API_URL}/contracts/${orderId}/payments`, {
+      headers: bearer(adminToken),
+      data: { amount: 3000000, paidDate: `${month}-12` },
+    });
+    expect(addPaymentRes.status()).toBe(201);
+
+    const staffRes = await request.get(`${API_URL}/staff?month=${month}`, {
+      headers: bearer(adminToken),
+    });
+    expect(staffRes.status()).toBe(200);
+    const list: Array<{
+      name: string;
+      revenue?: { closedMonth: number; closedTotal: number; collectedMonth: number; collectedTotal: number };
+    }> = (await staffRes.json()).data;
+    const found = list.find((s) => s.name === name);
+    expect(found).toBeDefined();
+    expect(found?.revenue?.closedMonth).toBe(8000000);
+    expect(found?.revenue?.closedTotal).toBe(8000000);
+    expect(found?.revenue?.collectedMonth).toBe(3000000);
+    expect(found?.revenue?.collectedTotal).toBe(3000000);
+  });
+
+  test("GET /api/staff?month= sai định dạng trả về 400", async ({ request }) => {
+    const res = await request.get(`${API_URL}/staff?month=2026/10`, {
+      headers: bearer(adminToken),
+    });
+    expect(res.status()).toBe(400);
+  });
 });

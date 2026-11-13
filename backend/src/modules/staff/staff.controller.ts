@@ -11,10 +11,12 @@ const staffService = new StaffService();
 staffRouter.get("/", requireAuth, async (req: Request, res: Response) => {
   try {
     const status = req.query.status as string | undefined;
-    const staff = await staffService.getAll({ status });
+    const month = req.query.month as string | undefined;
+    const staff = await staffService.getAll({ status, month });
     res.json({ success: true, data: staff });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    const statusCode = error instanceof HttpError ? error.status : 500;
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 });
 

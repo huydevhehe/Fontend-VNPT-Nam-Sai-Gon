@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import { query, run, transaction } from "../../database/db.js";
 import { ROLES, USER_STATUS, STAFF_TYPES, STAFF_STATUSES, INACTIVE_USER_STATUS, STAFF_NAME_REFERENCES } from "../../constants/org.js";
 import { HttpError } from "../auth/auth.service.js";
+import { currentMonthVn } from "../../utils/date-vn.js";
+import { computeStaffRevenue, ZERO_STAFF_REVENUE, type StaffRevenue } from "./staff-revenue.service.js";
 
 export function deriveShortName(fullName: string): string {
   const trimmed = (fullName || "").trim();
@@ -67,6 +69,8 @@ export interface StaffRecordDto {
   statusReason?: string | null;
   statusChangedAt?: string | null;
   statusChangedBy?: string | null;
+  /** Doanh thu tính từ đơn hàng (đã chốt/đã thu); chỉ có khi lấy qua getAll(). */
+  revenue?: StaffRevenue;
 }
 
 export interface StaffUpdateInput {
@@ -140,15 +144,23 @@ const MAX_PASSWORD_LENGTH = 72;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class StaffService {
-  async getAll(params?: { status?: string }): Promise<StaffRecordDto[]> {
-    if (params?.status === "active") {
-      const rows = await query<StaffRow>(
-        "SELECT * FROM staff WHERE status = 'Đang hoạt động' ORDER BY code ASC"
-      );
-      return rows.map(toStaffRecord);
-    }
-    const rows = await query<StaffRow>("SELECT * FROM staff ORDER BY code ASC");
-    return rows.map(toStaffRecord);
+  async getAll(params?: { status?: string; month?: string }): Promise<StaffRecordDto[]> {
+    const month = params?.month ?? currentMonthVn();
+    // Ném HttpError 400 ngay nếu tháng sai định dạng, trước khi đọc dữ liệu nhân viên.
+    const revenueMap = await computeStaffRevenue(month);
+
+    const rows =
+      params?.status === "active"
+        ? await query<StaffRow>(
+            "SELECT * FROM staff WHERE status = 'Đang hoạt động' ORDER BY code ASC"
+          )
+        : await query<StaffRow>("SELECT * FROM staff ORDER BY code ASC");
+
+    return rows.map((row) => {
+      const dto = toStaffRecord(row);
+      dto.revenue = revenueMap.get(dto.name.trim()) ?? { ...ZERO_STAFF_REVENUE };
+      return dto;
+    });
   }
 
   async getById(id: string): Promise<StaffRecordDto | null> {

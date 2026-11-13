@@ -195,6 +195,14 @@ export interface WardContactRecord {
 export type StaffStatus = "Đang hoạt động" | "Đình chỉ" | "Ngừng hoạt động" | "Tạm nghỉ";
 export type StaffType = "Chính thức" | "Cộng tác viên";
 
+/** Doanh thu nhân viên tính từ đơn hàng (contracts/contract_payments), theo tháng được chọn. */
+export interface StaffRevenue {
+  closedMonth: number;
+  closedTotal: number;
+  collectedMonth: number;
+  collectedTotal: number;
+}
+
 export interface StaffRecord {
   id: string;
   code: string;
@@ -220,6 +228,8 @@ export interface StaffRecord {
   statusReason?: string | null;
   statusChangedAt?: string | null;
   statusChangedBy?: string | null;
+  /** Doanh thu tính từ đơn hàng; chỉ có khi lấy qua getStaff() với tham số month. */
+  revenue?: StaffRevenue;
 }
 
 // 10. Task

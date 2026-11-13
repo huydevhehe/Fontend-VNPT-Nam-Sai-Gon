@@ -114,3 +114,28 @@ test("sidebar không có menu Import / Export; Quản lý nợ và Gia hạn tr�
   await page.goto("/admin/renewals");
   await expect(page.getByRole("button", { name: "Import file gia hạn" })).toBeVisible();
 });
+
+test("[admin] trang Nhân viên có 4 cột doanh thu mới; đổi tháng gọi lại API /staff?month=", async ({
+  page,
+}) => {
+  await loginAs(page, "admin");
+  await page.goto("/admin/employees");
+
+  await expect(page.getByRole("columnheader", { name: "Đã chốt — Tháng" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Đã chốt — Tổng" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Đã thu — Tháng" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Đã thu — Tổng" })).toBeVisible();
+  // Cột "Doanh thu thực hiện" cũ không còn.
+  await expect(page.getByRole("columnheader", { name: "Doanh thu thực hiện" })).toHaveCount(0);
+
+  const monthInput = page.locator("#revenue-month");
+  await expect(monthInput).toBeVisible();
+
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (res) => res.url().includes("/staff") && res.url().includes("month=2026-09")
+    ),
+    monthInput.fill("2026-09"),
+  ]);
+  expect(response.status()).toBe(200);
+});

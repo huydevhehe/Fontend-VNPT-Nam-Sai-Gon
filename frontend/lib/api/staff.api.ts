@@ -39,8 +39,11 @@ export type CreateStaffInput = Pick<
 /** Kết quả tạo nhân viên; `initialPassword` chỉ có khi dùng mật khẩu mặc định (backward-compat). */
 export type CreatedStaffRecord = StaffRecord & { initialPassword?: string };
 
-export function getStaff(params?: { status?: string }): Promise<StaffRecord[]> {
-  const query = params?.status ? `?status=${encodeURIComponent(params.status)}` : "";
+export function getStaff(params?: { status?: string; month?: string }): Promise<StaffRecord[]> {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set("status", params.status);
+  if (params?.month) qs.set("month", params.month);
+  const query = qs.toString() ? `?${qs.toString()}` : "";
   return apiFetch<StaffRecord[]>(`/staff${query}`);
 }
 

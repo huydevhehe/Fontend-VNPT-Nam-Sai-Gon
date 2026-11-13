@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import { query, run } from "../../database/db.js";
+import { HttpError } from "../auth/auth.service.js";
 
 export interface RenewalRow {
   id: string;
@@ -36,6 +37,11 @@ export class RenewalService {
 
     sql += " ORDER BY created_at DESC";
     return query<RenewalRow>(sql, params);
+  }
+
+  async getById(id: string): Promise<RenewalRow | null> {
+    const rows = await query<RenewalRow>("SELECT * FROM renewals WHERE id = ?", [id]);
+    return rows[0] ?? null;
   }
 
   async importExcel(fileBuffer: Buffer, cohort: string = "THÁNG T", operator: string = "Admin") {
@@ -132,7 +138,7 @@ export class RenewalService {
   async updateStatus(id: string, status: string, failureReason?: string, operator: string = "Admin") {
     const existing = await query<RenewalRow>("SELECT * FROM renewals WHERE id = ?", [id]);
     if (!existing.length) {
-      throw new Error("Không tìm thấy giao dịch gia hạn");
+      throw new HttpError(404, "Không tìm thấy giao dịch gia hạn");
     }
 
     await run(

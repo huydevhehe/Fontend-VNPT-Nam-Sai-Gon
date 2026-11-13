@@ -1,20 +1,52 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Receipt, UploadCloud, CheckCircle2, AlertCircle } from "lucide-react";
+import { Receipt, UploadCloud, CheckCircle2, AlertCircle, Plus, X } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { DebtRecord } from "@/lib/crm/types/crm.types";
-import { getDebts, importDebtsExcel } from "@/lib/api/debts.api";
+import { DebtRecord, StaffRecord } from "@/lib/crm/types/crm.types";
+import { createDebt, getDebts, importDebtsExcel } from "@/lib/api/debts.api";
+import { getStaff } from "@/lib/api/staff.api";
+import { useAuth } from "@/lib/auth/auth-context";
+
+const SERVICE_GROUPS = ["BRCĐ", "CNTT", "Di động"] as const;
+
+const EMPTY_FORM = {
+  staffName: "",
+  serviceGroup: SERVICE_GROUPS[0] as string,
+  paymentCode: "",
+  subscriberCode: "",
+  customerName: "",
+  installationAddress: "",
+  immediateDebt: "",
+  cumulativeDebt: "",
+  month: new Date().toISOString().slice(0, 7),
+};
 
 export default function DebtManagementPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+
   const [data, setData] = useState<DebtRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<"all" | "immediate" | "cumulative">("all");
+
+  const [staffList, setStaffList] = useState<StaffRecord[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState(EMPTY_FORM);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    getStaff()
+      .then(setStaffList)
+      .catch(() => setStaffList([]));
+  }, [isAdmin]);
 
   async function loadDebts() {
     setLoading(true);
@@ -62,6 +94,34 @@ export default function DebtManagementPage() {
     if (activeTab === "cumulative") return item.cumulativeDebt > 0;
     return true;
   });
+
+  async function handleCreateSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setCreateError(null);
+    setCreating(true);
+    try {
+      await createDebt({
+        staffName: createForm.staffName,
+        serviceGroup: createForm.serviceGroup,
+        paymentCode: createForm.paymentCode,
+        subscriberCode: createForm.subscriberCode,
+        customerName: createForm.customerName,
+        installationAddress: createForm.installationAddress,
+        immediateDebt: Number(createForm.immediateDebt) || 0,
+        cumulativeDebt: Number(createForm.cumulativeDebt) || 0,
+        month: createForm.month,
+      });
+      setShowCreateModal(false);
+      setCreateForm(EMPTY_FORM);
+      await loadDebts();
+    } catch (err) {
+      setCreateError(
+        err instanceof Error ? err.message : "Thêm nợ lẻ thất bại. Vui lòng thử lại."
+      );
+    } finally {
+      setCreating(false);
+    }
+  }
 
   const columns: Column<DebtRecord>[] = [
     {
@@ -140,31 +200,40 @@ export default function DebtManagementPage() {
             Khớp chuẩn 8 cột Sheet &apos;THU NGAY , LŨY KẾ&apos; từ file mẫu import+CSKH.xlsx
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                handleFileSelected(file);
-              }
-              e.target.value = "";
-            }}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark disabled:opacity-60"
-          >
-            <UploadCloud className="h-4 w-4" />
-            <span className="btn-label">
-              {importing ? "Đang import..." : "Import file nợ"}
-            </span>
-          </button>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleFileSelected(file);
+                }
+                e.target.value = "";
+              }}
+            />
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-vnpt/30 bg-white px-3.5 text-xs font-bold text-vnpt shadow-xs hover:bg-blue-50"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="btn-label">Thêm nợ lẻ</span>
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark disabled:opacity-60"
+            >
+              <UploadCloud className="h-4 w-4" />
+              <span className="btn-label">
+                {importing ? "Đang import..." : "Import file nợ"}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 4 KPI Cards */}
@@ -249,9 +318,222 @@ export default function DebtManagementPage() {
           subtitle="Dữ liệu chi tiết từng mã thanh toán và tình trạng gạch nợ"
           columns={columns}
           data={filteredByTab}
+          filters={[
+            ...(isAdmin
+              ? [
+                  {
+                    id: "staffName",
+                    label: "nhân viên",
+                    getValue: (row: DebtRecord) => row.staffName,
+                  },
+                ]
+              : []),
+            {
+              id: "serviceGroup",
+              label: "nhóm dịch vụ",
+              getValue: (row: DebtRecord) => row.serviceGroup,
+            },
+            {
+              id: "status",
+              label: "trạng thái",
+              getValue: (row: DebtRecord) => row.status,
+            },
+            {
+              id: "month",
+              label: "tháng",
+              getValue: (row: DebtRecord) => row.month,
+            },
+          ]}
           searchPlaceholder="Tìm mã thuê bao, tên KH, nhân viên..."
           exportFileName="vnpt_cong_no"
         />
+      )}
+
+      {/* Modal Thêm nợ lẻ (Admin) */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Thêm nợ lẻ</h3>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSubmit} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Nhân viên
+                  </label>
+                  <select
+                    required
+                    value={createForm.staffName}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, staffName: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  >
+                    <option value="">-- Chọn nhân viên --</option>
+                    {staffList.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Nhóm dịch vụ
+                  </label>
+                  <select
+                    required
+                    value={createForm.serviceGroup}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, serviceGroup: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  >
+                    {SERVICE_GROUPS.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Mã thanh toán
+                  </label>
+                  <input
+                    required
+                    value={createForm.paymentCode}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, paymentCode: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Mã thuê bao
+                  </label>
+                  <input
+                    required
+                    value={createForm.subscriberCode}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, subscriberCode: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Tên khách hàng
+                </label>
+                <input
+                  required
+                  value={createForm.customerName}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, customerName: e.target.value })
+                  }
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Địa chỉ lắp đặt
+                </label>
+                <input
+                  value={createForm.installationAddress}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, installationAddress: e.target.value })
+                  }
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Nợ thu ngay (₫)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={createForm.immediateDebt}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, immediateDebt: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Nợ lũy kế (₫)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={createForm.cumulativeDebt}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, cumulativeDebt: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">
+                    Tháng
+                  </label>
+                  <input
+                    type="month"
+                    required
+                    value={createForm.month}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, month: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {createError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                  {createError}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="rounded-xl bg-vnpt px-4 py-2 text-xs font-bold text-white hover:bg-vnpt-dark disabled:opacity-60"
+                >
+                  {creating ? "Đang lưu..." : "Lưu nợ lẻ"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

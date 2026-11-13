@@ -14,6 +14,7 @@ import {
   updateRenewalStatus,
 } from "@/lib/api/renewals.api";
 import StatusSelect from "@/components/admin/shared/StatusSelect";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const RENEWAL_STATUS_OPTIONS: RenewalStatus[] = [
   "Chưa xử lý",
@@ -23,6 +24,9 @@ const RENEWAL_STATUS_OPTIONS: RenewalStatus[] = [
 ];
 
 export default function RenewalsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+
   const [data, setData] = useState<RenewalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -180,31 +184,33 @@ export default function RenewalsPage() {
             Theo dõi riêng 2 file Tháng T và Tháng T-1 theo chuẩn Sheet &apos;GIA HẠN&apos;
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                handleFileSelected(file);
-              }
-              e.target.value = "";
-            }}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark disabled:opacity-60"
-          >
-            <UploadCloud className="h-4 w-4" />
-            <span className="btn-label">
-              {importing ? "Đang import..." : "Import file gia hạn"}
-            </span>
-          </button>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleFileSelected(file);
+                }
+                e.target.value = "";
+              }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark disabled:opacity-60"
+            >
+              <UploadCloud className="h-4 w-4" />
+              <span className="btn-label">
+                {importing ? "Đang import..." : "Import file gia hạn"}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* KPI Cards */}
@@ -290,6 +296,22 @@ export default function RenewalsPage() {
           subtitle="Quản lý chống trùng mã giao dịch theo từng thuê bao"
           columns={columns}
           data={filteredData}
+          filters={[
+            ...(isAdmin
+              ? [
+                  {
+                    id: "staffName",
+                    label: "nhân viên",
+                    getValue: (row: RenewalRecord) => row.staffName,
+                  },
+                ]
+              : []),
+            {
+              id: "status",
+              label: "trạng thái",
+              getValue: (row: RenewalRecord) => row.status,
+            },
+          ]}
           searchPlaceholder="Tìm mã giao dịch, mã thuê bao, khách hàng..."
           exportFileName="vnpt_gia_han"
         />

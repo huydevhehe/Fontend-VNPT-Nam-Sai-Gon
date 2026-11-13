@@ -58,6 +58,29 @@ export async function getDebts(
   return rows.map(mapDebtRow);
 }
 
+export interface CreateSingleDebtInput {
+  staffName: string;
+  serviceGroup: string;
+  paymentCode: string;
+  subscriberCode: string;
+  customerName: string;
+  installationAddress?: string;
+  immediateDebt: number;
+  cumulativeDebt: number;
+  month: string;
+}
+
+/** Admin thêm 1 bản ghi nợ lẻ (ngoài luồng import Excel). `POST /api/debts`. */
+export async function createDebt(
+  input: CreateSingleDebtInput
+): Promise<DebtRecord> {
+  const row = await apiFetch<DebtApiRow>("/debts", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return mapDebtRow(row);
+}
+
 export interface ImportDebtsResult {
   success: boolean;
   sheetName: string;

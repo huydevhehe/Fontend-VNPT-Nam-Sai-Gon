@@ -1,5 +1,18 @@
 import * as XLSX from "xlsx";
 import { query, run } from "../../database/db.js";
+import { HttpError } from "../auth/auth.service.js";
+
+export interface CreateSingleDebtInput {
+  staffName: string;
+  serviceGroup: string;
+  paymentCode: string;
+  subscriberCode: string;
+  customerName: string;
+  installationAddress?: string;
+  immediateDebt: number;
+  cumulativeDebt: number;
+  month: string;
+}
 
 export interface DebtRow {
   id: string;
@@ -37,6 +50,93 @@ export class DebtService {
 
     sql += " ORDER BY created_at DESC";
     return query<DebtRow>(sql, params);
+  }
+
+  async getById(id: string): Promise<DebtRow | null> {
+    const rows = await query<DebtRow>("SELECT * FROM debts WHERE id = ?", [id]);
+    return rows[0] ?? null;
+  }
+
+  /** Admin thêm nợ lẻ thủ công (ngoài luồng import Excel). */
+  async createSingle(input: CreateSingleDebtInput, operator: string = "Admin"): Promise<DebtRow> {
+    const staffName = (input.staffName || "").trim();
+    const serviceGroup = (input.serviceGroup || "").trim();
+    const paymentCode = (input.paymentCode || "").trim();
+    const subscriberCode = (input.subscriberCode || "").trim();
+    const customerName = (input.customerName || "").trim();
+    const installationAddress = (input.installationAddress || "").trim();
+    const month = (input.month || "").trim();
+
+    if (!staffName) {
+      throw new HttpError(400, "Vui lòng chọn nhân viên");
+    }
+    if (!serviceGroup) {
+      throw new HttpError(400, "Vui lòng chọn nhóm dịch vụ");
+    }
+    if (!paymentCode) {
+      throw new HttpError(400, "Vui lòng nhập mã thanh toán");
+    }
+    if (!subscriberCode) {
+      throw new HttpError(400, "Vui lòng nhập mã thuê bao");
+    }
+    if (!customerName) {
+      throw new HttpError(400, "Vui lòng nhập tên khách hàng");
+    }
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      throw new HttpError(400, "Tháng phải theo định dạng YYYY-MM");
+    }
+
+    const immediateDebt = Number(input.immediateDebt);
+    const cumulativeDebt = Number(input.cumulativeDebt);
+    if (!Number.isFinite(immediateDebt) || immediateDebt < 0) {
+      throw new HttpError(400, "Nợ thu ngay phải là số không âm");
+    }
+    if (!Number.isFinite(cumulativeDebt) || cumulativeDebt < 0) {
+      throw new HttpError(400, "Nợ lũy kế phải là số không âm");
+    }
+
+    const staffRows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [staffName]);
+    if (!staffRows.length) {
+      throw new HttpError(400, "Nhân viên không tồn tại");
+    }
+
+    const id = `DEBT-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    await run(
+      `INSERT INTO debts (
+        id, staff_name, service_group, payment_code, subscriber_code,
+        customer_name, installation_address, immediate_debt, cumulative_debt,
+        status, month
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        staffName,
+        serviceGroup,
+        paymentCode,
+        subscriberCode,
+        customerName,
+        installationAddress,
+        immediateDebt,
+        cumulativeDebt,
+        "Nợ cước",
+        month,
+      ]
+    );
+
+    await run(
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+      [
+        `LOG-${Date.now()}`,
+        operator,
+        "Thêm nợ lẻ",
+        `Thêm bản ghi nợ cho thuê bao ${subscriberCode} (${customerName}) tháng ${month}`,
+      ]
+    );
+
+    const created = await this.getById(id);
+    if (!created) {
+      throw new HttpError(500, "Không thể tạo bản ghi công nợ");
+    }
+    return created;
   }
 
   async importExcel(fileBuffer: Buffer, month: string, operator: string = "Admin") {
@@ -118,12 +218,12 @@ export class DebtService {
 
   async gachNo(id: string, amount: number, documentRef?: string, operator: string = "Admin") {
     if (Number.isNaN(amount) || amount < 0) {
-      throw new Error("Số tiền thu được không được âm");
+      throw new HttpError(400, "Số tiền thu được không được âm");
     }
 
     const existing = await query<DebtRow>("SELECT * FROM debts WHERE id = ?", [id]);
     if (!existing.length) {
-      throw new Error("Không tìm thấy bản ghi công nợ");
+      throw new HttpError(404, "Không tìm thấy bản ghi công nợ");
     }
 
     await run(

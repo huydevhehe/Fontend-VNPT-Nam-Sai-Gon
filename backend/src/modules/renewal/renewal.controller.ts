@@ -105,3 +105,16 @@ renewalRouter.patch("/:id/status", requireAuth, async (req: Request, res: Respon
   }
 });
 
+// PATCH /api/renewals/:id/dates — Admin sửa tay ngày hết hạn / ngày gia hạn thành công
+renewalRouter.patch("/:id/dates", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { expiryDate, renewedAt } = req.body ?? {};
+    const updated = await renewalService.updateDates(id, { expiryDate, renewedAt });
+    res.json({ success: true, data: updated });
+  } catch (error: any) {
+    const statusCode = error instanceof HttpError ? error.status : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+

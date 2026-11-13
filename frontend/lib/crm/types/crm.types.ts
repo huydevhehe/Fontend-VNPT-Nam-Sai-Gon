@@ -46,6 +46,8 @@ export interface RenewalRecord {
   cohort: "THÁNG T" | "THÁNG T-1";
   status: RenewalStatus;
   failureReason?: RenewalFailureReason;
+  expiryDate?: string | null; // Ngày hết hạn dịch vụ (YYYY-MM-DD)
+  renewedAt?: string | null; // Ngày gia hạn thành công (YYYY-MM-DD)
 }
 
 // 3. Customer

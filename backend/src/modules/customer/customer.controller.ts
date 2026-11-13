@@ -40,6 +40,26 @@ customerRouter.post("/", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+customerRouter.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const customer = await customerService.getById(req.params.id);
+    res.json({ success: true, data: customer });
+  } catch (error: any) {
+    sendError(res, error);
+  }
+});
+
+customerRouter.patch("/:id", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const operator = { name: req.user?.name ?? req.user?.id ?? "Admin", role: req.user?.role ?? "" };
+    const updated = await customerService.update(id, req.body ?? {}, operator);
+    res.json({ success: true, data: updated });
+  } catch (error: any) {
+    sendError(res, error);
+  }
+});
+
 customerRouter.patch("/:id/transfer", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

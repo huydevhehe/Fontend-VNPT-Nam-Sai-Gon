@@ -1,10 +1,22 @@
 import { query, run, transaction } from "../../database/db.js";
-import { CUSTOMER_GROUPS } from "../../constants/org.js";
+import { CUSTOMER_GROUPS, LEAD_CHANNELS } from "../../constants/org.js";
+import { normalizeTaxCode } from "../../utils/tax-code.js";
 
 const GROUP_LABEL: Record<string, string> = {
   "Tự phát triển": "KH PTM",
-  "Tập hiện hữu": "KHDN chăm",
+  "Tập hiện hữu": "KH địa bàn",
+  "PTM địa bàn": "PTM địa bàn",
 };
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(email: unknown): boolean {
+  return typeof email === "string" && EMAIL_PATTERN.test(email);
+}
+
+function isValidChannel(channel: unknown): boolean {
+  return typeof channel === "string" && (LEAD_CHANNELS as readonly string[]).includes(channel);
+}
 
 export interface BatchCustomerItem {
   identityCode?: string;
@@ -33,7 +45,7 @@ export interface CustomerBatchResult {
 export class CustomerServiceError extends Error {
   constructor(
     message: string,
-    public readonly status: 400 | 404
+    public readonly status: 400 | 403 | 404
   ) {
     super(message);
   }
@@ -53,21 +65,26 @@ export class CustomerService {
       throw new CustomerServiceError("Nhóm khách hàng không hợp lệ", 400);
     }
 
-    let sql = "SELECT * FROM customers WHERE 1=1";
+    let sql = `
+      SELECT c.*, t.ward_name AS territory_name
+      FROM customers c
+      LEFT JOIN territories t ON t.id = c.territory_id
+      WHERE 1=1
+    `;
     const params: any[] = [];
 
     if (search) {
-      sql += " AND (name LIKE ? OR identity_code LIKE ? OR phone LIKE ?)";
+      sql += " AND (c.name LIKE ? OR c.identity_code LIKE ? OR c.phone LIKE ?)";
       const pattern = `%${search}%`;
       params.push(pattern, pattern, pattern);
     }
 
     if (group) {
-      sql += " AND customer_group = ?";
+      sql += " AND c.customer_group = ?";
       params.push(group);
     }
 
-    sql += " ORDER BY created_at DESC";
+    sql += " ORDER BY c.created_at DESC";
     return query(sql, params);
   }
 
@@ -82,9 +99,29 @@ export class CustomerService {
     amStaff?: string;
     amCaringStaff?: string;
     handoverBatch?: string;
+    territoryId?: string;
+    customerCode?: string;
+    status?: string;
+    teamId?: string;
+    salesChannel?: string;
+    contactName?: string;
+    contactEmail?: string;
+    billingName?: string;
+    billingPhone?: string;
+    billingEmail?: string;
+    note?: string;
   }) {
     if (!isValidGroup(data.customerGroup)) {
       throw new CustomerServiceError("Nhóm khách hàng không hợp lệ", 400);
+    }
+    if (data.salesChannel && !isValidChannel(data.salesChannel)) {
+      throw new CustomerServiceError("Kênh bán không hợp lệ", 400);
+    }
+    if (data.contactEmail && !isValidEmail(data.contactEmail)) {
+      throw new CustomerServiceError("Email liên hệ không hợp lệ", 400);
+    }
+    if (data.billingEmail && !isValidEmail(data.billingEmail)) {
+      throw new CustomerServiceError("Email thanh toán không hợp lệ", 400);
     }
 
     const handoverBatch =
@@ -95,16 +132,18 @@ export class CustomerService {
     // AM chăm sóc (CSKH) là field độc lập với AM bán hàng — chỉ dùng amStaff làm
     // mặc định khi người tạo không chỉ định rõ amCaringStaff, không ép buộc trùng nhau.
     const amCaringStaff = data.amCaringStaff || amStaff;
+    const identityCode = data.identityCode ? normalizeTaxCode(data.identityCode) : "";
 
     await run(
       `INSERT INTO customers (
         id, name, identity_code, type, customer_group, phone, address, services, am_staff, am_caring_staff,
-        handover_batch, handover_date
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        handover_batch, handover_date, territory_id, customer_code, status, team_id, sales_channel,
+        contact_name, contact_email, billing_name, billing_phone, billing_email, note
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.name,
-        data.identityCode || null,
+        identityCode || null,
         data.type,
         data.customerGroup,
         data.phone || null,
@@ -114,12 +153,134 @@ export class CustomerService {
         amCaringStaff,
         handoverBatch || null,
         handoverBatch ? today() : null,
+        data.territoryId || null,
+        data.customerCode || null,
+        data.status || null,
+        data.teamId || null,
+        data.salesChannel || null,
+        data.contactName || null,
+        data.contactEmail || null,
+        data.billingName || null,
+        data.billingPhone || null,
+        data.billingEmail || null,
+        data.note || null,
       ]
     );
 
     const rows = await query("SELECT * FROM customers WHERE id = ?", [id]);
 
     return { success: true, customer: rows[0], message: "Thêm khách hàng thành công" };
+  }
+
+  /** Lấy 1 khách hàng kèm tên địa bàn (join territories); 404 nếu không có. */
+  async getById(id: string) {
+    const rows = await query<any>(
+      `SELECT c.*, t.ward_name AS territory_name
+       FROM customers c
+       LEFT JOIN territories t ON t.id = c.territory_id
+       WHERE c.id = ?`,
+      [id]
+    );
+    if (rows.length === 0) {
+      throw new CustomerServiceError("Không tìm thấy khách hàng", 404);
+    }
+    return rows[0];
+  }
+
+  /**
+   * Sửa thông tin khách hàng. KHÔNG cho đổi am_staff/am_caring_staff qua route
+   * này (đã có route điều chuyển riêng, admin-only). Admin sửa được mọi khách;
+   * AM chỉ sửa được khách mình đang phụ trách (am_staff hoặc am_caring_staff
+   * khớp tên người gọi, so sánh đã trim).
+   */
+  async update(
+    id: string,
+    patch: Record<string, unknown>,
+    operator: { name: string; role: string }
+  ) {
+    const existingRows = await query<any>("SELECT * FROM customers WHERE id = ?", [id]);
+    if (existingRows.length === 0) {
+      throw new CustomerServiceError("Không tìm thấy khách hàng", 404);
+    }
+    const existing = existingRows[0];
+
+    if (operator.role !== "Admin") {
+      const actor = (operator.name || "").trim();
+      const isOwner =
+        (existing.am_staff || "").trim() === actor || (existing.am_caring_staff || "").trim() === actor;
+      if (!isOwner) {
+        throw new CustomerServiceError("Bạn chỉ được sửa khách hàng mình đang phụ trách", 403);
+      }
+    }
+
+    if ("amStaff" in patch || "amCaringStaff" in patch) {
+      throw new CustomerServiceError(
+        "Không thể đổi AM phụ trách qua route này, dùng điều chuyển",
+        400
+      );
+    }
+
+    const fieldMap: Record<string, string> = {
+      name: "name",
+      identityCode: "identity_code",
+      type: "type",
+      customerGroup: "customer_group",
+      phone: "phone",
+      address: "address",
+      territoryId: "territory_id",
+      customerCode: "customer_code",
+      status: "status",
+      teamId: "team_id",
+      salesChannel: "sales_channel",
+      contactName: "contact_name",
+      contactEmail: "contact_email",
+      billingName: "billing_name",
+      billingPhone: "billing_phone",
+      billingEmail: "billing_email",
+      note: "note",
+    };
+
+    if (patch.customerGroup !== undefined && !isValidGroup(patch.customerGroup)) {
+      throw new CustomerServiceError("Nhóm khách hàng không hợp lệ", 400);
+    }
+    if (patch.salesChannel !== undefined && patch.salesChannel && !isValidChannel(patch.salesChannel)) {
+      throw new CustomerServiceError("Kênh bán không hợp lệ", 400);
+    }
+    if (patch.contactEmail !== undefined && patch.contactEmail && !isValidEmail(patch.contactEmail)) {
+      throw new CustomerServiceError("Email liên hệ không hợp lệ", 400);
+    }
+    if (patch.billingEmail !== undefined && patch.billingEmail && !isValidEmail(patch.billingEmail)) {
+      throw new CustomerServiceError("Email thanh toán không hợp lệ", 400);
+    }
+    if (patch.identityCode !== undefined && patch.identityCode) {
+      patch.identityCode = normalizeTaxCode(patch.identityCode);
+    }
+
+    const sets: string[] = [];
+    const params: any[] = [];
+    for (const [key, column] of Object.entries(fieldMap)) {
+      if (key in patch) {
+        sets.push(`${column} = ?`);
+        params.push(patch[key] ?? null);
+      }
+    }
+
+    if (sets.length === 0) {
+      return existing;
+    }
+
+    params.push(id);
+    await run(`UPDATE customers SET ${sets.join(", ")} WHERE id = ?`, params);
+
+    await this.logTransfer(
+      id,
+      operator.name || "Admin",
+      "Sửa thông tin khách hàng",
+      `Sửa khách ${id}: cập nhật ${Object.keys(patch).join(", ")}`
+    );
+
+    const updatedRows = await query<any>("SELECT * FROM customers WHERE id = ?", [id]);
+    return updatedRows[0];
   }
 
   private async loadForTransfer(id: string, newStaff: unknown) {

@@ -25,7 +25,10 @@ export const LEAD_GROUP_RENAMES: Record<string, string> = {
   "Khách hiện hữu mua thêm": "Lead bán chéo DV",
 };
 
-export const CUSTOMER_GROUPS = ["Tự phát triển", "Tập hiện hữu"] as const;
+export const CUSTOMER_GROUPS = ["Tự phát triển", "Tập hiện hữu", "PTM địa bàn"] as const;
+
+export const DOCUMENT_TYPES = ["GPKD", "CCCD", "KHAC"] as const;
+export type DocumentType = (typeof DOCUMENT_TYPES)[number];
 
 export const WARD_UNITS: readonly { unit: string; positions: readonly string[] }[] = [
   { unit: "Lãnh đạo Phường", positions: ["Bí thư", "Chủ tịch", "Phó chủ tịch"] },

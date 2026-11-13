@@ -23,6 +23,19 @@ interface CustomerApiRow {
   am_caring_staff?: string | null;
   handover_batch?: string | null;
   handover_date?: string | null;
+  territory_id?: string | null;
+  territory_name?: string | null;
+  customer_code?: string | null;
+  status?: string | null;
+  team_id?: string | null;
+  team_name?: string | null;
+  sales_channel?: string | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+  billing_name?: string | null;
+  billing_phone?: string | null;
+  billing_email?: string | null;
+  note?: string | null;
 }
 
 function mapCustomerRow(row: CustomerApiRow): CustomerRecord {
@@ -45,6 +58,19 @@ function mapCustomerRow(row: CustomerApiRow): CustomerRecord {
     amCaringStaff: row.am_caring_staff || "",
     handoverBatch: row.handover_batch || "",
     handoverDate: row.handover_date || "",
+    territoryId: row.territory_id || undefined,
+    territoryName: row.territory_name || undefined,
+    customerCode: row.customer_code || undefined,
+    status: row.status || undefined,
+    teamId: row.team_id || undefined,
+    teamName: row.team_name || undefined,
+    salesChannel: row.sales_channel || undefined,
+    contactName: row.contact_name || undefined,
+    contactEmail: row.contact_email || undefined,
+    billingName: row.billing_name || undefined,
+    billingPhone: row.billing_phone || undefined,
+    billingEmail: row.billing_email || undefined,
+    note: row.note || undefined,
   };
 }
 
@@ -72,6 +98,35 @@ export interface CreateCustomerInput {
   amStaff?: string;
   amCaringStaff?: string;
   handoverBatch?: string;
+  territoryId?: string;
+  customerCode?: string;
+  status?: string;
+  teamId?: string;
+  salesChannel?: string;
+  contactName?: string;
+  contactEmail?: string;
+  billingName?: string;
+  billingPhone?: string;
+  billingEmail?: string;
+  note?: string;
+}
+
+export type UpdateCustomerInput = Partial<Omit<CreateCustomerInput, "amStaff" | "amCaringStaff">>;
+
+export async function getCustomer(id: string): Promise<CustomerRecord> {
+  const row = await apiFetch<CustomerApiRow>(`/customers/${encodeURIComponent(id)}`);
+  return mapCustomerRow(row);
+}
+
+export async function updateCustomer(
+  id: string,
+  patch: UpdateCustomerInput
+): Promise<CustomerRecord> {
+  const row = await apiFetch<CustomerApiRow>(`/customers/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+  return mapCustomerRow(row);
 }
 
 /**

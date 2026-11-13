@@ -29,6 +29,16 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("customers", "handover_batch", "TEXT");
   await ensureColumn("customers", "handover_date", "TEXT");
   await ensureColumn("customers", "territory_id", "TEXT");
+  await ensureColumn("customers", "customer_code", "TEXT");
+  await ensureColumn("customers", "status", "TEXT");
+  await ensureColumn("customers", "team_id", "TEXT");
+  await ensureColumn("customers", "sales_channel", "TEXT");
+  await ensureColumn("customers", "contact_name", "TEXT");
+  await ensureColumn("customers", "contact_email", "TEXT");
+  await ensureColumn("customers", "billing_name", "TEXT");
+  await ensureColumn("customers", "billing_phone", "TEXT");
+  await ensureColumn("customers", "billing_email", "TEXT");
+  await ensureColumn("customers", "note", "TEXT");
 
   await ensureColumn("leads", "territory_id", "TEXT");
   await ensureColumn("leads", "referred_by_ctv_id", "TEXT");

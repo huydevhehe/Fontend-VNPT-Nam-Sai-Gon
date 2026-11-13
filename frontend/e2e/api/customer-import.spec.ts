@@ -101,9 +101,20 @@ test.describe("API Import khách hàng + xử lý trùng (POST /api/customers/im
     expect(summary.duplicate).toBe(2);
     expect(summary.ptmConflict).toBe(1);
 
-    const newRow = rows.find((r: any) => r.row.name === `Công ty Mới ${suffix}`);
-    const dupRow = rows.find((r: any) => r.row.name === `Công ty Trùng MST ${suffix}`);
-    const ptmRow = rows.find((r: any) => r.row.name === `Công ty Trùng PTM ${suffix}`);
+    interface PreviewClassifiedRow {
+      row: { name: string; [key: string]: unknown };
+      status: string;
+      ptmConflict: boolean;
+      matches: { customerId?: string; matchedFields: string[] }[];
+    }
+    const typedRows = rows as PreviewClassifiedRow[];
+
+    const newRow = typedRows.find((r) => r.row.name === `Công ty Mới ${suffix}`);
+    const dupRow = typedRows.find((r) => r.row.name === `Công ty Trùng MST ${suffix}`);
+    const ptmRow = typedRows.find((r) => r.row.name === `Công ty Trùng PTM ${suffix}`);
+    if (!newRow || !dupRow || !ptmRow) {
+      throw new Error("Thiếu dòng preview mong đợi");
+    }
 
     expect(newRow.status).toBe("new");
     expect(dupRow.status).toBe("duplicate");
@@ -142,10 +153,12 @@ test.describe("API Import khách hàng + xử lý trùng (POST /api/customers/im
       { headers: bearer(adminToken) }
     );
     const listBody = await listRes.json();
-    const createdRow = listBody.data.find((c: any) => c.name === `Công ty Mới ${suffix}`);
+    const createdRow = (listBody.data as { name: string; identity_code: string; customer_group: string }[]).find(
+      (c) => c.name === `Công ty Mới ${suffix}`
+    );
     expect(createdRow).toBeTruthy();
-    expect(createdRow.identity_code).toBe(`0${newTaxCode}`);
-    expect(createdRow.customer_group).toBe("Tập hiện hữu");
+    expect(createdRow?.identity_code).toBe(`0${newTaxCode}`);
+    expect(createdRow?.customer_group).toBe("Tập hiện hữu");
 
     // Khách PTM đã chuyển thành PTM địa bàn
     const ptmCheckRes = await request.get(`${API_URL}/customers/${ptmCustomer.id}`, {

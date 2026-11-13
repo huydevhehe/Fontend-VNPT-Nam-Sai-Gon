@@ -38,6 +38,7 @@ import CustomerForm, {
   CustomerFormValues,
   customerToFormValues,
 } from "@/components/admin/customer/CustomerForm";
+import CustomerImportWizard from "@/components/admin/customer/CustomerImportWizard";
 
 
 export default function CustomersPage() {
@@ -80,6 +81,10 @@ export default function CustomersPage() {
   // Team khách hàng (Đợt 7, Task 2)
   const [teams, setTeams] = useState<CustomerTeamRecord[]>([]);
   const [showTeamManager, setShowTeamManager] = useState(false);
+
+  // Import khách hàng (xử lý trùng) — Đợt 8, Task 4. Luồng độc lập với modal
+  // "Nhập đợt KHDN chăm" cũ (showBatchModal), không thay thế.
+  const [showImportWizard, setShowImportWizard] = useState(false);
 
   function loadTeams() {
     getCustomerTeams()
@@ -544,6 +549,15 @@ export default function CustomersPage() {
               <span className="btn-label">Nhập đợt KHDN chăm</span>
             </button>
           )}
+          {isAdmin && (
+            <button
+              onClick={() => setShowImportWizard(true)}
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-600 shadow-xs hover:bg-slate-50 transition-colors"
+            >
+              <UploadCloud className="h-4 w-4" />
+              <span className="btn-label">Import khách hàng</span>
+            </button>
+          )}
           <button
             onClick={() => {
               setFormError(null);
@@ -638,6 +652,18 @@ export default function CustomersPage() {
           ]}
           searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
           exportFileName="vnpt_khach_hang"
+        />
+      )}
+
+      {/* Import khách hàng (xử lý trùng) — Đợt 8 */}
+      {showImportWizard && (
+        <CustomerImportWizard
+          territories={territories}
+          staffNames={staffNames}
+          onClose={() => setShowImportWizard(false)}
+          onImported={() => {
+            getCustomers().then(setData).catch(() => {});
+          }}
         />
       )}
 

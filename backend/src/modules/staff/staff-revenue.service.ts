@@ -52,24 +52,27 @@ const CONTRACT_MONTH_EXPR = `SUBSTRING(COALESCE(NULLIF(signed_date, ''), to_char
 export async function computeStaffRevenue(month: string): Promise<Map<string, StaffRevenue>> {
   assertValidMonth(month);
 
+  // GROUP BY TRIM(...) — nếu không trim ở SQL, 2 giá trị am_staff lệch khoảng trắng
+  // sẽ bị tách thành 2 nhóm riêng, rồi khi JS trim() để ghép map sẽ ghi đè mất
+  // nhóm trước đó thay vì cộng dồn (xem rủi ro #1, mục 8 00-tong-quan.md).
   const closedRows = await query<ClosedRevenueRow>(
-    `SELECT am_staff AS staff_name,
+    `SELECT TRIM(am_staff) AS staff_name,
       SUM(CASE WHEN ${CONTRACT_MONTH_EXPR} = ? THEN total_value ELSE 0 END) AS closed_month,
       SUM(CASE WHEN ${CONTRACT_MONTH_EXPR} <= ? THEN total_value ELSE 0 END) AS closed_total
     FROM contracts
     WHERE deployment_status <> 'Hủy' AND am_staff IS NOT NULL AND am_staff <> ''
-    GROUP BY am_staff`,
+    GROUP BY TRIM(am_staff)`,
     [month, month]
   );
 
   const collectedRows = await query<CollectedRevenueRow>(
-    `SELECT c.am_staff AS staff_name,
+    `SELECT TRIM(c.am_staff) AS staff_name,
       SUM(CASE WHEN SUBSTRING(p.paid_date, 1, 7) = ? THEN p.amount ELSE 0 END) AS collected_month,
       SUM(CASE WHEN SUBSTRING(p.paid_date, 1, 7) <= ? THEN p.amount ELSE 0 END) AS collected_total
     FROM contract_payments p
     JOIN contracts c ON c.id = p.contract_id
     WHERE c.am_staff IS NOT NULL AND c.am_staff <> ''
-    GROUP BY c.am_staff`,
+    GROUP BY TRIM(c.am_staff)`,
     [month, month]
   );
 

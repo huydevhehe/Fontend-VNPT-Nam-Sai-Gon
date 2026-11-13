@@ -132,6 +132,20 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("customers", "billing_email", "TEXT");
 
   await run(`
+    CREATE TABLE IF NOT EXISTS reminder_settings (
+      id TEXT PRIMARY KEY,
+      enabled BOOLEAN DEFAULT FALSE,
+      run_time TEXT DEFAULT '08:00',
+      days_before TEXT DEFAULT '[30,7,1]',
+      notify_staff BOOLEAN DEFAULT TRUE,
+      notify_customer BOOLEAN DEFAULT FALSE,
+      extra_cc TEXT DEFAULT '',
+      last_run_date TEXT,
+      updated_at TEXT
+    )
+  `);
+
+  await run(`
     CREATE TABLE IF NOT EXISTS kpi_formulas (
       kpi_key TEXT PRIMARY KEY,
       segments TEXT NOT NULL,

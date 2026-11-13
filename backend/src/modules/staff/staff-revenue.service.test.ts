@@ -171,10 +171,10 @@ test("StaffService.getAll attaches revenue computed from orders", async () => {
   const list = await staffService.getAll({ month: "2026-10" });
   const found = list.find((s) => s.id === staff.id);
   assert.ok(found);
-  assert.equal(found!.revenue.closedMonth, 6_000_000);
-  assert.equal(found!.revenue.closedTotal, 6_000_000);
-  assert.equal(found!.revenue.collectedMonth, 1_500_000);
-  assert.equal(found!.revenue.collectedTotal, 1_500_000);
+  assert.equal(found!.revenue!.closedMonth, 6_000_000);
+  assert.equal(found!.revenue!.closedTotal, 6_000_000);
+  assert.equal(found!.revenue!.collectedMonth, 1_500_000);
+  assert.equal(found!.revenue!.collectedTotal, 1_500_000);
 });
 
 test("getAll rejects bad month format", async () => {

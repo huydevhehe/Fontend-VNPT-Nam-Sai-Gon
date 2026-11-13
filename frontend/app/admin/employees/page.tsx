@@ -13,6 +13,17 @@ import { StaffRecord, StaffType, TerritoryRecord } from "@/lib/crm/types/crm.typ
 const ROLE_OPTIONS: StaffRecord["role"][] = ["AM", "AM Bán chăm", "Admin"];
 const STAFF_TYPE_OPTIONS: StaffType[] = ["Chính thức", "Cộng tác viên"];
 
+function currentMonthVnClient(): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const year = parts.find((p) => p.type === "year")?.value ?? "";
+  const month = parts.find((p) => p.type === "month")?.value ?? "";
+  return `${year}-${month}`;
+}
+
 function deriveShortNameClient(fullName: string): string {
   const trimmed = (fullName || "").trim();
   if (!trimmed) return "";
@@ -67,6 +78,7 @@ export default function EmployeesPage() {
   const [territories, setTerritories] = useState<TerritoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [revenueMonth, setRevenueMonth] = useState(currentMonthVnClient);
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<StaffFormState>(EMPTY_FORM);
@@ -267,7 +279,7 @@ export default function EmployeesPage() {
       setError(null);
       try {
         const [staffRes, territoriesRes] = await Promise.allSettled([
-          getStaff(),
+          getStaff({ month: revenueMonth }),
           getTerritories(),
         ]);
         if (isMounted) {
@@ -294,7 +306,7 @@ export default function EmployeesPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [revenueMonth]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -421,11 +433,34 @@ export default function EmployeesPage() {
       cell: (item) => <span className="font-bold text-emerald-600">{item.monthlyContracts ?? 0}</span>,
     },
     {
-      header: "Doanh thu thực hiện",
-      accessorKey: "revenueExecuted",
+      header: "Đã chốt — Tháng",
       cell: (item) => (
         <span className="font-bold text-slate-900">
-          {(item.revenueExecuted ?? 0).toLocaleString("vi-VN")} ₫
+          {(item.revenue?.closedMonth ?? 0).toLocaleString("vi-VN")} ₫
+        </span>
+      ),
+    },
+    {
+      header: "Đã chốt — Tổng",
+      cell: (item) => (
+        <span className="font-semibold text-slate-700">
+          {(item.revenue?.closedTotal ?? 0).toLocaleString("vi-VN")} ₫
+        </span>
+      ),
+    },
+    {
+      header: "Đã thu — Tháng",
+      cell: (item) => (
+        <span className="font-bold text-emerald-600">
+          {(item.revenue?.collectedMonth ?? 0).toLocaleString("vi-VN")} ₫
+        </span>
+      ),
+    },
+    {
+      header: "Đã thu — Tổng",
+      cell: (item) => (
+        <span className="font-semibold text-emerald-700">
+          {(item.revenue?.collectedTotal ?? 0).toLocaleString("vi-VN")} ₫
         </span>
       ),
     },
@@ -535,6 +570,18 @@ export default function EmployeesPage() {
             Quản lý đội ngũ AM, AM Bán chăm và lịch sử bàn giao tập khách hàng
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <label htmlFor="revenue-month" className="text-xs font-semibold text-slate-600">
+            Tháng doanh thu:
+          </label>
+          <input
+            id="revenue-month"
+            type="month"
+            value={revenueMonth}
+            onChange={(e) => setRevenueMonth(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:border-vnpt focus:outline-none"
+          />
+        </div>
         <button
           onClick={() => {
             setFormError(null);
@@ -590,15 +637,21 @@ export default function EmployeesPage() {
           Đang tải dữ liệu Nhân viên...
         </div>
       ) : (
-        <DataTable
-          title="Danh sách nhân viên & Chỉ tiêu"
-          subtitle="Chi tiết tỷ lệ hoàn thành thu nợ, gia hạn và doanh thu từng nhân viên"
-          columns={columns}
-          data={data}
-          filters={staffFilters}
-          searchPlaceholder="Tìm theo tên nhân viên, mã NV, SĐT, địa bàn..."
-          exportFileName="vnpt_nhan_vien"
-        />
+        <>
+          <DataTable
+            title="Danh sách nhân viên & Chỉ tiêu"
+            subtitle="Chi tiết tỷ lệ hoàn thành thu nợ, gia hạn và doanh thu từng nhân viên"
+            columns={columns}
+            data={data}
+            filters={staffFilters}
+            searchPlaceholder="Tìm theo tên nhân viên, mã NV, SĐT, địa bàn..."
+            exportFileName="vnpt_nhan_vien"
+          />
+          <p className="text-[11px] text-slate-400">
+            Đã chốt = giá trị đơn hàng; Đã thu = tiền đã ghi nhận thu. Cột &quot;Tháng&quot;
+            tính theo tháng đã chọn; cột &quot;Tổng&quot; là lũy kế từ trước tới hết tháng đó.
+          </p>
+        </>
       )}
 
       {/* Create Staff Modal */}

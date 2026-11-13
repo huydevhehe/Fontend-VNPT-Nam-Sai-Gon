@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { requireAuth } from "../../middleware/require-auth.js";
 import { DashboardService } from "./dashboard.service.js";
+import { HttpError } from "../auth/auth.service.js";
 
 export const dashboardRouter = Router();
 const dashboardService = new DashboardService();
@@ -11,7 +12,8 @@ dashboardRouter.get("/stats", requireAuth, async (req: Request, res: Response) =
     const stats = await dashboardService.getLiveStats(month as string);
     res.json({ success: true, ...stats });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    const statusCode = error instanceof HttpError ? error.status : 500;
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 });
 

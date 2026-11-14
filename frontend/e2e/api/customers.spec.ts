@@ -389,4 +389,58 @@ test.describe("API Team khách hàng", () => {
     });
     expect(okDelete.status()).toBe(200);
   });
+
+  test("PATCH /customers/assign-staff gán AM chăm sóc cho nhiều khách cùng lúc", async ({
+    request,
+  }) => {
+    const suffix = Date.now();
+    const c1 = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: { name: `KH Bulk 1 ${suffix}`, type: "Doanh nghiệp", customerGroup: "Tập hiện hữu" },
+    });
+    const c2 = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: { name: `KH Bulk 2 ${suffix}`, type: "Doanh nghiệp", customerGroup: "Tập hiện hữu" },
+    });
+    const id1 = (await c1.json()).data.id;
+    const id2 = (await c2.json()).data.id;
+
+    const res = await request.patch(`${API_URL}/customers/assign-staff`, {
+      headers: bearer(token),
+      data: { customerIds: [id1, id2], amCaringStaff: STAFF_NEW },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.data.updated).toBe(2);
+
+    const listRes = await request.get(`${API_URL}/customers`, { headers: bearer(token) });
+    const rows = (await listRes.json()).data as { id: string; am_caring_staff?: string }[];
+    const row1 = rows.find((r) => r.id === id1);
+    const row2 = rows.find((r) => r.id === id2);
+    expect(row1?.am_caring_staff).toBe(STAFF_NEW);
+    expect(row2?.am_caring_staff).toBe(STAFF_NEW);
+  });
+
+  test("PATCH /customers/assign-staff: AM nhận lỗi 403, nhân viên không tồn tại nhận lỗi 400", async ({
+    request,
+  }) => {
+    const suffix = Date.now();
+    const c = await request.post(`${API_URL}/customers`, {
+      headers: bearer(token),
+      data: { name: `KH Bulk Lỗi ${suffix}`, type: "Doanh nghiệp", customerGroup: "Tập hiện hữu" },
+    });
+    const id = (await c.json()).data.id;
+
+    const forbidden = await request.patch(`${API_URL}/customers/assign-staff`, {
+      headers: bearer(amToken),
+      data: { customerIds: [id], amCaringStaff: STAFF_NEW },
+    });
+    expect(forbidden.status()).toBe(403);
+
+    const badStaff = await request.patch(`${API_URL}/customers/assign-staff`, {
+      headers: bearer(token),
+      data: { customerIds: [id], amCaringStaff: "Nhân Viên Không Tồn Tại ABC" },
+    });
+    expect(badStaff.status()).toBe(400);
+  });
 });

@@ -133,6 +133,67 @@ test("update by owning AM succeeds and does not change am_staff/am_caring_staff"
   assert.equal(updated.am_staff, amName);
 });
 
+test("assignStaffBulk updates caring staff for selected customers only", async () => {
+  const service = new CustomerService();
+  const suffix = Date.now();
+
+  const a = await service.create({
+    name: `Công ty Bulk A ${suffix}`,
+    type: "Doanh nghiệp",
+    customerGroup: "Tập hiện hữu",
+  });
+  const b = await service.create({
+    name: `Công ty Bulk B ${suffix}`,
+    type: "Doanh nghiệp",
+    customerGroup: "Tập hiện hữu",
+  });
+  const untouched = await service.create({
+    name: `Công ty Bulk Không Chọn ${suffix}`,
+    type: "Doanh nghiệp",
+    customerGroup: "Tập hiện hữu",
+    amCaringStaff: "Nguyễn Thị Huyền Trang",
+  });
+
+  const result = await service.assignStaffBulk(
+    {
+      customerIds: [a.customer.id, b.customer.id],
+      amCaringStaff: "Nguyễn Thị Tình",
+    },
+    "Admin Test"
+  );
+
+  assert.equal(result.updated, 2);
+
+  const after = await service.getById(a.customer.id);
+  assert.equal(after.am_caring_staff, "Nguyễn Thị Tình");
+  const afterUntouched = await service.getById(untouched.customer.id);
+  assert.notEqual(afterUntouched.am_caring_staff, "Nguyễn Thị Tình");
+});
+
+test("assignStaffBulk rejects unknown staff", async () => {
+  const service = new CustomerService();
+  const suffix = Date.now();
+  const created = await service.create({
+    name: `Công ty Bulk Lỗi ${suffix}`,
+    type: "Doanh nghiệp",
+    customerGroup: "Tập hiện hữu",
+  });
+
+  await assert.rejects(
+    async () => {
+      await service.assignStaffBulk({
+        customerIds: [created.customer.id],
+        amCaringStaff: "Nhân Viên Không Tồn Tại XYZ",
+      });
+    },
+    (err: any) => {
+      assert.ok(err instanceof CustomerServiceError);
+      assert.equal(err.status, 400);
+      return true;
+    }
+  );
+});
+
 test("getById returns 404 for unknown id", async () => {
   const service = new CustomerService();
   await assert.rejects(

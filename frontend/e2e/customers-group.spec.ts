@@ -124,4 +124,50 @@ test.describe("Khách hàng PTM / KHDN chăm trên /admin/customers", () => {
     await expect(row).toContainText("Online");
     await expect(row).toContainText(territory.ward_name);
   });
+
+  test("Admin lọc bằng ô tìm kiếm, chọn tất cả, gán AM chăm sóc cho nhiều khách", async ({
+    page,
+    request,
+  }) => {
+    const suffix = Date.now();
+    const keyword = `UIBulk${suffix}`;
+    const name1 = `KH ${keyword} Một`;
+    const name2 = `KH ${keyword} Hai`;
+    const newStaff = "Phạm Thanh Hà";
+
+    const token = await apiLogin(request, ADMIN.username, ADMIN.password);
+    for (const name of [name1, name2]) {
+      const res = await request.post(`${API_URL}/customers`, {
+        headers: bearer(token),
+        data: { name, type: "Doanh nghiệp", customerGroup: "Tập hiện hữu" },
+      });
+      expect(res.status()).toBe(201);
+    }
+
+    await loginAs(page, "admin");
+    await page.goto("/admin/customers");
+    await page.waitForLoadState("networkidle");
+
+    await page.getByPlaceholder("Tìm theo tên, MST, CCCD, địa chỉ...").fill(keyword);
+    await expect(page.locator("tbody tr", { hasText: name1 })).toBeVisible();
+    await expect(page.locator("tbody tr", { hasText: name2 })).toBeVisible();
+
+    await page.getByLabel("Chọn tất cả").check();
+    await expect(page.getByText("Đã chọn 2 khách")).toBeVisible();
+
+    await page.getByRole("button", { name: "Gán AM chăm sóc" }).click();
+    await page.getByPlaceholder("Chọn hoặc nhập tên nhân viên").fill(newStaff);
+    await page.getByRole("button", { name: "Gán", exact: true }).click();
+
+    await expect(page.getByText("Đã chọn 2 khách")).toHaveCount(0);
+
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.getByPlaceholder("Tìm theo tên, MST, CCCD, địa chỉ...").fill(keyword);
+
+    const row1 = page.locator("tbody tr", { hasText: name1 });
+    const row2 = page.locator("tbody tr", { hasText: name2 });
+    await expect(row1).toContainText(newStaff);
+    await expect(row2).toContainText(newStaff);
+  });
 });

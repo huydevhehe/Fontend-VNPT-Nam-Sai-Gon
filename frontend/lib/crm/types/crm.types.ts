@@ -1,5 +1,6 @@
 export type CustomerType = "Doanh nghiệp" | "Hộ kinh doanh" | "Cá nhân";
-export type CustomerGroup = "Tự phát triển" | "Tập hiện hữu";
+export type CustomerGroup = "Tự phát triển" | "Tập hiện hữu" | "PTM địa bàn";
+export type DocumentType = "GPKD" | "CCCD" | "KHAC";
 export type StaffRole = "Admin" | "AM" | "AM Bán chăm" | "Người xem";
 export type UserRole = "Admin" | "AM" | "AM Bán chăm" | "CTV";
 
@@ -46,6 +47,8 @@ export interface RenewalRecord {
   cohort: "THÁNG T" | "THÁNG T-1";
   status: RenewalStatus;
   failureReason?: RenewalFailureReason;
+  expiryDate?: string | null; // Ngày hết hạn dịch vụ (YYYY-MM-DD)
+  renewedAt?: string | null; // Ngày gia hạn thành công (YYYY-MM-DD)
 }
 
 // 3. Customer
@@ -55,7 +58,7 @@ export interface CustomerRecord {
   identityCode: string; // MST (10/14) hoặc CCCD (12)
   type: CustomerType;
   group: CustomerGroup;
-  phone: string;
+  phone: string; // SĐT liên hệ
   address: string;
   services: string[];
   nearestExpiration: string;
@@ -63,6 +66,19 @@ export interface CustomerRecord {
   amCaringStaff: string;
   handoverBatch?: string; // Đợt giao (rỗng nếu chưa có)
   handoverDate?: string; // Ngày giao (rỗng nếu chưa có)
+  territoryId?: string;
+  territoryName?: string;
+  customerCode?: string;
+  status?: string;
+  teamId?: string;
+  teamName?: string;
+  salesChannel?: string;
+  contactName?: string;
+  contactEmail?: string;
+  billingName?: string;
+  billingPhone?: string;
+  billingEmail?: string;
+  note?: string;
 }
 
 // 4. Service & Alert
@@ -76,6 +92,10 @@ export interface ServiceRecord {
   daysRemaining: number;
   staffName: string;
   isExpired: boolean;
+  customerId?: string | null;
+  serviceGroup?: string | null;
+  packageName?: string | null;
+  paymentType?: string | null;
 }
 
 // 5. Lead
@@ -110,6 +130,16 @@ export interface ContractRecord {
   leadId?: string;
   territoryId?: string;
   referredByCtvId?: string;
+  amStaff?: string | null;
+  serviceGroup?: string | null;
+  serviceName?: string | null;
+  packageName?: string | null;
+  paymentMethod?: string | null;
+  customerId?: string | null;
+  taxCode?: string | null;
+  contractNumber?: string | null;
+  signedDate?: string | null;
+  collectedAmount?: number;
 }
 
 // 7. Commission
@@ -121,9 +151,34 @@ export interface CommissionRecord {
   amount: number;
   status: "Đã nhận" | "Chờ nhận" | "Đã chi" | "Chờ chi";
   date: string;
-  ctvId?: string;
-  contractId?: string;
+  ctvId?: string | null;
+  contractId?: string | null;
   note?: string | null;
+  /** Người giới thiệu: tên CTV, hoặc recipient_name (chi kênh không CTV), hoặc AM tiếp thị của đơn (nội bộ). */
+  referrerName: string | null;
+  referrerCode: string | null;
+  customerName: string | null;
+  /** "Khách đã chi" tự tính từ đơn hàng; null nếu không gắn đơn hàng nào. */
+  customerPaidAuto: number | null;
+  /** Admin ghi đè; null = dùng số tự tính. */
+  customerPaidOverride: number | null;
+  /** customerPaidOverride ?? customerPaidAuto. */
+  customerPaid: number | null;
+  paidOutAmount: number;
+  paidOutDate: string | null;
+  /** amount - paidOutAmount; có thể âm nếu chi vượt. */
+  remaining: number;
+}
+
+export interface ReferrerSummaryRecord {
+  referrerName: string;
+  referrerCode: string | null;
+  customerCount: number;
+  orderCount: number;
+  totalCustomerPaid: number;
+  totalCommission: number;
+  totalPaidOut: number;
+  totalRemaining: number;
 }
 
 // 8. Territory (7 Phường)
@@ -157,6 +212,17 @@ export interface WardContactRecord {
 }
 
 // 9. Staff
+export type StaffStatus = "Đang hoạt động" | "Đình chỉ" | "Ngừng hoạt động" | "Tạm nghỉ";
+export type StaffType = "Chính thức" | "Cộng tác viên";
+
+/** Doanh thu nhân viên tính từ đơn hàng (contracts/contract_payments), theo tháng được chọn. */
+export interface StaffRevenue {
+  closedMonth: number;
+  closedTotal: number;
+  collectedMonth: number;
+  collectedTotal: number;
+}
+
 export interface StaffRecord {
   id: string;
   code: string;
@@ -169,8 +235,21 @@ export interface StaffRecord {
   revenueExecuted: number;
   collectionRate: number;
   renewalRate: number;
-  status: "Đang hoạt động" | "Tạm nghỉ";
+  status: StaffStatus;
   email: string;
+  username?: string;
+  hrmCode?: string | null;
+  staffType?: StaffType | null;
+  phone?: string | null;
+  birthDate?: string | null;
+  personalEmail?: string | null;
+  shortName?: string | null;
+  note?: string | null;
+  statusReason?: string | null;
+  statusChangedAt?: string | null;
+  statusChangedBy?: string | null;
+  /** Doanh thu tính từ đơn hàng; chỉ có khi lấy qua getStaff() với tham số month. */
+  revenue?: StaffRevenue;
 }
 
 // 10. Task

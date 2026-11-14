@@ -22,9 +22,13 @@ docs/
 !frontend/public/templates/*.xlsx
 !frontend/e2e/fixtures/*.xlsx
 *.docx
+!backend/templates/*.docx
 *.docx.backup
 ~$*
 *.bak
+
+# Giấy tờ đính kèm khách hàng (PDF/DOC/DOCX) tải lên — không commit file người dùng upload.
+backend/uploads/
 
 # Database files
 backend/data/

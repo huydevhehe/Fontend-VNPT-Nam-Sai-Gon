@@ -47,7 +47,7 @@ test.describe("Chi tiết Phường", () => {
     await expect(page.getByRole("heading", { name: "Lãnh đạo & Phòng ban" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Khu phố", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Lead dự án đang theo" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Hợp đồng đã triển khai" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Đơn hàng đã triển khai" })).toBeVisible();
     await expect(page.getByText("Chưa cập nhật").first()).toBeVisible();
     await expect(page.getByText("LEAD-01")).toBeVisible();
     await expect(page.getByText("Khai báo:")).toContainText("Đã nhập chi tiết:");

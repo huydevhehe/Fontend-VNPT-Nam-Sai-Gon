@@ -22,6 +22,8 @@ interface RenewalApiRow {
   cohort: string;
   status: string;
   failure_reason?: string | null;
+  expiry_date?: string | null;
+  renewed_at?: string | null;
 }
 
 function mapRenewalRow(row: RenewalApiRow): RenewalRecord {
@@ -40,6 +42,8 @@ function mapRenewalRow(row: RenewalApiRow): RenewalRecord {
     failureReason: (row.failure_reason || undefined) as
       | RenewalFailureReason
       | undefined,
+    expiryDate: row.expiry_date ?? null,
+    renewedAt: row.renewed_at ?? null,
   };
 }
 
@@ -129,4 +133,19 @@ export async function updateRenewalStatus(
     method: "PATCH",
     body: JSON.stringify({ status, failureReason }),
   });
+}
+
+/**
+ * Admin sửa tay ngày hết hạn / ngày gia hạn thành công.
+ * Gọi `PATCH /api/renewals/:id/dates` (Admin only).
+ */
+export async function updateRenewalDates(
+  id: string,
+  dates: { expiryDate?: string | null; renewedAt?: string | null }
+): Promise<RenewalRecord> {
+  const row = await apiFetch<RenewalApiRow>(`/renewals/${id}/dates`, {
+    method: "PATCH",
+    body: JSON.stringify(dates),
+  });
+  return mapRenewalRow(row);
 }

@@ -5,6 +5,7 @@ import { initDatabase } from "./database/db.js";
 import { debtRouter } from "./modules/debt/debt.controller.js";
 import { renewalRouter } from "./modules/renewal/renewal.controller.js";
 import { customerRouter } from "./modules/customer/customer.controller.js";
+import { customerTeamRouter } from "./modules/customer/customer-team.controller.js";
 import { territoryRouter } from "./modules/territory/territory.controller.js";
 import { dashboardRouter } from "./modules/dashboard/dashboard.controller.js";
 import { authRouter } from "./modules/auth/auth.controller.js";
@@ -19,6 +20,9 @@ import { settingsRouter } from "./modules/settings/settings.controller.js";
 import { ctvRouter } from "./modules/ctv/ctv.controller.js";
 import { ctvAccountsRouter } from "./modules/ctv/ctv-accounts.controller.js";
 import { publicRouter } from "./modules/public/public.controller.js";
+import { kpiRouter } from "./modules/kpi/kpi.controller.js";
+import { reminderRouter } from "./modules/reminder/reminder.controller.js";
+import { startReminderScheduler } from "./modules/reminder/reminder-scheduler.js";
 import { requireAuth } from "./middleware/require-auth.js";
 import { requireAdmin, requireCtv, requireStaff } from "./middleware/require-role.js";
 
@@ -37,7 +41,17 @@ const app = express();
 // tra mã giới thiệu, và login) — xem Task 10 ở plan để xác nhận trên server.
 app.set("trust proxy", 1);
 
-app.use(cors({ origin: config.corsOrigin }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, config.corsOrigin === "*" ? true : origin === config.corsOrigin);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -61,6 +75,7 @@ app.use("/api/public", publicRouter);
 app.use("/api/debts", requireAuth, requireStaff, debtRouter);
 app.use("/api/renewals", requireAuth, requireStaff, renewalRouter);
 app.use("/api/customers", requireAuth, requireStaff, customerRouter);
+app.use("/api/customer-teams", requireAuth, requireStaff, customerTeamRouter);
 app.use("/api/territories", requireAuth, requireStaff, territoryRouter);
 app.use("/api/dashboard", requireAuth, requireStaff, dashboardRouter);
 app.use("/api/services", requireAuth, requireStaff, serviceRouter);
@@ -71,6 +86,8 @@ app.use("/api/staff", requireAuth, requireStaff, staffRouter);
 app.use("/api/tasks", requireAuth, requireStaff, taskRouter);
 app.use("/api/reports", requireAuth, requireStaff, reportRouter);
 app.use("/api/settings", requireAuth, requireStaff, settingsRouter);
+app.use("/api/kpi", requireAuth, requireStaff, kpiRouter);
+app.use("/api/reminders", requireAuth, requireAdmin, reminderRouter);
 
 // Khu vực CTV và quản lý tài khoản CTV.
 app.use("/api/ctv", requireAuth, requireCtv, ctvRouter);
@@ -80,9 +97,22 @@ app.use("/api/ctv-accounts", requireAuth, requireAdmin, ctvAccountsRouter);
 async function start() {
   try {
     await initDatabase();
+    startReminderScheduler();
     app.listen(config.port, () => {
       console.log(`[VNPT CRM Backend] Server is running on http://localhost:${config.port}`);
     });
+    if (Number(config.port) !== 8087) {
+      // `listen()` báo lỗi (vd cổng 8087 đang bị chiếm bởi một tiến trình
+      // backend khác) qua event 'error' bất đồng bộ, không ném exception nên
+      // try/catch không bắt được — phải đăng ký handler 'error' mới "ignore"
+      // được thật, nếu không tiến trình sẽ crash vì unhandled error event.
+      const compatServer = app.listen(8087, () => {
+        console.log("[VNPT CRM Backend] Also listening on http://localhost:8087");
+      });
+      compatServer.on("error", () => {
+        // Cổng 8087 có thể đang bị chiếm (bởi backend ở worktree khác) — bỏ qua.
+      });
+    }
   } catch (error) {
     console.error("[VNPT CRM Backend] Failed to start server:", error);
     process.exit(1);

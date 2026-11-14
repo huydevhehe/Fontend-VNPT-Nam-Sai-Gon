@@ -1,7 +1,11 @@
 import { query } from "../../database/db.js";
+import { StaffService } from "../staff/staff.service.js";
+import { currentMonthVn } from "../../utils/date-vn.js";
+
+const staffService = new StaffService();
 
 export class DashboardService {
-  async getLiveStats(month: string = new Date().toISOString().slice(0, 7)) {
+  async getLiveStats(month: string = currentMonthVn()) {
     // 1. Debt Stats
     const debtRes = await query<{
       totalImmediate: number;
@@ -50,8 +54,11 @@ export class DashboardService {
         ? Number(((renewalT1[0].completed / renewalT1[0].total) * 100).toFixed(1))
         : 65.0;
 
-    // 3. Staff stats
-    const staffList = await query("SELECT * FROM staff ORDER BY revenue_executed DESC");
+    // 3. Staff stats — doanh thu tính từ đơn hàng (Đợt 5), không còn đọc số cố định
+    // revenue_executed. Xếp hạng theo doanh thu "đã chốt" của tháng đang xem.
+    const staffList = (await staffService.getAll({ month })).sort(
+      (a, b) => (b.revenue?.closedMonth ?? 0) - (a.revenue?.closedMonth ?? 0)
+    );
 
     // 4. Territory totals
     const territoryRes = await query<{ totalWards: number; totalHouseholds: number; totalDeployed: number }>(

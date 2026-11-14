@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test lib/data.test.ts content/category-map.test.ts lib/table-filters.test.ts",
+    "test": "tsx --test lib/data.test.ts content/category-map.test.ts lib/table-filters.test.ts lib/kpi-formula.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

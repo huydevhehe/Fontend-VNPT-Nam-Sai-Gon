@@ -209,29 +209,30 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
     await loginAs(page, "admin");
     await page.goto("/admin/contracts");
 
-    await page.getByRole("button", { name: "Thêm hợp đồng" }).click();
-    await expect(page.getByRole("heading", { name: "Thêm hợp đồng" })).toBeVisible();
+    await page.getByRole("button", { name: "Tạo đơn hàng" }).click();
+    await expect(page.getByRole("heading", { name: "Tạo đơn hàng" })).toBeVisible();
 
-    await fieldByLabel(page, "Từ Lead").selectOption(lead.id);
+    await fieldByLabel(page, "Chọn từ Lead chốt thành công (tùy chọn)").selectOption(lead.id);
     // Chọn lead tự điền tên khách hàng và giá trị
     await expect(fieldByLabel(page, "Tên khách hàng")).toHaveValue(customerName);
-    await expect(fieldByLabel(page, "Giá trị hợp đồng (₫)")).toHaveValue("20000000");
+    await expect(fieldByLabel(page, "Giá trị đơn hàng (₫)")).toHaveValue("20000000");
     await fieldByLabel(page, "Mã giao dịch").fill(transactionCode);
     await fieldByLabel(page, "Mã thuê bao (phân tách bởi dấu phẩy)").fill("0901112223");
     await expect(fieldByLabel(page, "Phường")).toHaveValue(wards[0].id);
 
-    await page.getByRole("button", { name: "Tạo hợp đồng" }).click();
-    await expect(page.getByRole("heading", { name: "Thêm hợp đồng" })).not.toBeVisible({
+    await page.locator("form").getByRole("button", { name: "Tạo đơn hàng" }).click();
+    await expect(page.getByRole("heading", { name: "Tạo đơn hàng" })).not.toBeVisible({
       timeout: 10_000,
     });
 
     await page
-      .getByPlaceholder("Tìm theo mã giao dịch, khách hàng, mã thuê bao...")
+      .getByPlaceholder("Tìm theo mã giao dịch, khách hàng, AM, mã thuê bao...")
       .fill(transactionCode);
     const row = page.locator("table tbody tr", { hasText: transactionCode });
     await expect(row).toHaveCount(1);
     await expect(row).toContainText("CTV E2E Test");
-    await expect(row).toContainText(wards[0].ward_name);
+    // Cột Phường đã bị bỏ khỏi bảng đơn hàng (Đợt 3) — Phường đã được xác nhận
+    // ghi đúng vào form ở bước trên (dòng 221), không kiểm tra lại trên bảng.
 
     const deploymentSelect = row.locator("select").first();
     await deploymentSelect.selectOption("Hoàn tất");
@@ -239,7 +240,7 @@ test.describe("Lead / Hợp đồng / Hoa hồng gắn CTV và Phường trên t
 
     await page.goto("/admin/commissions");
     await page
-      .getByPlaceholder("Tìm theo đối tượng thụ hưởng, mã giao dịch...")
+      .getByPlaceholder("Tìm theo người giới thiệu, khách hàng, mã giao dịch...")
       .fill(transactionCode);
     const commissionRow = page.locator("table tbody tr", { hasText: transactionCode });
     await expect(commissionRow).toHaveCount(1);

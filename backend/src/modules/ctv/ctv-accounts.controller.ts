@@ -25,6 +25,17 @@ ctvAccountsRouter.get("/", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/ctv-accounts — Admin tạo trực tiếp tài khoản CTV
+ctvAccountsRouter.post("/", async (req: Request, res: Response) => {
+  try {
+    const adminName = req.user?.name || req.user?.id || "Admin";
+    const data = await service.createByAdmin(req.body, adminName);
+    res.status(201).json({ success: true, data });
+  } catch (error) {
+    sendError(res, error);
+  }
+});
+
 // PATCH /api/ctv-accounts/:id/approve
 ctvAccountsRouter.patch("/:id/approve", async (req: Request, res: Response) => {
   try {

@@ -50,10 +50,12 @@ test.describe("Hành động ghi dữ liệu trên trang Admin (Task 3-10)", () 
     const transactionCode = `GD-E2E-${uniqueSuffix}`;
     const customerName = `KH E2E Hợp đồng ${uniqueSuffix}`;
 
-    await page.getByRole("button", { name: "Thêm hợp đồng" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Thêm hợp đồng" })
-    ).toBeVisible();
+    await page.getByRole("button", { name: "Tạo đơn hàng" }).click();
+    const modalHeading = page.getByRole("heading", { name: "Tạo đơn hàng" });
+    await expect(modalHeading).toBeVisible();
+    const submitButton = page
+      .locator("form")
+      .getByRole("button", { name: "Tạo đơn hàng" });
 
     await fieldByLabel(page, "Mã giao dịch").fill(transactionCode);
     await fieldByLabel(page, "Tên khách hàng").fill(customerName);
@@ -61,18 +63,16 @@ test.describe("Hành động ghi dữ liệu trên trang Admin (Task 3-10)", () 
       "0909000111"
     );
 
-    const totalValueInput = fieldByLabel(page, "Giá trị hợp đồng (₫)");
+    const totalValueInput = fieldByLabel(page, "Giá trị đơn hàng (₫)");
     await totalValueInput.fill("-1000000");
 
-    await page.getByRole("button", { name: "Tạo hợp đồng" }).click();
+    await submitButton.click();
 
     // Giá trị âm phải bị chặn (browser constraint validation với min=0 hoặc
-    // lỗi backend trả về) — modal "Thêm hợp đồng" không được đóng, và chưa có
+    // lỗi backend trả về) — modal "Tạo đơn hàng" không được đóng, và chưa có
     // dòng mới nào xuất hiện trong bảng với mã giao dịch này.
     await page.waitForTimeout(300);
-    await expect(
-      page.getByRole("heading", { name: "Thêm hợp đồng" })
-    ).toBeVisible();
+    await expect(modalHeading).toBeVisible();
 
     const isValueInputValid = await totalValueInput.evaluate(
       (el: HTMLInputElement) => el.validity.valid
@@ -81,14 +81,12 @@ test.describe("Hành động ghi dữ liệu trên trang Admin (Task 3-10)", () 
 
     // Sửa lại giá trị hợp lệ (dương) và submit lại — lần này phải tạo thành công.
     await totalValueInput.fill("1500000");
-    await page.getByRole("button", { name: "Tạo hợp đồng" }).click();
+    await submitButton.click();
 
-    await expect(
-      page.getByRole("heading", { name: "Thêm hợp đồng" })
-    ).not.toBeVisible({ timeout: 10_000 });
+    await expect(modalHeading).not.toBeVisible({ timeout: 10_000 });
 
     const searchBox = page.getByPlaceholder(
-      "Tìm theo mã giao dịch, khách hàng, mã thuê bao..."
+      "Tìm theo mã giao dịch, khách hàng, AM, mã thuê bao..."
     );
     await searchBox.fill(transactionCode);
 
@@ -117,18 +115,19 @@ test.describe("Hành động ghi dữ liệu trên trang Admin (Task 3-10)", () 
 
     await fieldByLabel(page, "Mã nhân viên").fill(`NV-E2E-${uniqueSuffix}`);
     await fieldByLabel(page, "Họ tên").fill(`NV E2E Test ${uniqueSuffix}`);
-    await fieldByLabel(page, "Địa bàn phụ trách").fill("Khu vực 1");
-    await fieldByLabel(page, "Email").fill(
+    await fieldByLabel(page, "Email VNPT").fill(
       `nv-e2e-${uniqueSuffix}@example.com`
     );
+    await page.getByPlaceholder("Mật khẩu ban đầu").fill("Nv2026E2e@");
+    await page.getByPlaceholder("Nhập lại chính xác").fill("Nv2026E2e@");
 
     await page.getByRole("button", { name: "Tạo nhân viên" }).click();
 
-    // Phải hiện lỗi 403 rõ ràng từ backend ("Chỉ Admin được phép tạo Nhân
-    // viên"), modal vẫn còn (chưa đóng do tạo thất bại), trang không bị crash
-    // (heading vẫn hiển thị bình thường).
+    // Phải hiện lỗi 403 rõ ràng từ backend ("Không có quyền truy cập"), modal
+    // vẫn còn (chưa đóng do tạo thất bại), trang không bị crash (heading vẫn
+    // hiển thị bình thường).
     await expect(
-      page.getByText("Chỉ Admin được phép tạo Nhân viên")
+      page.getByText("Không có quyền truy cập")
     ).toBeVisible({ timeout: 10_000 });
     await expect(
       page.getByRole("heading", { name: "Thêm nhân viên" })

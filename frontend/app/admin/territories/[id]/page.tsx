@@ -26,7 +26,10 @@ import {
   updateTerritoryStats,
   CreateWardContactInput,
 } from "@/lib/api/territories.api";
-import type { TerritoryDetail, WardContactRecord } from "@/lib/crm/types/crm.types";
+import { getStaff } from "@/lib/api/staff.api";
+import type { TerritoryDetail, WardContactRecord, StaffRecord } from "@/lib/crm/types/crm.types";
+import { WARD_CONTACT_UNITS } from "@/lib/crm/constants/org.constants";
+import { TableFilter } from "@/lib/table-filters";
 import OfficialsSection from "@/components/admin/territory/OfficialsSection";
 import QuartersSection from "@/components/admin/territory/QuartersSection";
 import WardLeadsContractsSection from "@/components/admin/territory/WardLeadsContractsSection";
@@ -63,6 +66,7 @@ export default function TerritoryDetailPage({
   const [error, setError] = useState<string | null>(null);
 
   const [contacts, setContacts] = useState<WardContactRecord[]>([]);
+  const [staffList, setStaffList] = useState<StaffRecord[]>([]);
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState<WardContactRecord | null>(null);
   const [contactForm, setContactForm] = useState<CreateWardContactInput>(EMPTY_CONTACT_FORM);
@@ -121,6 +125,21 @@ export default function TerritoryDetailPage({
       isMounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getStaff({ status: "Đang hoạt động" })
+      .then((staff) => {
+        if (isMounted) setStaffList(staff);
+      })
+      .catch(() => {
+        // Danh sách nhân viên chỉ phục vụ gợi ý trong form đầu mối; lỗi ở
+        // đây không được làm hỏng trang chi tiết phường.
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   function openCreateContact() {
     setEditingContact(null);
@@ -232,7 +251,7 @@ export default function TerritoryDetailPage({
       cell: (item) => <span className="font-bold text-slate-900">{item.fullName}</span>,
     },
     {
-      header: "Chức",
+      header: "Chức vụ",
       accessorKey: "position",
       cell: (item) => <span className="font-semibold text-vnpt">{item.position}</span>,
     },
@@ -266,6 +285,12 @@ export default function TerritoryDetailPage({
           },
         ]
       : []),
+  ];
+
+  const contactFilters: TableFilter<WardContactRecord>[] = [
+    { id: "unit", label: "Đơn vị", getValue: (r) => r.unit },
+    { id: "department", label: "Phòng ban", getValue: (r) => r.department },
+    { id: "amInCharge", label: "AM phụ trách", getValue: (r) => r.amInCharge || "Chưa phân công" },
   ];
 
   return (
@@ -373,6 +398,7 @@ export default function TerritoryDetailPage({
             subtitle="Trạm Y tế, UBND, Đảng ủy, Trường học Mầm non/TH/THCS/THPT, Trung tâm Phục vụ HCC..."
             columns={contactColumns}
             data={contacts}
+            filters={contactFilters}
             searchPlaceholder="Tìm theo đơn vị, phòng ban, họ tên, chức..."
             exportFileName={`vnpt_dau_moi_${detail.territory.wardName}`}
             actionButton={
@@ -421,11 +447,17 @@ export default function TerritoryDetailPage({
                   </label>
                   <input
                     required
+                    list="ward-contact-units"
                     placeholder="UBND, Đảng ủy, Trường học..."
                     value={contactForm.unit}
                     onChange={(e) => setContactForm({ ...contactForm, unit: e.target.value })}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
                   />
+                  <datalist id="ward-contact-units">
+                    {WARD_CONTACT_UNITS.map((u) => (
+                      <option key={u} value={u} />
+                    ))}
+                  </datalist>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-slate-600">
@@ -442,9 +474,10 @@ export default function TerritoryDetailPage({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">Họ tên</label>
+                <label className="mb-1 block text-xs font-semibold text-slate-600">
+                  Họ tên (tùy chọn)
+                </label>
                 <input
-                  required
                   value={contactForm.fullName}
                   onChange={(e) => setContactForm({ ...contactForm, fullName: e.target.value })}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
@@ -453,7 +486,7 @@ export default function TerritoryDetailPage({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">Chức</label>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">Chức vụ</label>
                   <input
                     required
                     placeholder="Trưởng phòng, Hiệu trưởng..."
@@ -463,7 +496,7 @@ export default function TerritoryDetailPage({
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">SĐT</label>
+                  <label className="mb-1 block text-xs font-semibold text-slate-600">SĐT (tùy chọn)</label>
                   <input
                     value={contactForm.phone}
                     onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
@@ -474,13 +507,24 @@ export default function TerritoryDetailPage({
 
               <div>
                 <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  AM phụ trách
+                  AM phụ trách (tùy chọn)
                 </label>
-                <input
+                <select
                   value={contactForm.amInCharge}
                   onChange={(e) => setContactForm({ ...contactForm, amInCharge: e.target.value })}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
+                >
+                  <option value="">— Chưa phân công —</option>
+                  {!staffList.some((m) => m.name === contactForm.amInCharge) &&
+                    contactForm.amInCharge && (
+                      <option value={contactForm.amInCharge}>{contactForm.amInCharge}</option>
+                    )}
+                  {staffList.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {contactFormError && (

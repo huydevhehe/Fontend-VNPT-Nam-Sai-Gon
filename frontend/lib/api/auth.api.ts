@@ -13,11 +13,15 @@ export interface LoginResult {
   user: AuthUser;
 }
 
-export function login(username: string, password: string): Promise<LoginResult> {
-  return apiFetch<LoginResult>("/auth/login", {
+export async function login(username: string, password: string): Promise<LoginResult> {
+  const res = await apiFetch<LoginResult>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ username, password }),
   });
+  if (typeof window !== "undefined" && res?.token) {
+    window.localStorage.setItem("vnpt_token", res.token);
+  }
+  return res;
 }
 
 export function changePassword(

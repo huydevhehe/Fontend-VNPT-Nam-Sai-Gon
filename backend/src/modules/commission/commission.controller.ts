@@ -16,6 +16,17 @@ commissionRouter.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/commissions/summary — thống kê theo người giới thiệu.
+// Khai báo trước các route /:id/... để không bị Express hiểu "summary" là :id.
+commissionRouter.get("/summary", async (_req: Request, res: Response) => {
+  try {
+    const summary = await commissionService.getReferrerSummary();
+    res.json({ success: true, data: summary });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // PATCH /api/commissions/:id/status
 commissionRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
   try {
@@ -44,6 +55,25 @@ commissionRouter.patch("/:id/amount", requireAuth, requireAdmin, async (req: Req
     }
 
     const commission = await commissionService.updateAmount(id, amount, note ?? null);
+    res.json({ success: true, data: commission });
+  } catch (error: any) {
+    const statusCode = error.message === "Không tìm thấy Hoa hồng" ? 404 : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// PATCH /api/commissions/:id/payout — chỉ Admin được ghi đè "khách đã chi" và
+// ghi nhận "đã chi hoa hồng".
+commissionRouter.patch("/:id/payout", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { customerPaidOverride, paidOutAmount, paidOutDate } = req.body ?? {};
+
+    const commission = await commissionService.updatePayout(id, {
+      customerPaidOverride,
+      paidOutAmount,
+      paidOutDate,
+    });
     res.json({ success: true, data: commission });
   } catch (error: any) {
     const statusCode = error.message === "Không tìm thấy Hoa hồng" ? 404 : 400;

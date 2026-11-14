@@ -1,5 +1,7 @@
-import { query, run } from "../../database/db.js";
+import { query, run, transaction, type TransactionClient } from "../../database/db.js";
 import { WARD_UNITS } from "../../constants/org.js";
+import { normalizeWardName } from "./ward-name.js";
+import type { WardContactImportItem } from "./ward-contact-import.js";
 
 export class TerritoryServiceError extends Error {
   constructor(message: string, public status: number) {
@@ -17,6 +19,10 @@ function badRequest(message: string): TerritoryServiceError {
 
 function notFound(message: string): TerritoryServiceError {
   return new TerritoryServiceError(message, 404);
+}
+
+function conflict(message: string): TerritoryServiceError {
+  return new TerritoryServiceError(message, 409);
 }
 
 function requireText(value: unknown, label: string, max: number): string {
@@ -110,6 +116,11 @@ export interface WardContactInput {
   amInCharge?: string;
 }
 
+export interface CreateTerritoryInput {
+  wardName: string;
+  staffName?: string;
+}
+
 export interface WardStatsInput {
   population?: number;
   schoolMamnon?: number;
@@ -122,6 +133,56 @@ export interface WardStatsInput {
 export class TerritoryService {
   async getAll() {
     return query("SELECT * FROM territories ORDER BY ward_name ASC");
+  }
+
+  async createTerritory(input: CreateTerritoryInput, operator: string = "Admin") {
+    if (typeof input.wardName !== "string" || input.wardName.trim() === "") {
+      throw badRequest("Tên phường không được để trống");
+    }
+    const wardName = input.wardName.trim();
+    if (wardName.length < 2 || wardName.length > MAX_NAME_LENGTH) {
+      throw badRequest("Tên phường phải từ 2 đến 100 ký tự");
+    }
+
+    const normalizedNew = normalizeWardName(wardName);
+    const existingWards = await query<{ ward_name: string }>("SELECT ward_name FROM territories");
+    const isDuplicate = existingWards.some(
+      (row) => normalizeWardName(row.ward_name) === normalizedNew
+    );
+    if (isDuplicate) {
+      throw conflict("Phường đã tồn tại");
+    }
+
+    let staffName = "";
+    if (input.staffName !== undefined && input.staffName !== null && input.staffName !== "") {
+      if (typeof input.staffName !== "string") {
+        throw badRequest("Nhân viên phụ trách không hợp lệ");
+      }
+      staffName = input.staffName.trim();
+      const staffRows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [staffName]);
+      if (!staffRows.length) {
+        throw badRequest("Nhân viên phụ trách không tồn tại");
+      }
+    }
+
+    const id = `TB-${Date.now()}`;
+    await run(
+      "INSERT INTO territories (id, ward_name, staff_name) VALUES (?, ?, ?)",
+      [id, wardName, staffName || null]
+    );
+
+    await run(
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+      [`LOG-${Date.now()}`, operator, "Tạo phường", `Tạo phường ${wardName} (ID ${id})`]
+    );
+
+    const created = await query<any>("SELECT * FROM territories WHERE id = ?", [id]);
+    const row = created[0];
+    return {
+      id: row.id,
+      wardName: row.ward_name,
+      staffName: row.staff_name || "",
+    };
   }
 
   async updateStats(id: string, stats: WardStatsInput, operator: string = "Admin") {
@@ -160,7 +221,7 @@ export class TerritoryService {
     await run(`UPDATE territories SET ${fields.join(", ")} WHERE id = ?`, values);
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [`LOG-${Date.now()}`, operator, "Cập nhật chỉ số địa bàn", `Cập nhật địa bàn ID ${id}: ${JSON.stringify(stats)}`]
     );
 
@@ -199,9 +260,16 @@ export class TerritoryService {
     }
   }
 
+  private async assertKnownStaff(staffName: string): Promise<void> {
+    const rows = await query<{ id: string }>("SELECT id FROM staff WHERE name = ?", [staffName]);
+    if (!rows.length) {
+      throw new Error("AM phụ trách không tồn tại");
+    }
+  }
+
   async createWardContact(territoryId: string, data: WardContactInput, operator: string = "Admin") {
-    if (!data.unit || !data.department || !data.fullName || !data.position) {
-      throw new Error("Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Họ tên, Chức vụ)");
+    if (!data.unit || !data.department || !data.position) {
+      throw new Error("Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Chức vụ)");
     }
 
     const territoryExists = await query("SELECT id FROM territories WHERE id = ?", [territoryId]);
@@ -209,17 +277,25 @@ export class TerritoryService {
       throw new Error("Không tìm thấy địa bàn");
     }
 
-    await this.assertNoDuplicateContact(territoryId, data);
+    const fullName = data.fullName || "";
+    const phone = data.phone || "";
+    const amInCharge = data.amInCharge || "";
+    if (amInCharge) {
+      await this.assertKnownStaff(amInCharge);
+    }
+
+    const normalized: WardContactInput = { ...data, fullName, phone, amInCharge };
+    await this.assertNoDuplicateContact(territoryId, normalized);
 
     const id = `WARDC-${Date.now()}`;
     await run(
       "INSERT INTO ward_contacts (id, territory_id, unit, department, full_name, position, phone, am_in_charge) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [id, territoryId, data.unit, data.department, data.fullName, data.position, data.phone || "", data.amInCharge || ""]
+      [id, territoryId, data.unit, data.department, fullName, data.position, phone, amInCharge]
     );
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
-      [`LOG-${Date.now()}`, operator, "Thêm đầu mối phường", `Thêm ${data.fullName} (${data.position}) vào địa bàn ID ${territoryId}`]
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+      [`LOG-${Date.now()}`, operator, "Thêm đầu mối phường", `Thêm ${fullName || data.position} (${data.position}) vào địa bàn ID ${territoryId}`]
     );
 
     const created = await query("SELECT * FROM ward_contacts WHERE id = ?", [id]);
@@ -236,11 +312,18 @@ export class TerritoryService {
     const merged: WardContactInput = {
       unit: patch.unit ?? existing.unit,
       department: patch.department ?? existing.department,
-      fullName: patch.fullName ?? existing.full_name,
+      fullName: patch.fullName ?? existing.full_name ?? "",
       position: patch.position ?? existing.position,
-      phone: patch.phone ?? existing.phone,
-      amInCharge: patch.amInCharge ?? existing.am_in_charge,
+      phone: patch.phone ?? existing.phone ?? "",
+      amInCharge: patch.amInCharge ?? existing.am_in_charge ?? "",
     };
+
+    if (!merged.unit || !merged.department || !merged.position) {
+      throw new Error("Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Chức vụ)");
+    }
+    if (merged.amInCharge) {
+      await this.assertKnownStaff(merged.amInCharge);
+    }
 
     await this.assertNoDuplicateContact(existing.territory_id, merged, contactId);
 
@@ -250,7 +333,7 @@ export class TerritoryService {
     );
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [`LOG-${Date.now()}`, operator, "Cập nhật đầu mối phường", `Cập nhật đầu mối ID ${contactId}`]
     );
 
@@ -267,11 +350,100 @@ export class TerritoryService {
     await run("DELETE FROM ward_contacts WHERE id = ?", [contactId]);
 
     await run(
-      "INSERT INTO audit_logs (id, user, action, details) VALUES (?, ?, ?, ?)",
+      'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
       [`LOG-${Date.now()}`, operator, "Xóa đầu mối phường", `Xóa đầu mối ID ${contactId}`]
     );
 
     return { success: true, message: "Xóa đầu mối thành công" };
+  }
+
+  async importWardContacts(
+    items: WardContactImportItem[],
+    opts: { autoCreateWards: boolean },
+    operator: string = "Admin"
+  ): Promise<{
+    created: number;
+    duplicates: number;
+    createdWards: string[];
+    errors: { rowNumber: number; message: string }[];
+  }> {
+    return transaction(async (tx: TransactionClient) => {
+      const errors: { rowNumber: number; message: string }[] = [];
+      const createdWards: string[] = [];
+      let created = 0;
+      let duplicates = 0;
+
+      const territoryRows = await tx.query<{ id: string; ward_name: string }>(
+        "SELECT id, ward_name FROM territories"
+      );
+      // wardId theo tên đã chuẩn hóa — dùng Map để tìm phường trùng O(1) và
+      // để phường vừa tự tạo trong lượt import này cũng được các dòng sau
+      // trong CÙNG file nhận diện (vd nhiều dòng của 1 phường mới).
+      const wardsByNormalizedName = new Map<string, string>();
+      for (const row of territoryRows) {
+        wardsByNormalizedName.set(normalizeWardName(row.ward_name), row.id);
+      }
+
+      const staffRows = await tx.query<{ name: string }>("SELECT name FROM staff");
+      const knownStaffNames = new Set(staffRows.map((r) => r.name));
+
+      for (const item of items) {
+        const normalizedWard = normalizeWardName(item.wardName);
+        let territoryId = wardsByNormalizedName.get(normalizedWard);
+
+        if (!territoryId) {
+          if (!opts.autoCreateWards) {
+            errors.push({ rowNumber: item.rowNumber, message: `Không tìm thấy phường: ${item.wardName}` });
+            continue;
+          }
+          territoryId = newId("TB");
+          await tx.run("INSERT INTO territories (id, ward_name) VALUES (?, ?)", [territoryId, item.wardName.trim()]);
+          wardsByNormalizedName.set(normalizedWard, territoryId);
+          createdWards.push(item.wardName.trim());
+        }
+
+        if (!item.unit || !item.department || !item.position) {
+          errors.push({
+            rowNumber: item.rowNumber,
+            message: "Thiếu thông tin bắt buộc (Đơn vị, Phòng ban, Chức vụ)",
+          });
+          continue;
+        }
+
+        if (item.amInCharge && !knownStaffNames.has(item.amInCharge)) {
+          errors.push({ rowNumber: item.rowNumber, message: `AM phụ trách không tồn tại: ${item.amInCharge}` });
+          continue;
+        }
+
+        const existingContact = await tx.query<{ id: string }>(
+          "SELECT id FROM ward_contacts WHERE territory_id = ? AND unit = ? AND department = ? AND position = ? AND full_name = ?",
+          [territoryId, item.unit, item.department, item.position, item.fullName]
+        );
+        if (existingContact.length > 0) {
+          duplicates++;
+          continue;
+        }
+
+        const contactId = newId("WARDC");
+        await tx.run(
+          "INSERT INTO ward_contacts (id, territory_id, unit, department, full_name, position, phone, am_in_charge) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [contactId, territoryId, item.unit, item.department, item.fullName, item.position, item.phone, item.amInCharge]
+        );
+        created++;
+      }
+
+      await tx.run(
+        'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+        [
+          newId("LOG"),
+          operator,
+          "Import đầu mối phường",
+          `Tạo mới ${created}, trùng bỏ qua ${duplicates}, phường mới ${createdWards.length}, lỗi ${errors.length}`,
+        ]
+      );
+
+      return { created, duplicates, createdWards, errors };
+    });
   }
 
   async updateHouseholds(id: string, householdCount: number, quarterCount?: number, operator: string = "Admin") {

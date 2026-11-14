@@ -30,6 +30,12 @@ const EXPECTED_COLUMNS: Record<string, string[]> = {
     "population",
     "created_at",
   ],
+  system_settings: [
+    "payment_beneficiary",
+    "payment_account_no",
+    "payment_bank_name",
+    "payment_signer_name",
+  ],
 };
 
 async function count(table: string): Promise<number> {

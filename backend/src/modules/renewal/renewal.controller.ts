@@ -1,7 +1,14 @@
 import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { requireAuth } from "../../middleware/require-auth.js";
+import { requireAdmin } from "../../middleware/require-role.js";
+import { resolveActorName } from "../../middleware/actor.js";
+import { ROLES } from "../../constants/org.js";
+import { HttpError } from "../auth/auth.service.js";
 import { RenewalService } from "./renewal.service.js";
+
+/** Giá trị chắc chắn không khớp bất kỳ `staff_name` nào — dùng khi không xác định được tên nhân viên hiện tại. */
+const NO_MATCH_STAFF = "\u0000__NO_STAFF__\u0000";
 
 const ALLOWED_EXCEL_MIMES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -38,12 +45,18 @@ export const renewalRouter = Router();
 const renewalService = new RenewalService();
 
 // GET /api/renewals
-renewalRouter.get("/", async (req: Request, res: Response) => {
+// Không phải Admin: ép staff = tên của người gọi (ép ở tầng API, không chỉ
+// ẩn ở UI) — tham số `?staff=...` của client bị bỏ qua hoàn toàn.
+renewalRouter.get("/", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { cohort, staff, status } = req.query;
+    const { cohort, status } = req.query;
+    let staffFilter = req.query.staff as string | undefined;
+    if (req.user?.role !== ROLES.ADMIN) {
+      staffFilter = (await resolveActorName(req)) ?? NO_MATCH_STAFF;
+    }
     const renewals = await renewalService.getAll({
       cohort: cohort as string,
-      staff: staff as string,
+      staff: staffFilter,
       status: status as string,
     });
     res.json({ success: true, data: renewals });
@@ -52,8 +65,8 @@ renewalRouter.get("/", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/renewals/import
-renewalRouter.post("/import", requireAuth, handleUpload, async (req: Request, res: Response): Promise<void> => {
+// POST /api/renewals/import — chỉ Admin
+renewalRouter.post("/import", requireAuth, requireAdmin, handleUpload, async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
       res.status(400).json({ success: false, message: "Vui lòng đính kèm file Excel (.xlsx)" });
@@ -71,15 +84,37 @@ renewalRouter.post("/import", requireAuth, handleUpload, async (req: Request, re
 });
 
 // PATCH /api/renewals/:id/status
-renewalRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response) => {
+renewalRouter.patch("/:id/status", requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    if (req.user?.role !== ROLES.ADMIN) {
+      const existing = await renewalService.getById(id);
+      const actorName = await resolveActorName(req);
+      if (!existing || existing.staff_name.trim() !== (actorName ?? "").trim()) {
+        res.status(403).json({ success: false, message: "Bạn chỉ được xử lý dữ liệu của mình" });
+        return;
+      }
+    }
     const { status, failureReason } = req.body;
     const operator = req.user?.name ?? req.user?.id ?? "Admin";
     const result = await renewalService.updateStatus(id, status, failureReason, operator);
     res.json(result);
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    const statusCode = error instanceof HttpError ? error.status : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
+  }
+});
+
+// PATCH /api/renewals/:id/dates — Admin sửa tay ngày hết hạn / ngày gia hạn thành công
+renewalRouter.patch("/:id/dates", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { expiryDate, renewedAt } = req.body ?? {};
+    const updated = await renewalService.updateDates(id, { expiryDate, renewedAt });
+    res.json({ success: true, data: updated });
+  } catch (error: any) {
+    const statusCode = error instanceof HttpError ? error.status : 400;
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 });
 

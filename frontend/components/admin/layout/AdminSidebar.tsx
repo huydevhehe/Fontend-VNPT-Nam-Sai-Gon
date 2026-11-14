@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth/auth-context";
 import {
   LayoutDashboard,
   Receipt,
   RotateCw,
   Users,
   BellRing,
+  MailWarning,
   Target,
   FileText,
   Percent,
@@ -17,6 +19,7 @@ import {
   CheckSquare,
   ShieldCheck,
   Settings,
+  Settings2,
   X,
 } from "lucide-react";
 
@@ -45,8 +48,13 @@ const NAV_SECTIONS = [
         icon: Target,
       },
       {
-        name: "Hợp đồng & Giao dịch",
+        name: "Đơn hàng",
         href: "/admin/contracts",
+        icon: FileText,
+      },
+      {
+        name: "Đề nghị thanh toán",
+        href: "/admin/payment-requests",
         icon: FileText,
       },
       {
@@ -80,13 +88,25 @@ const NAV_SECTIONS = [
         href: "/admin/services",
         icon: BellRing,
       },
+      {
+        name: "Cấu hình KPI",
+        href: "/admin/kpi-settings",
+        icon: Settings2,
+        badge: "Admin",
+      },
+      {
+        name: "Nhắc hết hạn (Email)",
+        href: "/admin/reminders",
+        icon: MailWarning,
+        badge: "Admin",
+      },
     ],
   },
   {
     label: "ĐỊA BÀN",
     items: [
       {
-        name: "Phường / Khu phố",
+        name: "Phường xã",
         href: "/admin/territories",
         icon: MapPin,
       },
@@ -101,7 +121,7 @@ const NAV_SECTIONS = [
         icon: UserCheck,
       },
       {
-        name: "Duyệt CTV",
+        name: "Cộng tác viên",
         href: "/admin/ctv-accounts",
         icon: UserRoundCheck,
         badge: "Admin",
@@ -128,6 +148,8 @@ const NAV_SECTIONS = [
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
 
   return (
     <>
@@ -177,7 +199,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 {section.label}
               </div>
               <nav className="space-y-1">
-                {section.items.map((item) => {
+                {section.items
+                  .filter((item) => !("adminOnly" in item && item.adminOnly) || isAdmin)
+                  .map((item) => {
                   const isActive =
                     pathname === item.href ||
                     (item.href !== "/admin/dashboard" &&
@@ -219,7 +243,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-[11px] text-slate-600">
             <span className="font-bold text-blue-900">● VNPT CRM V2</span>
             <div className="mt-0.5 text-[10px] text-slate-500">
-              Nam Sài Gòn · Đã kết nối Mock Backend
+              Nam Sài Gòn · Đã kết nối hệ thống
             </div>
           </div>
         </div>

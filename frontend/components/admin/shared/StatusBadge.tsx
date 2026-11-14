@@ -1,9 +1,10 @@
 interface StatusBadgeProps {
   status: string;
   variant?: "green" | "amber" | "red" | "blue" | "slate";
+  title?: string;
 }
 
-export default function StatusBadge({ status, variant }: StatusBadgeProps) {
+export default function StatusBadge({ status, variant, title }: StatusBadgeProps) {
   let resolvedVariant = variant;
 
   if (!resolvedVariant) {
@@ -19,6 +20,7 @@ export default function StatusBadge({ status, variant }: StatusBadgeProps) {
     ) {
       resolvedVariant = "green";
     } else if (
+      s.includes("đình chỉ") ||
       s.includes("hẹn") ||
       s.includes("đang làm") ||
       s.includes("đang tư vấn") ||
@@ -28,6 +30,8 @@ export default function StatusBadge({ status, variant }: StatusBadgeProps) {
       s.includes("cần xử lý")
     ) {
       resolvedVariant = "amber";
+    } else if (s.includes("ngừng hoạt động")) {
+      resolvedVariant = "slate";
     } else if (
       s.includes("nợ cước") ||
       s.includes("thất bại") ||
@@ -53,7 +57,8 @@ export default function StatusBadge({ status, variant }: StatusBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${colorStyles}`}
+      title={title}
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap cursor-default ${colorStyles}`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
       {status}

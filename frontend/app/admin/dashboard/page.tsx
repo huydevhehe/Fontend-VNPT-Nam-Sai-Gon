@@ -383,7 +383,8 @@ export default function AdminDashboardPage() {
                 <th className="px-4 py-3">Gia hạn</th>
                 <th className="px-4 py-3">Lead</th>
                 <th className="px-4 py-3">Hợp đồng</th>
-                <th className="px-4 py-3 text-right">Doanh thu thực hiện</th>
+                <th className="px-4 py-3 text-right">Đã chốt tháng</th>
+                <th className="px-4 py-3 text-right">Đã thu tháng</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -404,7 +405,10 @@ export default function AdminDashboardPage() {
                   <td className="px-4 py-3">{staff.monthlyLeads}</td>
                   <td className="px-4 py-3">{staff.monthlyContracts}</td>
                   <td className="px-4 py-3 text-right font-bold text-slate-900">
-                    {staff.revenueExecuted.toLocaleString("vi-VN")} ₫
+                    {(staff.revenue?.closedMonth ?? 0).toLocaleString("vi-VN")} ₫
+                  </td>
+                  <td className="px-4 py-3 text-right font-bold text-emerald-600">
+                    {(staff.revenue?.collectedMonth ?? 0).toLocaleString("vi-VN")} ₫
                   </td>
                 </tr>
               ))}

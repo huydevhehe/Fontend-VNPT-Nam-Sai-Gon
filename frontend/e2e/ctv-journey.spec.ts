@@ -128,28 +128,28 @@ test.describe("Hành trình CTV đầu-cuối", () => {
 
     await test.step("Tạo hợp đồng từ lead", async () => {
       await page.goto("/admin/contracts");
-      await page.getByRole("button", { name: "Thêm hợp đồng" }).click();
-      await expect(page.getByRole("heading", { name: "Thêm hợp đồng" })).toBeVisible();
+      await page.getByRole("button", { name: "Tạo đơn hàng" }).click();
+      await expect(page.getByRole("heading", { name: "Tạo đơn hàng" })).toBeVisible();
 
       const lead = await findLeadByName(request, adminToken, customerName);
-      await fieldByLabel(page, "Từ Lead").selectOption(lead.id);
+      await fieldByLabel(page, "Chọn từ Lead chốt thành công (tùy chọn)").selectOption(lead.id);
       await expect(fieldByLabel(page, "Tên khách hàng")).toHaveValue(customerName);
       await fieldByLabel(page, "Mã giao dịch").fill(transactionCode);
-      await fieldByLabel(page, "Giá trị hợp đồng (₫)").fill(String(CONTRACT_VALUE));
+      await fieldByLabel(page, "Giá trị đơn hàng (₫)").fill(String(CONTRACT_VALUE));
       await fieldByLabel(page, "Mã thuê bao (phân tách bởi dấu phẩy)").fill("0901234567");
 
-      await page.getByRole("button", { name: "Tạo hợp đồng" }).click();
-      await expect(page.getByRole("heading", { name: "Thêm hợp đồng" })).not.toBeVisible({
+      await page.locator("form").getByRole("button", { name: "Tạo đơn hàng" }).click();
+      await expect(page.getByRole("heading", { name: "Tạo đơn hàng" })).not.toBeVisible({
         timeout: 10_000,
       });
 
       await page
-        .getByPlaceholder("Tìm theo mã giao dịch, khách hàng, mã thuê bao...")
+        .getByPlaceholder("Tìm theo mã giao dịch, khách hàng, AM, mã thuê bao...")
         .fill(transactionCode);
       contractRow = page.locator("table tbody tr", { hasText: transactionCode });
       await expect(contractRow).toHaveCount(1);
       await expect(contractRow).toContainText("CTV E2E Test");
-      await expect(contractRow).toContainText(ward.ward_name);
+      // Cột Phường đã bị bỏ khỏi bảng đơn hàng (Đợt 3), không kiểm tra lại trên bảng.
     });
 
     await test.step("Đổi hợp đồng sang Hoàn tất triển khai", async () => {
@@ -163,7 +163,7 @@ test.describe("Hành trình CTV đầu-cuối", () => {
     await test.step("Trang Hoa hồng có dòng Chờ chi của CTV", async () => {
       await page.goto("/admin/commissions");
       await page
-        .getByPlaceholder("Tìm theo đối tượng thụ hưởng, mã giao dịch...")
+        .getByPlaceholder("Tìm theo người giới thiệu, khách hàng, mã giao dịch...")
         .fill(transactionCode);
       commissionRow = page.locator("table tbody tr", { hasText: transactionCode });
       await expect(commissionRow).toHaveCount(1);
@@ -212,7 +212,7 @@ test.describe("Hành trình CTV đầu-cuối", () => {
       await loginAs(page, "admin");
       await page.goto(`/admin/territories/${ward.id}`);
       await expect(page.getByRole("heading", { name: "Lead dự án đang theo" })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Hợp đồng đã triển khai" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Đơn hàng đã triển khai" })).toBeVisible();
       await expect(page.getByText(customerName).first()).toBeVisible();
       await expect(page.getByText(transactionCode)).toBeVisible();
     });

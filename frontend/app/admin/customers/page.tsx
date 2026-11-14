@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, FormEvent, ChangeEvent } from "react";
+import Link from "next/link";
 import {
   Users,
   UserPlus,
@@ -12,49 +13,38 @@ import {
   ArrowRightLeft,
   UploadCloud,
   CheckCircle2,
+  Users2,
+  Pencil,
 } from "lucide-react";
 import KpiCard from "@/components/admin/shared/KpiCard";
 import DataTable, { Column } from "@/components/admin/shared/DataTable";
 import StatusBadge from "@/components/admin/shared/StatusBadge";
-import { CustomerRecord, CustomerType, CustomerGroup, TerritoryRecord } from "@/lib/crm/types/crm.types";
+import { CustomerRecord, TerritoryRecord } from "@/lib/crm/types/crm.types";
 import {
   getCustomers,
   createCustomer,
+  updateCustomer,
   transferCustomer,
   transferCaringStaff,
   importCustomerBatchExcel,
+  assignStaffBulk,
 } from "@/lib/api/customers.api";
 import { getTerritories } from "@/lib/api/territories.api";
 import { getStaff } from "@/lib/api/staff.api";
+import {
+  getCustomerTeams,
+  assignCustomerTeam,
+  CustomerTeamRecord,
+} from "@/lib/api/customer-teams.api";
 import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 import { useAuth } from "@/lib/auth/auth-context";
+import TeamManager from "@/components/admin/customer/TeamManager";
+import CustomerForm, {
+  CustomerFormValues,
+  customerToFormValues,
+} from "@/components/admin/customer/CustomerForm";
+import CustomerImportWizard from "@/components/admin/customer/CustomerImportWizard";
 
-const TYPE_OPTIONS: CustomerType[] = ["Doanh nghiệp", "Hộ kinh doanh", "Cá nhân"];
-const GROUP_OPTIONS: CustomerGroup[] = ["Tự phát triển", "Tập hiện hữu"];
-
-interface CustomerFormState {
-  name: string;
-  identityCode: string;
-  type: CustomerType;
-  customerGroup: CustomerGroup;
-  phone: string;
-  address: string;
-  amStaff: string;
-  amCaringStaff: string;
-  handoverBatch: string;
-}
-
-const EMPTY_FORM: CustomerFormState = {
-  name: "",
-  identityCode: "",
-  type: TYPE_OPTIONS[0],
-  customerGroup: GROUP_OPTIONS[0],
-  phone: "",
-  address: "",
-  amStaff: "",
-  amCaringStaff: "",
-  handoverBatch: "",
-};
 
 export default function CustomersPage() {
   const { user } = useAuth();
@@ -65,13 +55,12 @@ export default function CustomersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<CustomerFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [editTarget, setEditTarget] = useState<CustomerRecord | null>(null);
 
   const [transferTarget, setTransferTarget] = useState<CustomerRecord | null>(null);
   const [transferStaff, setTransferStaff] = useState("");
-  const [groupFilter, setGroupFilter] = useState<CustomerGroup | "">("");
   const [staffNames, setStaffNames] = useState<string[]>([]);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [transferring, setTransferring] = useState(false);
@@ -93,6 +82,29 @@ export default function CustomersPage() {
   const [batchError, setBatchError] = useState<string | null>(null);
   const [batchSuccess, setBatchSuccess] = useState<string | null>(null);
   const [batchLoading, setBatchLoading] = useState(false);
+
+  // Team khách hàng (Đợt 7, Task 2)
+  const [teams, setTeams] = useState<CustomerTeamRecord[]>([]);
+  const [showTeamManager, setShowTeamManager] = useState(false);
+
+  // Import khách hàng (xử lý trùng) — Đợt 8, Task 4. Luồng độc lập với modal
+  // "Nhập đợt KHDN chăm" cũ (showBatchModal), không thay thế.
+  const [showImportWizard, setShowImportWizard] = useState(false);
+
+  // Gán nhân viên cho nhiều khách — Đợt 8, Task 5. Chỉ bật selection cho Admin.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkTarget, setBulkTarget] = useState<"caring" | "am" | "team" | null>(null);
+  const [bulkValue, setBulkValue] = useState("");
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+
+  function loadTeams() {
+    getCustomerTeams()
+      .then(setTeams)
+      .catch(() => {
+        // Không chặn trang khách hàng nếu danh sách team tải lỗi.
+      });
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -131,7 +143,7 @@ export default function CustomersPage() {
     let isMounted = true;
     getStaff()
       .then((staff) => {
-        if (isMounted) setStaffNames(staff.map((s) => s.name));
+        if (isMounted) setStaffNames(Array.from(new Set(staff.map((s) => s.name))));
       })
       .catch(() => {
         // Gợi ý tên nhân viên là tuỳ chọn; backend vẫn kiểm tra khi điều chuyển.
@@ -146,10 +158,44 @@ export default function CustomersPage() {
       })
       .catch(() => {});
 
+    loadTeams();
+
     return () => {
       isMounted = false;
     };
   }, []);
+
+  async function handleBulkAssign() {
+    if (!bulkTarget || selectedIds.size === 0) return;
+    const value = bulkValue.trim();
+    if (!value) {
+      setBulkError("Vui lòng chọn giá trị cần gán");
+      return;
+    }
+
+    setBulkError(null);
+    setBulkSubmitting(true);
+    try {
+      const customerIds = Array.from(selectedIds);
+      if (bulkTarget === "caring") {
+        await assignStaffBulk({ customerIds, amCaringStaff: value });
+      } else if (bulkTarget === "am") {
+        await assignStaffBulk({ customerIds, amStaff: value });
+      } else {
+        await assignCustomerTeam(customerIds, value);
+      }
+
+      const updated = await getCustomers();
+      setData(updated);
+      setSelectedIds(new Set());
+      setBulkTarget(null);
+      setBulkValue("");
+    } catch (err) {
+      setBulkError(err instanceof Error ? err.message : "Gán nhân viên thất bại");
+    } finally {
+      setBulkSubmitting(false);
+    }
+  }
 
   async function handleBatchSubmit(e: FormEvent) {
     e.preventDefault();
@@ -195,31 +241,72 @@ export default function CustomersPage() {
     }
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleCreateSubmit(values: CustomerFormValues) {
     setFormError(null);
     setSubmitting(true);
 
     try {
       const created = await createCustomer({
-        name: form.name,
-        identityCode: form.identityCode || undefined,
-        type: form.type,
-        customerGroup: form.customerGroup,
-        phone: form.phone || undefined,
-        address: form.address || undefined,
-        amStaff: form.amStaff || undefined,
-        amCaringStaff: form.amCaringStaff || undefined,
-        handoverBatch: form.handoverBatch.trim() || undefined,
+        name: values.name,
+        identityCode: values.identityCode || undefined,
+        type: values.type,
+        customerGroup: values.customerGroup,
+        customerCode: values.customerCode || undefined,
+        status: values.status || undefined,
+        teamId: values.teamId || undefined,
+        salesChannel: values.salesChannel || undefined,
+        territoryId: values.territoryId || undefined,
+        phone: values.phone || undefined,
+        address: values.address || undefined,
+        note: values.note || undefined,
+        contactName: values.contactName || undefined,
+        contactEmail: values.contactEmail || undefined,
+        billingName: values.billingName || undefined,
+        billingPhone: values.billingPhone || undefined,
+        billingEmail: values.billingEmail || undefined,
       });
 
       setData((prev) => [created, ...prev]);
       setShowForm(false);
-      setForm(EMPTY_FORM);
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "Không thể thêm khách hàng. Vui lòng thử lại."
       );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleEditSubmit(values: CustomerFormValues) {
+    if (!editTarget) return;
+    setFormError(null);
+    setSubmitting(true);
+
+    try {
+      const updated = await updateCustomer(editTarget.id, {
+        name: values.name,
+        identityCode: values.identityCode || undefined,
+        type: values.type,
+        customerGroup: values.customerGroup,
+        customerCode: values.customerCode || undefined,
+        status: values.status || undefined,
+        teamId: values.teamId || undefined,
+        salesChannel: values.salesChannel || undefined,
+        territoryId: values.territoryId || undefined,
+        phone: values.phone || undefined,
+        address: values.address || undefined,
+        note: values.note || undefined,
+        contactName: values.contactName || undefined,
+        contactEmail: values.contactEmail || undefined,
+        billingName: values.billingName || undefined,
+        billingPhone: values.billingPhone || undefined,
+        billingEmail: values.billingEmail || undefined,
+      });
+
+      setData((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      setEditTarget(null);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Không thể sửa khách hàng. Vui lòng thử lại.");
     } finally {
       setSubmitting(false);
     }
@@ -305,10 +392,32 @@ export default function CustomersPage() {
             {item.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <div className="font-bold text-slate-900">{item.name}</div>
+            <Link
+              href={`/admin/customers/${item.id}`}
+              className="font-bold text-slate-900 hover:text-vnpt hover:underline"
+            >
+              {item.name}
+            </Link>
             <div className="text-[11px] text-slate-400">{item.address}</div>
           </div>
         </div>
+      ),
+    },
+    {
+      header: "Địa bàn",
+      accessorKey: "territoryName",
+      cell: (item) =>
+        item.territoryName ? (
+          <StatusBadge status={item.territoryName} variant="slate" />
+        ) : (
+          <span className="text-slate-400">—</span>
+        ),
+    },
+    {
+      header: "Kênh bán",
+      accessorKey: "salesChannel",
+      cell: (item) => (
+        <span className="text-xs text-slate-700">{item.salesChannel || "—"}</span>
       ),
     },
     {
@@ -390,6 +499,13 @@ export default function CustomersPage() {
       ),
     },
     {
+      header: "Team",
+      accessorKey: "teamName",
+      cell: (item) => (
+        <span className="text-xs font-semibold text-slate-700">{item.teamName || "—"}</span>
+      ),
+    },
+    {
       header: "Đợt giao",
       accessorKey: "handoverBatch",
       cell: (item) =>
@@ -411,6 +527,16 @@ export default function CustomersPage() {
             accessorKey: "id" as const,
             cell: (item: CustomerRecord) => (
               <div className="flex flex-col items-start gap-1">
+                <button
+                  onClick={() => {
+                    setFormError(null);
+                    setEditTarget(item);
+                  }}
+                  className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
+                >
+                  <Pencil className="h-3 w-3" />
+                  Sửa thông tin
+                </button>
                 <button
                   onClick={() => openTransfer(item)}
                   className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 hover:text-vnpt hover:border-vnpt transition-colors"
@@ -447,6 +573,15 @@ export default function CustomersPage() {
         <div className="flex items-center gap-2">
           {isAdmin && (
             <button
+              onClick={() => setShowTeamManager(true)}
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-600 shadow-xs hover:bg-slate-50 transition-colors"
+            >
+              <Users2 className="h-4 w-4" />
+              <span className="btn-label">Quản lý Team</span>
+            </button>
+          )}
+          {isAdmin && (
+            <button
               onClick={() => {
                 setBatchError(null);
                 setBatchSuccess(null);
@@ -458,10 +593,18 @@ export default function CustomersPage() {
               <span className="btn-label">Nhập đợt KHDN chăm</span>
             </button>
           )}
+          {isAdmin && (
+            <button
+              onClick={() => setShowImportWizard(true)}
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-600 shadow-xs hover:bg-slate-50 transition-colors"
+            >
+              <UploadCloud className="h-4 w-4" />
+              <span className="btn-label">Import khách hàng</span>
+            </button>
+          )}
           <button
             onClick={() => {
               setFormError(null);
-              setForm(EMPTY_FORM);
               setShowForm(true);
             }}
             className="flex h-9 items-center gap-1.5 rounded-xl bg-vnpt px-3.5 text-xs font-bold text-white shadow-xs hover:bg-vnpt-dark"
@@ -500,6 +643,49 @@ export default function CustomersPage() {
         />
       </div>
 
+      {/* Thanh gán nhân viên hàng loạt — Đợt 8, Task 5 */}
+      {isAdmin && selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-vnpt/30 bg-vnpt/5 px-4 py-2.5 text-xs">
+          <span className="font-bold text-slate-800">Đã chọn {selectedIds.size} khách</span>
+          <button
+            onClick={() => {
+              setBulkTarget("caring");
+              setBulkValue("");
+              setBulkError(null);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Gán AM chăm sóc
+          </button>
+          <button
+            onClick={() => {
+              setBulkTarget("am");
+              setBulkValue("");
+              setBulkError(null);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Gán AM phụ trách
+          </button>
+          <button
+            onClick={() => {
+              setBulkTarget("team");
+              setBulkValue("");
+              setBulkError(null);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Gán Team
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="ml-auto text-slate-500 underline-offset-2 hover:underline"
+          >
+            Bỏ chọn
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       {error ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
@@ -515,193 +701,178 @@ export default function CustomersPage() {
         </div>
       ) : (
         <DataTable
-          actionButton={
-            <select
-              aria-label="Lọc theo nhóm khách hàng"
-              value={groupFilter}
-              onChange={(e) => setGroupFilter(e.target.value as CustomerGroup | "")}
-              className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 focus:border-vnpt focus:outline-none"
-            >
-              <option value="">Tất cả nhóm</option>
-              {GROUP_OPTIONS.map((g) => (
-                <option key={g} value={g}>
-                  {CUSTOMER_GROUP_LABEL[g]}
-                </option>
-              ))}
-            </select>
-          }
           title="Danh sách hồ sơ khách hàng"
-          subtitle="Hỗ trợ lọc theo loại doanh nghiệp, hộ kinh doanh hoặc cá nhân"
+          subtitle="Hỗ trợ lọc theo loại khách, team, địa bàn, kênh bán, AM phụ trách/chăm sóc"
           columns={columns}
-          data={groupFilter ? data.filter((c) => c.group === groupFilter) : data}
+          data={data}
+          filters={[
+            {
+              id: "group",
+              label: "Loại khách",
+              getValue: (row) => CUSTOMER_GROUP_LABEL[row.group] ?? row.group,
+            },
+            {
+              id: "teamName",
+              label: "Team",
+              getValue: (row) => row.teamName || null,
+            },
+            {
+              id: "territoryName",
+              label: "Địa bàn",
+              getValue: (row) => row.territoryName || null,
+            },
+            {
+              id: "salesChannel",
+              label: "Kênh bán",
+              getValue: (row) => row.salesChannel || null,
+            },
+            {
+              id: "amStaff",
+              label: "AM phụ trách",
+              getValue: (row) => row.amStaff || null,
+            },
+            {
+              id: "amCaringStaff",
+              label: "AM chăm sóc",
+              getValue: (row) => row.amCaringStaff || null,
+            },
+          ]}
           searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
           exportFileName="vnpt_khach_hang"
+          selection={
+            isAdmin
+              ? {
+                  getRowId: (row) => row.id,
+                  selectedIds,
+                  onChange: setSelectedIds,
+                }
+              : undefined
+          }
         />
       )}
 
-      {/* Create Customer Modal */}
-      {showForm && (
+      {/* Modal chọn giá trị gán hàng loạt */}
+      {bulkTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900">Thêm khách hàng</h3>
+              <h3 className="text-base font-bold text-slate-900">
+                {bulkTarget === "caring" && "Gán AM chăm sóc"}
+                {bulkTarget === "am" && "Gán AM phụ trách"}
+                {bulkTarget === "team" && "Gán Team"}
+              </h3>
               <button
-                onClick={() => setShowForm(false)}
+                onClick={() => setBulkTarget(null)}
                 className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Tên khách hàng
-                </label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
+            <p className="mb-3 text-xs text-slate-500">
+              Áp dụng cho <span className="font-semibold text-slate-800">{selectedIds.size}</span> khách hàng đã chọn.
+            </p>
 
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Mã định danh (MST / CCCD)
-                </label>
-                <input
-                  value={form.identityCode}
-                  onChange={(e) => setForm({ ...form, identityCode: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
+            {bulkTarget === "team" ? (
+              <select
+                value={bulkValue}
+                onChange={(e) => setBulkValue(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              >
+                <option value="">— Chọn team —</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                list="customer-staff-names"
+                value={bulkValue}
+                onChange={(e) => setBulkValue(e.target.value)}
+                placeholder="Chọn hoặc nhập tên nhân viên"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              />
+            )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Loại khách hàng
-                  </label>
-                  <select
-                    value={form.type}
-                    onChange={(e) => setForm({ ...form, type: e.target.value as CustomerType })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  >
-                    {TYPE_OPTIONS.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Nhóm khách hàng
-                  </label>
-                  <select
-                    value={form.customerGroup}
-                    onChange={(e) =>
-                      setForm({ ...form, customerGroup: e.target.value as CustomerGroup })
-                    }
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  >
-                    {GROUP_OPTIONS.map((g) => (
-                      <option key={g} value={g}>
-                        {CUSTOMER_GROUP_LABEL[g]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+            {bulkError && (
+              <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                {bulkError}
+              </p>
+            )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    Số điện thoại
-                  </label>
-                  <input
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-slate-600">
-                    AM phụ trách (bán hàng)
-                  </label>
-                  <input
-                    list="customer-staff-names"
-                    value={form.amStaff}
-                    onChange={(e) => setForm({ ...form, amStaff: e.target.value })}
-                    placeholder="Nguyễn Thị Tình"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="create-handover-batch"
-                  className="mb-1 block text-xs font-semibold text-slate-600"
-                >
-                  Mã đợt giao (tuỳ chọn)
-                </label>
-                <input
-                  id="create-handover-batch"
-                  value={form.handoverBatch}
-                  onChange={(e) => setForm({ ...form, handoverBatch: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  AM chăm sóc (CSKH)
-                </label>
-                <input
-                  value={form.amCaringStaff}
-                  onChange={(e) => setForm({ ...form, amCaringStaff: e.target.value })}
-                  placeholder="Để trống = giống AM phụ trách"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-slate-600">
-                  Địa chỉ
-                </label>
-                <input
-                  value={form.address}
-                  onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
-                />
-              </div>
-
-              {formError && (
-                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
-                  {formError}
-                </p>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
-                >
-                  {submitting ? "Đang tạo..." : "Thêm khách hàng"}
-                </button>
-              </div>
-            </form>
+            <div className="flex justify-end gap-2 pt-4">
+              <button
+                type="button"
+                onClick={() => setBulkTarget(null)}
+                className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkAssign}
+                disabled={bulkSubmitting}
+                className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+              >
+                {bulkSubmitting ? "Đang gán..." : "Gán"}
+              </button>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Import khách hàng (xử lý trùng) — Đợt 8 */}
+      {showImportWizard && (
+        <CustomerImportWizard
+          territories={territories}
+          staffNames={staffNames}
+          onClose={() => setShowImportWizard(false)}
+          onImported={() => {
+            getCustomers().then(setData).catch(() => {});
+          }}
+        />
+      )}
+
+      {/* Quản lý Team khách hàng */}
+      {showTeamManager && (
+        <TeamManager
+          onClose={() => setShowTeamManager(false)}
+          onChanged={() => {
+            loadTeams();
+            getCustomers().then(setData).catch(() => {});
+          }}
+        />
+      )}
+
+      {/* Create Customer Modal */}
+      {showForm && (
+        <CustomerForm
+          mode="create"
+          territories={territories}
+          teams={teams}
+          submitting={submitting}
+          error={formError}
+          onSubmit={handleCreateSubmit}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
+
+      {/* Edit Customer Modal */}
+      {editTarget && (
+        <CustomerForm
+          mode="edit"
+          initialValues={customerToFormValues(editTarget)}
+          territories={territories}
+          teams={teams}
+          submitting={submitting}
+          error={formError}
+          onSubmit={handleEditSubmit}
+          onCancel={() => setEditTarget(null)}
+          customerId={editTarget.id}
+          canDeleteDocuments={isAdmin}
+        />
       )}
 
       {/* Transfer AM bán hàng Modal */}

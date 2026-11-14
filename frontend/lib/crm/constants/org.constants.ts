@@ -1,8 +1,17 @@
-import type { CustomerGroup, LeadRecord } from "../types/crm.types";
+import type { CustomerGroup, DocumentType, LeadRecord } from "../types/crm.types";
 
 export const CUSTOMER_GROUP_LABEL: Record<CustomerGroup, string> = {
-  "Tự phát triển": "KH PTM (phát triển mới)",
-  "Tập hiện hữu": "KHDN chăm (địa bàn giao)",
+  "Tự phát triển": "KH PTM",
+  "Tập hiện hữu": "KH địa bàn",
+  "PTM địa bàn": "PTM địa bàn",
+};
+
+export const DOCUMENT_TYPES: readonly DocumentType[] = ["GPKD", "CCCD", "KHAC"];
+
+export const DOCUMENT_TYPE_LABEL: Record<DocumentType, string> = {
+  GPKD: "GPKD/QĐ thành lập",
+  CCCD: "CCCD người đại diện PL",
+  KHAC: "Khác (GUQ, Giấy giới thiệu…)",
 };
 
 export const LEAD_GROUP_LABEL: Record<LeadRecord["group"], string> = {
@@ -19,3 +28,15 @@ export const WARD_UNITS: readonly { unit: string; positions: readonly string[] }
   { unit: "Phòng Nội vụ", positions: ["Trưởng phòng", "Phó phòng"] },
   { unit: "Phòng Văn hóa", positions: ["Trưởng phòng", "Phó phòng"] },
 ];
+
+// Danh mục gợi ý Đơn vị cho đầu mối phường (sheet "PhườngXã") — chỉ là gợi ý
+// qua <datalist>, không giới hạn giá trị người dùng được nhập.
+export const WARD_CONTACT_UNITS = [
+  "UBND",
+  "Đảng ủy",
+  "Trường học",
+  "Công an",
+  "Trạm Y tế",
+  "BCH Quân sự",
+  "Trung tâm Cung ứng",
+] as const;

@@ -34,7 +34,7 @@ test.describe("requireAuth kiểm tra lại trạng thái tài khoản", () => {
     const code = `NV-H1-${Date.now()}`;
     const create = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
-      data: { code, name: "NV H1 Trạng thái", role: "AM", territory: "Khu vực H1", email: `${code.toLowerCase()}@example.com` },
+      data: { code, name: "NV H1 Trạng thái", role: "AM", territory: "Khu vực H1", email: `${code.toLowerCase()}@example.com`, password: `${code}@Vnpt2026` },
     });
     expect(create.status()).toBe(201);
     const staff = (await create.json()).data;
@@ -42,9 +42,9 @@ test.describe("requireAuth kiểm tra lại trạng thái tài khoản", () => {
     const token = await apiLogin(request, code, `${code}@Vnpt2026`);
     expect((await request.get(`${API_URL}/customers`, { headers: bearer(token) })).status()).toBe(200);
 
-    const patch = await request.patch(`${API_URL}/staff/${staff.id}`, {
+    const patch = await request.patch(`${API_URL}/staff/${staff.id}/status`, {
       headers: bearer(adminToken),
-      data: { status: "Ngừng hoạt động" },
+      data: { status: "Ngừng hoạt động", reason: "Nghỉ việc" },
     });
     expect(patch.status()).toBe(200);
 
@@ -60,7 +60,7 @@ test.describe("requireAuth kiểm tra lại trạng thái tài khoản", () => {
     const code = `NV-ROLE-${Date.now()}`;
     const create = await request.post(`${API_URL}/staff`, {
       headers: bearer(adminToken),
-      data: { code, name: "NV Đổi Role", role: "AM", territory: "Khu vực H1", email: `${code.toLowerCase()}@example.com` },
+      data: { code, name: "NV Đổi Role", role: "AM", territory: "Khu vực H1", email: `${code.toLowerCase()}@example.com`, password: `${code}@Vnpt2026` },
     });
     expect(create.status()).toBe(201);
     const staff = (await create.json()).data;

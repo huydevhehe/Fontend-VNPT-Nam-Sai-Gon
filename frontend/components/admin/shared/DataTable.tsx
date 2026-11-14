@@ -16,6 +16,12 @@ export interface Column<T> {
   className?: string;
 }
 
+export interface SelectionProps<T> {
+  getRowId: (row: T) => string;
+  selectedIds: Set<string>;
+  onChange: (ids: Set<string>) => void;
+}
+
 interface DataTableProps<T> {
   title?: string;
   subtitle?: string;
@@ -25,6 +31,8 @@ interface DataTableProps<T> {
   searchPlaceholder?: string;
   exportFileName?: string;
   actionButton?: React.ReactNode;
+  /** Tuỳ chọn: hiện cột checkbox chọn dòng (Đợt 8, Task 5). Không truyền thì bảng hoạt động như trước. */
+  selection?: SelectionProps<T>;
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -36,6 +44,7 @@ export default function DataTable<T extends Record<string, any>>({
   searchPlaceholder = "Tìm kiếm trong bảng...",
   exportFileName = "vnpt_crm_export",
   actionButton,
+  selection,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterValues, setFilterValues] = useState<FilterValues>({});
@@ -53,6 +62,30 @@ export default function DataTable<T extends Record<string, any>>({
       return String(val).toLowerCase().includes(term);
     });
   });
+
+  const selectedCount = selection
+    ? filteredData.filter((row) => selection.selectedIds.has(selection.getRowId(row))).length
+    : 0;
+  const allVisibleSelected = selection ? filteredData.length > 0 && selectedCount === filteredData.length : false;
+
+  function toggleSelectAllVisible(checked: boolean) {
+    if (!selection) return;
+    const next = new Set(selection.selectedIds);
+    for (const row of filteredData) {
+      const id = selection.getRowId(row);
+      if (checked) next.add(id);
+      else next.delete(id);
+    }
+    selection.onChange(next);
+  }
+
+  function toggleSelectRow(id: string, checked: boolean) {
+    if (!selection) return;
+    const next = new Set(selection.selectedIds);
+    if (checked) next.add(id);
+    else next.delete(id);
+    selection.onChange(next);
+  }
 
   const hasActiveFilter = Object.values(filterValues).some(
     (v) => v !== "" && v !== undefined
@@ -169,6 +202,16 @@ export default function DataTable<T extends Record<string, any>>({
         <table className="w-full min-w-160 text-left text-xs">
           <thead className="border-b border-slate-100 bg-slate-50/80 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
             <tr>
+              {selection && (
+                <th className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    aria-label="Chọn tất cả"
+                    checked={allVisibleSelected}
+                    onChange={(e) => toggleSelectAllVisible(e.target.checked)}
+                  />
+                </th>
+              )}
               {columns.map((col, idx) => (
                 <th key={idx} className={`px-4 py-3 ${col.className || ""}`}>
                   {col.header}
@@ -183,6 +226,16 @@ export default function DataTable<T extends Record<string, any>>({
                   key={row.id || rIdx}
                   className="transition-colors hover:bg-blue-50/30"
                 >
+                  {selection && (
+                    <td className="px-4 py-3.5">
+                      <input
+                        type="checkbox"
+                        aria-label="Chọn dòng"
+                        checked={selection.selectedIds.has(selection.getRowId(row))}
+                        onChange={(e) => toggleSelectRow(selection.getRowId(row), e.target.checked)}
+                      />
+                    </td>
+                  )}
                   {columns.map((col, cIdx) => (
                     <td
                       key={cIdx}
@@ -204,7 +257,7 @@ export default function DataTable<T extends Record<string, any>>({
             ) : (
               <tr>
                 <td
-                  colSpan={columns.length}
+                  colSpan={columns.length + (selection ? 1 : 0)}
                   className="py-12 text-center text-xs text-slate-400"
                 >
                   Không tìm thấy dữ liệu phù hợp với tìm kiếm

@@ -59,6 +59,43 @@ function generateReferralCode(): string {
   return `CTV${suffix}`;
 }
 
+export interface ValidatedCtvInput {
+  username: string;
+  password: string;
+  name: string;
+  phone: string;
+  email: string;
+}
+
+export function validateCtvInput(input: RegisterCtvInput): ValidatedCtvInput {
+  const username = typeof input.username === "string" ? input.username.trim() : "";
+  const password = typeof input.password === "string" ? input.password : "";
+  const name = typeof input.name === "string" ? input.name.trim() : "";
+  const phone = typeof input.phone === "string" ? input.phone.trim() : "";
+  const email = typeof input.email === "string" ? input.email.trim() : "";
+
+  if (!USERNAME_PATTERN.test(username)) {
+    throw new HttpError(400, "Tên đăng nhập gồm 4-30 ký tự chữ, số, dấu chấm, gạch dưới hoặc gạch ngang");
+  }
+  if (password.length < 8) {
+    throw new HttpError(400, "Mật khẩu phải có ít nhất 8 ký tự");
+  }
+  if (password.length > 72) {
+    throw new HttpError(400, "Mật khẩu tối đa 72 ký tự");
+  }
+  if (name.length < 2 || name.length > 80) {
+    throw new HttpError(400, "Họ tên phải từ 2 đến 80 ký tự");
+  }
+  if (!PHONE_PATTERN.test(phone)) {
+    throw new HttpError(400, "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0");
+  }
+  if (email && (email.length > 120 || !EMAIL_PATTERN.test(email))) {
+    throw new HttpError(400, "Email không hợp lệ");
+  }
+
+  return { username, password, name, phone, email };
+}
+
 export class AuthService {
   async login(username: string, password: string): Promise<{ token: string; user: AuthUser }> {
     const rows = await query<UserRow>("SELECT * FROM users WHERE username = ?", [username]);
@@ -129,36 +166,16 @@ export class AuthService {
     );
   }
 
-  async registerCtv(input: RegisterCtvInput): Promise<{ message: string }> {
-    const username = typeof input.username === "string" ? input.username.trim() : "";
-    const password = typeof input.password === "string" ? input.password : "";
-    const name = typeof input.name === "string" ? input.name.trim() : "";
-    const phone = typeof input.phone === "string" ? input.phone.trim() : "";
-    const email = typeof input.email === "string" ? input.email.trim() : "";
+  async insertCtvUser(
+    v: ValidatedCtvInput,
+    opts: { status: string; mustChangePassword?: boolean; approvedBy?: string }
+  ): Promise<{ id: string; referralCode: string }> {
+    await this.assertAccountFree(v.username, v.phone);
 
-    if (!USERNAME_PATTERN.test(username)) {
-      throw new HttpError(400, "Tên đăng nhập gồm 4-30 ký tự chữ, số, dấu chấm, gạch dưới hoặc gạch ngang");
-    }
-    if (password.length < 8) {
-      throw new HttpError(400, "Mật khẩu phải có ít nhất 8 ký tự");
-    }
-    if (password.length > 72) {
-      throw new HttpError(400, "Mật khẩu tối đa 72 ký tự");
-    }
-    if (name.length < 2 || name.length > 80) {
-      throw new HttpError(400, "Họ tên phải từ 2 đến 80 ký tự");
-    }
-    if (!PHONE_PATTERN.test(phone)) {
-      throw new HttpError(400, "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0");
-    }
-    if (email && (email.length > 120 || !EMAIL_PATTERN.test(email))) {
-      throw new HttpError(400, "Email không hợp lệ");
-    }
-
-    await this.assertAccountFree(username, phone);
-
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(v.password, 10);
     const createdAt = new Date().toISOString();
+    const approvedAt = opts.approvedBy ? createdAt : null;
+    const mustChangePassword = opts.mustChangePassword ? 1 : 0;
     let lastError: unknown = null;
 
     for (let attempt = 0; attempt < MAX_REGISTER_ATTEMPTS; attempt += 1) {
@@ -166,30 +183,43 @@ export class AuthService {
       const referralCode = generateReferralCode();
       try {
         await run(
-          "INSERT INTO users (id, username, password_hash, name, role, email, status, phone, referral_code, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          `INSERT INTO users (
+            id, username, password_hash, name, role, email, status, phone, referral_code, created_at,
+            must_change_password, approved_at, approved_by
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             id,
-            username,
+            v.username,
             passwordHash,
-            name,
+            v.name,
             ROLES.CTV,
-            email || null,
-            USER_STATUS.PENDING,
-            phone,
+            v.email || null,
+            opts.status,
+            v.phone,
             referralCode,
             createdAt,
+            mustChangePassword,
+            approvedAt,
+            opts.approvedBy || null,
           ]
         );
-        return { message: "Đăng ký thành công. Tài khoản đang chờ Admin duyệt." };
+        return { id, referralCode };
       } catch (error) {
         lastError = error;
-        // Insert lỗi: nếu do trùng username/số điện thoại (race) thì báo 409,
-        // còn lại (trùng mã giới thiệu / id) thì thử lại với giá trị mới.
-        await this.assertAccountFree(username, phone);
+        await this.assertAccountFree(v.username, v.phone);
       }
     }
 
     throw lastError instanceof Error ? lastError : new Error("Không thể tạo tài khoản CTV");
+  }
+
+  async registerCtv(input: RegisterCtvInput): Promise<{ message: string }> {
+    const v = validateCtvInput(input);
+    await this.insertCtvUser(v, {
+      status: USER_STATUS.PENDING,
+      mustChangePassword: false,
+    });
+    return { message: "Đăng ký thành công. Tài khoản đang chờ Admin duyệt." };
   }
 
   async getById(id: string): Promise<AuthUser | null> {

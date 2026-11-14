@@ -198,6 +198,48 @@ test.describe("API chi tiết Phường", () => {
     expect(after.quarters.map((q: TerritoryDetail["quarters"][number]) => q.id)).not.toContain(q1.id);
   });
 
+  test("Admin tạo phường mới -> 201; trùng tên (khác hoa/thường, có tiền tố Phường) -> 409; AM tạo -> 403", async ({ request }) => {
+    const wardName = `E2E Phường Mới ${suffix}`;
+
+    const created = await request.post(`${API_URL}/territories`, {
+      headers: bearer(adminToken),
+      data: { wardName },
+    });
+    expect(created.status()).toBe(201);
+    const createdBody = (await created.json()).data;
+    expect(createdBody.wardName).toBe(wardName);
+    expect(typeof createdBody.id).toBe("string");
+
+    const duplicate = await request.post(`${API_URL}/territories`, {
+      headers: bearer(adminToken),
+      data: { wardName: `phường ${wardName.toLowerCase()}` },
+    });
+    expect(duplicate.status()).toBe(409);
+
+    const amAttempt = await request.post(`${API_URL}/territories`, {
+      headers: bearer(amToken),
+      data: { wardName: `E2E AM Không Được Tạo ${suffix}` },
+    });
+    expect(amAttempt.status()).toBe(403);
+  });
+
+  test("Mở chi tiết mọi phường trong danh sách đều trả 200 (test hồi quy Đợt 6 Task 4)", async ({ request }) => {
+    const listRes = await request.get(`${API_URL}/territories`, { headers: bearer(adminToken) });
+    expect(listRes.status()).toBe(200);
+    const territories = (await listRes.json()).data as Array<{ id: string }>;
+    expect(territories.length).toBeGreaterThan(0);
+
+    const failures: { id: string; status: number }[] = [];
+    for (const t of territories) {
+      const detail = await getDetail(request, adminToken, t.id);
+      if (detail.status() !== 200) {
+        failures.push({ id: t.id, status: detail.status() });
+      }
+    }
+
+    expect(failures, JSON.stringify(failures)).toEqual([]);
+  });
+
   test("Route /:id/households cũ vẫn hoạt động (không bị route mới bắt nhầm)", async ({ request }) => {
     const res = await request.patch(`${API_URL}/territories/TB-06/households`, {
       headers: bearer(adminToken),

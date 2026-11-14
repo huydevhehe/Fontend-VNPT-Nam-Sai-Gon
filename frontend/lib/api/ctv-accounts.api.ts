@@ -17,3 +17,19 @@ export function rejectCtvAccount(id: string): Promise<CtvAccountRecord> {
     method: "PATCH",
   });
 }
+
+export interface CreateCtvAccountInput {
+  username: string;
+  password: string;
+  name: string;
+  phone: string;
+  email?: string;
+  mustChangePassword?: boolean;
+}
+
+export function createCtvAccount(input: CreateCtvAccountInput): Promise<CtvAccountRecord> {
+  return apiFetch<CtvAccountRecord>("/ctv-accounts", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}

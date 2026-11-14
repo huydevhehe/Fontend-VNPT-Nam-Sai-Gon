@@ -40,6 +40,7 @@ export function findDueDays(expiryDate: string, today: string, daysBefore: numbe
 
 interface ServiceRow {
   id: string;
+  customer_id: string | null;
   customer_name: string;
   service_name: string;
   service_code: string;
@@ -65,12 +66,23 @@ async function findStaffEmail(staffName: string | null): Promise<string | null> 
   return email && email.trim() ? email.trim() : null;
 }
 
-async function findCustomerEmails(customerName: string | null): Promise<string[]> {
-  if (!customerName) return [];
-  const rows = await query<{ contact_email: string | null; billing_email: string | null }>(
-    "SELECT contact_email, billing_email FROM customers WHERE TRIM(name) = TRIM(?) LIMIT 1",
-    [customerName]
-  );
+/**
+ * Ưu tiên tra theo `customer_id` (chính xác, có từ Đợt 7) — chỉ so theo tên
+ * (TRIM, có thể gán nhầm khi 2 khách trùng tên) khi dịch vụ cũ chưa có
+ * `customer_id` (chưa backfill được, xem Review Focus #5 dot-07.md).
+ */
+async function findCustomerEmails(customerId: string | null, customerName: string | null): Promise<string[]> {
+  const rows = customerId
+    ? await query<{ contact_email: string | null; billing_email: string | null }>(
+        "SELECT contact_email, billing_email FROM customers WHERE id = ? LIMIT 1",
+        [customerId]
+      )
+    : customerName
+      ? await query<{ contact_email: string | null; billing_email: string | null }>(
+          "SELECT contact_email, billing_email FROM customers WHERE TRIM(name) = TRIM(?) LIMIT 1",
+          [customerName]
+        )
+      : [];
   const row = rows[0];
   if (!row) return [];
   const emails: string[] = [];
@@ -155,7 +167,7 @@ export const ReminderRunner = {
 
     // Nguồn "service"
     const services = await query<ServiceRow>(
-      "SELECT id, customer_name, service_name, service_code, expiration_date, staff_name FROM services"
+      "SELECT id, customer_id, customer_name, service_name, service_code, expiration_date, staff_name FROM services"
     );
     for (const svc of services) {
       const daysBefore = findDueDays(svc.expiration_date, today, settings.daysBefore);
@@ -167,7 +179,7 @@ export const ReminderRunner = {
         if (staffEmail) recipients.push(staffEmail);
       }
       if (settings.notifyCustomer) {
-        const customerEmails = await findCustomerEmails(svc.customer_name);
+        const customerEmails = await findCustomerEmails(svc.customer_id, svc.customer_name);
         recipients.push(...customerEmails);
       }
       recipients.push(...extraCc);

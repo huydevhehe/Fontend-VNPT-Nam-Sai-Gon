@@ -149,6 +149,19 @@ customerRouter.post("/import/commit", requireAuth, requireAdmin, async (req: Req
   }
 });
 
+// PATCH /api/customers/assign-staff — gán AM chăm sóc/phụ trách cho nhiều khách cùng lúc (chỉ Admin).
+// Đặt TRƯỚC "/:id" để không bị route "/:id" nuốt mất.
+customerRouter.patch("/assign-staff", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const operator = req.user?.name ?? req.user?.id ?? "Admin";
+    const { customerIds, amCaringStaff, amStaff } = req.body ?? {};
+    const result = await customerService.assignStaffBulk({ customerIds, amCaringStaff, amStaff }, operator);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    sendError(res, error);
+  }
+});
+
 customerRouter.get("/:id", async (req: Request, res: Response) => {
   try {
     const customer = await customerService.getById(req.params.id);

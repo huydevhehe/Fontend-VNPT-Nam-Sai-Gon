@@ -230,6 +230,21 @@ export async function importCustomerBatchExcel(
   return payload.data;
 }
 
+export interface AssignStaffBulkInput {
+  customerIds: string[];
+  amCaringStaff?: string;
+  amStaff?: string;
+}
+
+export async function assignStaffBulk(
+  input: AssignStaffBulkInput
+): Promise<{ updated: number }> {
+  return apiFetch<{ updated: number }>("/customers/assign-staff", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
 export interface CustomerDocumentRecord {
   id: string;
   customerId: string;

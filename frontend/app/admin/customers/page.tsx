@@ -27,10 +27,15 @@ import {
   transferCustomer,
   transferCaringStaff,
   importCustomerBatchExcel,
+  assignStaffBulk,
 } from "@/lib/api/customers.api";
 import { getTerritories } from "@/lib/api/territories.api";
 import { getStaff } from "@/lib/api/staff.api";
-import { getCustomerTeams, CustomerTeamRecord } from "@/lib/api/customer-teams.api";
+import {
+  getCustomerTeams,
+  assignCustomerTeam,
+  CustomerTeamRecord,
+} from "@/lib/api/customer-teams.api";
 import { CUSTOMER_GROUP_LABEL } from "@/lib/crm/constants/org.constants";
 import { useAuth } from "@/lib/auth/auth-context";
 import TeamManager from "@/components/admin/customer/TeamManager";
@@ -85,6 +90,13 @@ export default function CustomersPage() {
   // Import khách hàng (xử lý trùng) — Đợt 8, Task 4. Luồng độc lập với modal
   // "Nhập đợt KHDN chăm" cũ (showBatchModal), không thay thế.
   const [showImportWizard, setShowImportWizard] = useState(false);
+
+  // Gán nhân viên cho nhiều khách — Đợt 8, Task 5. Chỉ bật selection cho Admin.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkTarget, setBulkTarget] = useState<"caring" | "am" | "team" | null>(null);
+  const [bulkValue, setBulkValue] = useState("");
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
 
   function loadTeams() {
     getCustomerTeams()
@@ -152,6 +164,38 @@ export default function CustomersPage() {
       isMounted = false;
     };
   }, []);
+
+  async function handleBulkAssign() {
+    if (!bulkTarget || selectedIds.size === 0) return;
+    const value = bulkValue.trim();
+    if (!value) {
+      setBulkError("Vui lòng chọn giá trị cần gán");
+      return;
+    }
+
+    setBulkError(null);
+    setBulkSubmitting(true);
+    try {
+      const customerIds = Array.from(selectedIds);
+      if (bulkTarget === "caring") {
+        await assignStaffBulk({ customerIds, amCaringStaff: value });
+      } else if (bulkTarget === "am") {
+        await assignStaffBulk({ customerIds, amStaff: value });
+      } else {
+        await assignCustomerTeam(customerIds, value);
+      }
+
+      const updated = await getCustomers();
+      setData(updated);
+      setSelectedIds(new Set());
+      setBulkTarget(null);
+      setBulkValue("");
+    } catch (err) {
+      setBulkError(err instanceof Error ? err.message : "Gán nhân viên thất bại");
+    } finally {
+      setBulkSubmitting(false);
+    }
+  }
 
   async function handleBatchSubmit(e: FormEvent) {
     e.preventDefault();
@@ -599,6 +643,49 @@ export default function CustomersPage() {
         />
       </div>
 
+      {/* Thanh gán nhân viên hàng loạt — Đợt 8, Task 5 */}
+      {isAdmin && selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-vnpt/30 bg-vnpt/5 px-4 py-2.5 text-xs">
+          <span className="font-bold text-slate-800">Đã chọn {selectedIds.size} khách</span>
+          <button
+            onClick={() => {
+              setBulkTarget("caring");
+              setBulkValue("");
+              setBulkError(null);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Gán AM chăm sóc
+          </button>
+          <button
+            onClick={() => {
+              setBulkTarget("am");
+              setBulkValue("");
+              setBulkError(null);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Gán AM phụ trách
+          </button>
+          <button
+            onClick={() => {
+              setBulkTarget("team");
+              setBulkValue("");
+              setBulkError(null);
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            Gán Team
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="ml-auto text-slate-500 underline-offset-2 hover:underline"
+          >
+            Bỏ chọn
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       {error ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/70 px-6 py-10 text-center">
@@ -652,7 +739,88 @@ export default function CustomersPage() {
           ]}
           searchPlaceholder="Tìm theo tên, MST, CCCD, địa chỉ..."
           exportFileName="vnpt_khach_hang"
+          selection={
+            isAdmin
+              ? {
+                  getRowId: (row) => row.id,
+                  selectedIds,
+                  onChange: setSelectedIds,
+                }
+              : undefined
+          }
         />
+      )}
+
+      {/* Modal chọn giá trị gán hàng loạt */}
+      {bulkTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">
+                {bulkTarget === "caring" && "Gán AM chăm sóc"}
+                {bulkTarget === "am" && "Gán AM phụ trách"}
+                {bulkTarget === "team" && "Gán Team"}
+              </h3>
+              <button
+                onClick={() => setBulkTarget(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="mb-3 text-xs text-slate-500">
+              Áp dụng cho <span className="font-semibold text-slate-800">{selectedIds.size}</span> khách hàng đã chọn.
+            </p>
+
+            {bulkTarget === "team" ? (
+              <select
+                value={bulkValue}
+                onChange={(e) => setBulkValue(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              >
+                <option value="">— Chọn team —</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                list="customer-staff-names"
+                value={bulkValue}
+                onChange={(e) => setBulkValue(e.target.value)}
+                placeholder="Chọn hoặc nhập tên nhân viên"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-vnpt focus:outline-none"
+              />
+            )}
+
+            {bulkError && (
+              <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+                {bulkError}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-4">
+              <button
+                type="button"
+                onClick={() => setBulkTarget(null)}
+                className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkAssign}
+                disabled={bulkSubmitting}
+                className="btn-label rounded-xl bg-vnpt px-3.5 py-2 text-white hover:bg-vnpt-dark disabled:opacity-60"
+              >
+                {bulkSubmitting ? "Đang gán..." : "Gán"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Import khách hàng (xử lý trùng) — Đợt 8 */}

@@ -327,6 +327,77 @@ export class CustomerService {
     return updated;
   }
 
+  /**
+   * Gán AM chăm sóc và/hoặc AM phụ trách (bán hàng) cho nhiều khách hàng cùng
+   * lúc (Đợt 8, Task 5). Cần ít nhất 1 trong 2 tên; tên phải tồn tại trong
+   * bảng staff và đang hoạt động. Giới hạn 2000 id/lần, chạy trong 1
+   * transaction, ghi 1 audit log tóm tắt số lượng.
+   */
+  async assignStaffBulk(
+    input: { customerIds: string[]; amCaringStaff?: string; amStaff?: string },
+    operator: string = "Admin"
+  ): Promise<{ updated: number }> {
+    const customerIds = Array.isArray(input?.customerIds) ? input.customerIds : [];
+    if (customerIds.length === 0) {
+      throw new CustomerServiceError("Vui lòng chọn ít nhất 1 khách hàng", 400);
+    }
+    if (customerIds.length > 2000) {
+      throw new CustomerServiceError("Chỉ được gán tối đa 2000 khách hàng mỗi lần", 400);
+    }
+
+    const amCaringStaff = typeof input.amCaringStaff === "string" ? input.amCaringStaff.trim() : "";
+    const amStaff = typeof input.amStaff === "string" ? input.amStaff.trim() : "";
+    if (!amCaringStaff && !amStaff) {
+      throw new CustomerServiceError("Vui lòng chọn AM chăm sóc hoặc AM phụ trách", 400);
+    }
+
+    for (const staffName of [amCaringStaff, amStaff].filter(Boolean)) {
+      const staffRows = await query<any>("SELECT id, status FROM staff WHERE name = ?", [staffName]);
+      if (staffRows.length === 0) {
+        throw new CustomerServiceError(`Nhân viên "${staffName}" không tồn tại`, 400);
+      }
+      if (staffRows[0].status && staffRows[0].status !== "Đang hoạt động") {
+        throw new CustomerServiceError(`Nhân viên "${staffName}" đang bị đình chỉ hoặc đã ngừng hoạt động`, 400);
+      }
+    }
+
+    const updated = await transaction(async (tx) => {
+      const sets: string[] = [];
+      const baseParams: any[] = [];
+      if (amCaringStaff) {
+        sets.push("am_caring_staff = ?");
+        baseParams.push(amCaringStaff);
+      }
+      if (amStaff) {
+        sets.push("am_staff = ?");
+        baseParams.push(amStaff);
+      }
+
+      let count = 0;
+      for (const customerId of customerIds) {
+        const params = [...baseParams, customerId];
+        const result = await tx.run(`UPDATE customers SET ${sets.join(", ")} WHERE id = ?`, params);
+        count += result.changes;
+      }
+
+      await tx.run(
+        'INSERT INTO audit_logs (id, "user", action, details) VALUES (?, ?, ?, ?)',
+        [
+          `LOG-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          operator,
+          "Gán nhân viên cho nhiều khách hàng",
+          `Gán ${count} khách hàng: ${amCaringStaff ? `AM chăm sóc = ${amCaringStaff}` : ""}${
+            amCaringStaff && amStaff ? ", " : ""
+          }${amStaff ? `AM phụ trách = ${amStaff}` : ""}`,
+        ]
+      );
+
+      return count;
+    });
+
+    return { updated };
+  }
+
   private async loadForTransfer(id: string, newStaff: unknown) {
     const staffName = typeof newStaff === "string" ? newStaff.trim() : "";
     if (!staffName) {

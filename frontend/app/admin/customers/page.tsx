@@ -143,7 +143,7 @@ export default function CustomersPage() {
     let isMounted = true;
     getStaff()
       .then((staff) => {
-        if (isMounted) setStaffNames(staff.map((s) => s.name));
+        if (isMounted) setStaffNames(Array.from(new Set(staff.map((s) => s.name))));
       })
       .catch(() => {
         // Gợi ý tên nhân viên là tuỳ chọn; backend vẫn kiểm tra khi điều chuyển.

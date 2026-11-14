@@ -243,7 +243,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-[11px] text-slate-600">
             <span className="font-bold text-blue-900">● VNPT CRM V2</span>
             <div className="mt-0.5 text-[10px] text-slate-500">
-              Nam Sài Gòn · Đã kết nối Mock Backend
+              Nam Sài Gòn · Đã kết nối hệ thống
             </div>
           </div>
         </div>

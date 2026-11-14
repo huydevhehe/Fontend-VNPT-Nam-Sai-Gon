@@ -99,7 +99,6 @@ const NAV_SECTIONS = [
         href: "/admin/reminders",
         icon: MailWarning,
         badge: "Admin",
-        adminOnly: true,
       },
     ],
   },

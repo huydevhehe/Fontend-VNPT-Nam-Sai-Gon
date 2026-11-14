@@ -72,9 +72,9 @@ test.describe("Menu Nhắc hết hạn (Email) (Đợt 10 - Task 5)", () => {
     }
   });
 
-  test("AM không thấy menu Nhắc hết hạn (Email) và API trả 403", async ({ page, request }) => {
+  test("AM thấy menu Nhắc hết hạn (Email) với badge Admin nhưng API trả 403", async ({ page, request }) => {
     await loginAs(page, "am");
-    await expect(page.getByRole("link", { name: "Nhắc hết hạn (Email)" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Nhắc hết hạn (Email)" })).toBeVisible();
 
     const amToken = await apiLogin(request, "VNPT-AM-01", "VNPT-AM-01@Vnpt2026");
     const res = await request.get(`${API_URL}/reminders/settings`, { headers: bearer(amToken) });

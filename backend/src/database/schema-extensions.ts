@@ -161,12 +161,6 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("system_settings", "smtp_from_name", "TEXT DEFAULT 'VNPT Nam Sài Gòn'");
   await ensureColumn("system_settings", "smtp_from_email", "TEXT DEFAULT ''");
 
-  // 2 cột khách hàng do Đợt 7 (hồ sơ khách hàng + team) thêm — tự thêm tạm ở
-  // đây để Đợt 10 dùng cho "Gửi cho khách hàng" của nhắc hết hạn; ensureColumn
-  // không lỗi nếu cột đã tồn tại khi 2 đợt merge với nhau.
-  await ensureColumn("customers", "contact_email", "TEXT");
-  await ensureColumn("customers", "billing_email", "TEXT");
-
   await run(`
     CREATE TABLE IF NOT EXISTS reminder_settings (
       id TEXT PRIMARY KEY,

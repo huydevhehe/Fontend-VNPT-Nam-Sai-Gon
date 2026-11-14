@@ -21,6 +21,8 @@ import { ctvRouter } from "./modules/ctv/ctv.controller.js";
 import { ctvAccountsRouter } from "./modules/ctv/ctv-accounts.controller.js";
 import { publicRouter } from "./modules/public/public.controller.js";
 import { kpiRouter } from "./modules/kpi/kpi.controller.js";
+import { reminderRouter } from "./modules/reminder/reminder.controller.js";
+import { startReminderScheduler } from "./modules/reminder/reminder-scheduler.js";
 import { requireAuth } from "./middleware/require-auth.js";
 import { requireAdmin, requireCtv, requireStaff } from "./middleware/require-role.js";
 
@@ -85,6 +87,7 @@ app.use("/api/tasks", requireAuth, requireStaff, taskRouter);
 app.use("/api/reports", requireAuth, requireStaff, reportRouter);
 app.use("/api/settings", requireAuth, requireStaff, settingsRouter);
 app.use("/api/kpi", requireAuth, requireStaff, kpiRouter);
+app.use("/api/reminders", requireAuth, requireAdmin, reminderRouter);
 
 // Khu vực CTV và quản lý tài khoản CTV.
 app.use("/api/ctv", requireAuth, requireCtv, ctvRouter);
@@ -94,6 +97,7 @@ app.use("/api/ctv-accounts", requireAuth, requireAdmin, ctvAccountsRouter);
 async function start() {
   try {
     await initDatabase();
+    startReminderScheduler();
     app.listen(config.port, () => {
       console.log(`[VNPT CRM Backend] Server is running on http://localhost:${config.port}`);
     });

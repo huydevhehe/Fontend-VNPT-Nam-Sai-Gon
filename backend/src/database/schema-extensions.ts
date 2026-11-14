@@ -157,6 +157,74 @@ export async function applySchemaExtensions(): Promise<void> {
   await ensureColumn("system_settings", "payment_bank_name", "TEXT DEFAULT 'TMCP Ngoại Thương Việt Nam – CN TP.HCM. (VietcomBank)'");
   await ensureColumn("system_settings", "payment_signer_name", "TEXT DEFAULT 'Lê Văn Thuần'");
 
+  await ensureColumn("system_settings", "smtp_mode", "TEXT DEFAULT 'domain'");
+  await ensureColumn("system_settings", "smtp_from_name", "TEXT DEFAULT 'VNPT Nam Sài Gòn'");
+  await ensureColumn("system_settings", "smtp_from_email", "TEXT DEFAULT ''");
+
+  // 2 cột khách hàng do Đợt 7 (hồ sơ khách hàng + team) thêm — tự thêm tạm ở
+  // đây để Đợt 10 dùng cho "Gửi cho khách hàng" của nhắc hết hạn; ensureColumn
+  // không lỗi nếu cột đã tồn tại khi 2 đợt merge với nhau.
+  await ensureColumn("customers", "contact_email", "TEXT");
+  await ensureColumn("customers", "billing_email", "TEXT");
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS reminder_settings (
+      id TEXT PRIMARY KEY,
+      enabled BOOLEAN DEFAULT FALSE,
+      run_time TEXT DEFAULT '08:00',
+      days_before TEXT DEFAULT '[30,7,1]',
+      notify_staff BOOLEAN DEFAULT TRUE,
+      notify_customer BOOLEAN DEFAULT FALSE,
+      extra_cc TEXT DEFAULT '',
+      last_run_date TEXT,
+      updated_at TEXT
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS reminder_logs (
+      id TEXT PRIMARY KEY,
+      source TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      days_before INTEGER NOT NULL,
+      recipients TEXT,
+      status TEXT NOT NULL,
+      error TEXT,
+      sent_at TEXT NOT NULL
+    )
+  `);
+  await run(`
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_reminder_logs_once
+    ON reminder_logs(source, item_id, days_before)
+    WHERE status = 'sent'
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS reminder_batches (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      file_name TEXT,
+      days_before TEXT NOT NULL,
+      enabled BOOLEAN DEFAULT TRUE,
+      imported_by TEXT,
+      imported_at TEXT
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS reminder_items (
+      id TEXT PRIMARY KEY,
+      batch_id TEXT NOT NULL,
+      title TEXT,
+      customer_name TEXT,
+      subscriber_code TEXT,
+      expiry_date TEXT NOT NULL,
+      recipient_email TEXT,
+      staff_name TEXT,
+      extra TEXT
+    )
+  `);
+
   await run(`
     CREATE TABLE IF NOT EXISTS kpi_formulas (
       kpi_key TEXT PRIMARY KEY,

@@ -338,6 +338,7 @@ export default function CustomerImportWizard({
                   <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
                     <input
                       type="checkbox"
+                      aria-label="Chọn tất cả dòng trong tab"
                       onChange={(e) => toggleSelectAllVisible(e.target.checked)}
                     />
                     Chọn tất cả

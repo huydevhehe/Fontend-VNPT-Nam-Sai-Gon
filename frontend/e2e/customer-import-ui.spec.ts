@@ -84,7 +84,7 @@ test.describe("UI Import khách hàng (xử lý trùng)", () => {
     await expect(page.getByText(/Trùng cần quyết \(2\)/)).toBeVisible();
 
     await page.getByRole("button", { name: /Trùng cần quyết/ }).click();
-    await page.getByLabel("Chọn tất cả").check();
+    await page.getByLabel("Chọn tất cả dòng trong tab").check();
     await page.getByRole("button", { name: "Giữ bản cũ" }).click();
 
     const submitBtn = page.getByRole("button", { name: "Nhập dữ liệu" });

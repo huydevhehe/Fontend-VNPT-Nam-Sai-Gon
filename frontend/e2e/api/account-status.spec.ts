@@ -42,9 +42,9 @@ test.describe("requireAuth kiểm tra lại trạng thái tài khoản", () => {
     const token = await apiLogin(request, code, `${code}@Vnpt2026`);
     expect((await request.get(`${API_URL}/customers`, { headers: bearer(token) })).status()).toBe(200);
 
-    const patch = await request.patch(`${API_URL}/staff/${staff.id}`, {
+    const patch = await request.patch(`${API_URL}/staff/${staff.id}/status`, {
       headers: bearer(adminToken),
-      data: { status: "Ngừng hoạt động" },
+      data: { status: "Ngừng hoạt động", reason: "Nghỉ việc" },
     });
     expect(patch.status()).toBe(200);
 
